@@ -1,0 +1,41 @@
+\documentclass[11pt, a4paper]{article}
+
+% Include my own style.
+\usepackage{./tex/style}
+
+% This will appear on title page.
+\author{Vladislav Mlejnecký}
+\title{MARK-II Documentation}
+
+% Start document
+\begin{document}
+
+% Title page will be without numbering.
+\pagenumbering{gobble}
+
+% Print title page.
+\createTitlePage
+\newpage
+
+% Next pages will have roman numbering.
+\pagenumbering{roman}
+
+% There is contents generated.
+\tableofcontents
+\newpage
+
+% And also list of figures.
+\listoffigures
+\newpage
+
+% We wan't list of tables too. :)
+\listoftables
+\newpage
+
+% Finally clasic arabic numbering.
+\pagenumbering{arabic}
+
+% And now just include as many chapter as you want.
+\include{./tex/cpu}
+
+\end{document}

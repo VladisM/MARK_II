@@ -1,0 +1,218 @@
+\section{Central Processing Unit}
+The CPU of the MARK II SoC is simple, custom made, 32bit CPU written in 
+VHDL. This document should explain how it work and how to use this CPU.
+Main features of the CPU are:
+
+\begin{itemize}
+    \item 32bit wide arithmetic and data bus
+    \item $2^{18}$ words of addresable memory
+    \item VonNeumann design
+    \item load store architecture
+    \item RISC inspired
+\end{itemize}
+
+\subsection{Quick overwiev of the architecture}
+
+This is probably most funniest part of this documentation. 
+
+\subsubsection{Registers}
+There are 16 registers. Many of them are universal, and a few have some
+special function. But technicaly, all the registers are identical. All
+registers are listed in the table \ref{tab:registers}.
+
+\begin{table}[h]
+    \centering
+    \caption{Registers of the CPU}
+    \label{tab:registers}
+    \begin{tabular}{|l|c|c|l|c|c|}
+        \hline
+        \multicolumn{1}{|c|}{\textbf{Name}} & \textbf{Value} & \textbf{Operation} & \multicolumn{1}{c|}{\textbf{Name}} & \textbf{Value}  & \textbf{Operation} \\ \hline
+        \textbf{R0}                         & 0x0000         & r                  & \textbf{R8}                        & -               & r/w                \\ \hline
+        \textbf{R1}                         & -              & r/w                & \textbf{R9}                        & -               & r/w                \\ \hline
+        \textbf{R2}                         & -              & r/w                & \textbf{R10}                       & -               & r/w                \\ \hline
+        \textbf{R3}                         & -              & r/w                & \textbf{R11}                       & -               & r/w                \\ \hline
+        \textbf{R4}                         & -              & r/w                & \textbf{R12}                       & -               & r/w                \\ \hline
+        \textbf{R5}                         & -              & r/w                & \textbf{R13}                       & -               & r/w                \\ \hline
+        \textbf{R6}                         & -              & r/w                & \textbf{PC}                        & program counter & r/w                \\ \hline
+        \textbf{R7}                         & -              & r/w                & \textbf{SP}                        & stack pointer   & r/w                \\ \hline
+    \end{tabular}
+\end{table}
+
+R0 is special register. This register is inspired by cpu architectures like
+MIPS and RISC-V. When you read this register, you are going to get a zero. 
+Whatever you written into R0, you are going to get zero. This is usefull
+when you want do nonconditional jump. You can compare R0 with R0 and branch
+when they are equal. Also it is usefull when you want jump if value is lower 
+zero, or bigger than zero.
+
+R14, called PC, is just program counter. There is nothing special about
+this register. It is normal universal register like others. But this is
+a point where instruction decoder looking for the actual address in program.
+Because this is normall register, you can do something like MVIL PC 0x0100.
+This instruction is going to jump into address 0x0100. 
+
+Stack pointer register, R15 or SP, is like PC. But in this register, pointer 
+into top of stack is stored. Stack is growing from higger memory down to zero. 
+You should set up stack pointer somewhere into RAM before using it (for interrupts 
+or subprogramms). 
+
+\subsubsection{ALU}
+
+ALU is realy simple. There are two registers that works as accumulator or
+temporary registers where operands are stored. These two registers are 
+hidden for the programmer. CPU uses them when aritmetic or logical instruction
+is executed.
+
+There is a fews operation that can ALU do. They are realy simple. But alu
+also do comparations for branch instructions. 
+
+List of supported operation what can ALU do is:
+
+\begin{itemize}
+    \item addiction
+    \item substraction
+    \item logical OR
+    \item logical AND
+    \item logical NOT
+    \item logical XOR
+    \item logical shift to left by 1
+    \item logical shift to right by 1
+    \item increment
+    \item decrement
+\end{itemize}
+
+This is short list, but there are enought operation for simple embedded CPU.
+Second list is list of suppored comparation. 
+
+\begin{itemize}
+    \item eqv - equal
+    \item lt - lower then
+    \item ltu - lower then, unsigned
+    \item ge - greater then or equal
+    \item geu - greater then or equal, unsigned
+\end{itemize}
+
+This comparsion outputs are used by all brach instructions to decide whatever to
+jump or no.
+
+All instruction are made as signed, but when you are using second complement code 
+for negative numbers, this isn't really important.
+
+\subsubsection{Instruction decoder}
+
+Instruction decoder is fucking large finite state machine. Its operation is
+simply, for first, instruction decoder take instruction from memory using PC.
+Increment PC and decode instruction. After that, instruction is executed.
+Execution time is depend on the type of instruction. At the end of instruction
+execution, instruction decoder will check interrupt. If it is active it will store
+PC into stack, decrement SP and jump into interrupt service routine. If 
+instrerrupt is inactive, there just start next instruction cycle. 
+
+Complete diagram of instruction diagram, its states and transition between them 
+is realy large, but you can see it with a few comments in doc directory. There are
+a file called id.dia, this is simple diagram but written in czech language. 
+You can open it using program Dia. 
+
+\subsubsection{Bus insterface}
+
+This is really simply block, it contains only register for address hold. Also
+one buffer for incoming data and one register for outgoing data. 
+
+\subsubsection{Instruction register}
+
+Another very simple block, this is only 32bit register for store actual
+instruction word.
+
+\subsubsection{Instruction argument}
+
+Finally, last very simple block. This is only simple buffer for instruction decoder
+to paste data into internal databus.
+
+
+\subsection{Instruction set architecture}
+
+Instruction set is simply. All the instructions have the same lenght, 32bits and
+quick brief of all instruction is in following tables.
+
+\begin{table}[]
+    \centering
+    \caption{Memory instructions}
+    \label{tab:mem_instruction}
+    \begin{tabular}{|l|l|}
+    \hline
+        \textbf{Instruction} & \textbf{Comment} \\ \hline
+	    LD R_{a} Address & Load data into register R_{a} from Address. \\ \hline
+	    ST R_{a} Address & Store data from register R_{a} into Address. \\ \hline
+    \end{tabular}
+\end{table}
+
+In the table \ref{tab:mem_instruction} are the only two instruction for read from
+and store into memory space. With instruction LD you can load 32bit word into register
+from memory. With ST you can save 32bit word from register into memory. Pointer
+into memory is alway stored in instruction word.
+
+\begin{table}[]
+    \centering
+    \caption{ALU instructions}
+    \label{tab:alu_instruction}
+    \begin{tabular}{|l|l|}
+    \hline
+        \textbf{Instruction} & \textbf{Comment} \\ \hline
+	    ADD R_A R_B & Do R_A + R_B and result store back into R_A. \\ \hline
+        SUB R_A R_B & Do R_A - R_B and result store back into R_A. \\ \hline
+        OR R_A R_B  & Do R_A OR R_B and result store back into R_A. \\ \hline
+        AND R_A R_B & Do R_A AND R_B and result store back into R_A. \\ \hline
+        NOT R_A & Do !(R_A) and result store back into R_A. \\ \hline
+        XOR R_A R_B & Do R_A XOR R_B and result store back into R_A. \\ \hline
+        ROL R_A & Do R_A << 1 and result store back into R_A. \\ \hline
+        ROR R_A & Do R_A >> 1 and result store back into R_A. \\ \hline
+        INC R_A & Do R_A ++ and result store back into R_A. \\ \hline
+        DEC R_A & Do R_A -- and result store back into R_A. \\ \hline
+    \end{tabular}
+\end{table}
+
+\begin{table}[]
+    \centering
+    \caption{Registers operation}
+    \label{tab:reg_mov_instruction}
+    \begin{tabular}{|l|l|}
+    \hline
+        \textbf{Instruction} & \textbf{Comment} \\ \hline
+	    MOV R_A R_B & Move content of register R_A into R_B. \\ \hline
+	    MVIL R_A Cons_{18b} & Move 18bit constant into lower half of register R_A. \\ \hline
+        MVIH R_A Cons_{18b} & Move 18bit constant into higer half of register R_A. \\ \hline
+    \end{tabular}
+\end{table}
+
+In the table \ref{tab:reg_mov_instruction} are a few instruction for data manipulating.
+With Instruction MOV you can move value from one register into another register.
+Also there are two instruction MVI. They are used for load data into register directly in single
+instruction. But instruction word is only 32bit long. So, there is two instruction MVI,
+MVIL for loading lower half of word (actualy, 18bit not half) and MVIH for higer
+half of word. Instruction will take destination register and do OR wit its value and
+direct data from instruction word.
+
+\begin{table}[]
+    \centering
+    \caption{Jumps}
+    \label{tab:jump_instruction}
+    \begin{tabular}{|l|l|}
+    \hline
+        \textbf{Instruction} & \textbf{Comment} \\ \hline
+        CALL Address         & Call a subprogram on Address. Store retun address into stack.
+        RET                  & Return from subprogramm.
+        RETI                 & Return from interrupt.
+        BEQ R_A R_B Address  & Branch if R_A = R_B.
+        BNE R_A R_B Address  & Branch if R_A != R_B.
+        BLT  R_A R_B Address & Branch if R_A < R_B.
+        BLTU R_A R_B Address & Branch if R_A < R_B. Unsigned.
+        BGE R_A R_B Address  & Branch if R_A => R_B.
+        BGEU R_A R_B Address & Branch if R_A => R_B. Unsigned.
+    \end{tabular}
+\end{table}
+
+In the table \ref{tab:jump_instruction} are listed all instruction for doing jump. Note this,
+CPU from MARK II doesn't have standarts flags like another CPUs. CPU doing conditional jump
+based on comparsion of two regs.
+
+Format of all instructions are listed in calc document "isa.odf" in doc directory.
