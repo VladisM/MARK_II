@@ -70,7 +70,7 @@ begin
         signed(rotate_left(unsigned(opA), 1)) when "0110",
         signed(rotate_right(unsigned(opA), 1)) when "0111",
         opA + 1 when "1000",
-        opA + 1 when "1001",
+        opA - 1 when "1001",
         opA when others;
 
     --flags
