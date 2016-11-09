@@ -1594,14 +1594,14 @@ begin
                 asyn_alu_oe <= '0'; asyn_alu_wrA <= '0'; asyn_alu_wrB <= '0'; asyn_alu_opcode <= x"2";      --ALU
                 asyn_bus_ext_WR <= '0'; asyn_bus_ext_RD <= '0'; asyn_bus_WRadd <= '0'; asyn_bus_WRdat <= '0'; asyn_bus_RDdat <= '0'; --external BUS
                 asyn_instruction_reg_wr <= '0';          --IR
-                asyn_ins_arg_input <= "00000000000000" & instruction_word(17 downto 0); asyn_ins_arg_oe <= '1';       --IA 
+                asyn_ins_arg_input <= x"0000" & instruction_word(15 downto 0); asyn_ins_arg_oe <= '1';       --IA 
             when mvil_3 => 
                 asyn_int_completed <= '0'; int_accept <= '0';
                 regs_wr <= '0'; regs_oe <= '0'; regs_wr_dest <= x"0"; regs_oe_dest <= x"0";      --regs
                 asyn_alu_oe <= '0'; asyn_alu_wrA <= '0'; asyn_alu_wrB <= '1'; asyn_alu_opcode <= x"2";      --ALU
                 asyn_bus_ext_WR <= '0'; asyn_bus_ext_RD <= '0'; asyn_bus_WRadd <= '0'; asyn_bus_WRdat <= '0'; asyn_bus_RDdat <= '0'; --external BUS
                 asyn_instruction_reg_wr <= '0';          --IR
-                asyn_ins_arg_input <= "00000000000000" & instruction_word(17 downto 0); asyn_ins_arg_oe <= '1';       --IA 
+                asyn_ins_arg_input <= x"0000" & instruction_word(15 downto 0); asyn_ins_arg_oe <= '1';       --IA 
             when mvil_4 => 
                 asyn_int_completed <= '0'; int_accept <= '0';
                 regs_wr <= '0'; regs_oe <= '0'; regs_wr_dest <= x"0"; regs_oe_dest <= x"0";      --regs
@@ -1638,14 +1638,14 @@ begin
                 asyn_alu_oe <= '0'; asyn_alu_wrA <= '0'; asyn_alu_wrB <= '0'; asyn_alu_opcode <= x"2";      --ALU
                 asyn_bus_ext_WR <= '0'; asyn_bus_ext_RD <= '0'; asyn_bus_WRadd <= '0'; asyn_bus_WRdat <= '0'; asyn_bus_RDdat <= '0'; --external BUS
                 asyn_instruction_reg_wr <= '0';          --IR
-                asyn_ins_arg_input <= instruction_word(17 downto 0) & "00000000000000"; asyn_ins_arg_oe <= '1';       --IA 
+                asyn_ins_arg_input <= instruction_word(15 downto 0) & x"0000"; asyn_ins_arg_oe <= '1';       --IA 
             when mvih_3 => 
                 asyn_int_completed <= '0'; int_accept <= '0';
                 regs_wr <= '0'; regs_oe <= '0'; regs_wr_dest <= x"0"; regs_oe_dest <= x"0";      --regs
                 asyn_alu_oe <= '0'; asyn_alu_wrA <= '0'; asyn_alu_wrB <= '1'; asyn_alu_opcode <= x"2";      --ALU
                 asyn_bus_ext_WR <= '0'; asyn_bus_ext_RD <= '0'; asyn_bus_WRadd <= '0'; asyn_bus_WRdat <= '0'; asyn_bus_RDdat <= '0'; --external BUS
                 asyn_instruction_reg_wr <= '0';          --IR
-                asyn_ins_arg_input <= instruction_word(17 downto 0) & "00000000000000"; asyn_ins_arg_oe <= '1';       --IA 
+                asyn_ins_arg_input <= instruction_word(15 downto 0) & x"0000"; asyn_ins_arg_oe <= '1';       --IA 
             when mvih_4 => 
                 asyn_int_completed <= '0'; int_accept <= '0';
                 regs_wr <= '0'; regs_oe <= '0'; regs_wr_dest <= x"0"; regs_oe_dest <= x"0";      --regs
