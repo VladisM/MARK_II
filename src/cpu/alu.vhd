@@ -9,8 +9,8 @@ use ieee.numeric_std.all;
 --0x3       A and B
 --0x4       ~A
 --0x5       A xor B
---0x6       A<<1
---0x7       A>>1
+--0x6       A<<1 rotate left
+--0x7       A>>1 rotate right
 --0x8       A+1
 --0x9       A-1
 entity alu is
