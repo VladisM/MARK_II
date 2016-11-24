@@ -9,34 +9,11 @@ entity cpu is
         int: in std_logic;
         int_accept: out std_logic;
         int_completed: out std_logic;
-        address: out std_logic_vector(17 downto 0);
+        address: out std_logic_vector(15 downto 0);
         data_mosi: out std_logic_vector(31 downto 0);
         data_miso: in std_logic_vector(31 downto 0);
         WR: out std_logic;
-        RD: out std_logic;
-        --debug part
-        deb_regs_wr_select: out std_logic_vector(15 downto 0);
-        deb_regs_oe_select: out std_logic_vector(15 downto 0);
-        deb_alu_lt: out std_logic;
-        deb_alu_ltu: out std_logic;
-        deb_alu_ge: out std_logic; 
-        deb_alu_geu: out std_logic;
-        deb_alu_eqv: out std_logic;
-        deb_alu_oe: out std_logic; 
-        deb_alu_wrA: out std_logic;
-        deb_alu_wrB: out std_logic;
-        deb_alu_opcode: out std_logic_vector(3 downto 0);
-        deb_bus_ext_WR: out std_logic;
-        deb_bus_ext_RD: out std_logic;
-        deb_bus_WRadd: out std_logic;
-        deb_bus_WRdat: out std_logic;
-        deb_bus_RDdat: out std_logic;
-        deb_instruction_word: out std_logic_vector(31 downto 0);
-        deb_instruction_reg_wr: out std_logic;
-        deb_ins_arg_input: out std_logic_vector(31 downto 0);
-        deb_ins_arg_oe: out std_logic;
-        deb_databus: out std_logic_vector(31 downto 0)
-        --end debug part
+        RD: out std_logic
     );
 end entity cpu;
 
@@ -78,7 +55,7 @@ architecture cpu_arch of cpu is
             data: inout signed(31 downto 0);
             res: in std_logic;
             clk: in std_logic;
-            address: out std_logic_vector(17 downto 0);
+            address: out std_logic_vector(15 downto 0);
             data_mosi: out std_logic_vector(31 downto 0);
             data_miso: in std_logic_vector(31 downto 0);
             WRadd: in std_logic;
@@ -208,29 +185,5 @@ begin
             --control outputs
             int_accept, int_completed
         );
-        
-    --debug part
-        deb_regs_wr_select <= regs_wr_select;
-        deb_regs_oe_select <= regs_oe_select;
-        deb_alu_lt <= alu_lt;
-        deb_alu_ltu <= alu_ltu;
-        deb_alu_ge <= alu_ge;
-        deb_alu_geu <= alu_geu;
-        deb_alu_eqv <= alu_eqv;
-        deb_alu_oe <= alu_oe;
-        deb_alu_wrA <= alu_wrA;
-        deb_alu_wrB <= alu_wrB;
-        deb_alu_opcode <= alu_opcode;
-        deb_bus_ext_WR <= bus_ext_WR;
-        deb_bus_ext_RD <= bus_ext_RD;
-        deb_bus_WRadd <= bus_WRadd;
-        deb_bus_WRdat <= bus_WRdat;
-        deb_bus_RDdat <= bus_RDdat;
-        deb_instruction_word <= instruction_word;
-        deb_instruction_reg_wr <= instruction_reg_wr;
-        deb_ins_arg_input <= ins_arg_input;
-        deb_ins_arg_oe <= ins_arg_oe;
-        deb_databus <= std_logic_vector(databus);
-    --end debug part
             
 end architecture cpu_arch;
