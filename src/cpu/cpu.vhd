@@ -9,7 +9,7 @@ entity cpu is
         int: in std_logic;
         int_accept: out std_logic;
         int_completed: out std_logic;
-        address: out std_logic_vector(17 downto 0);
+        address: out std_logic_vector(15 downto 0);
         data_mosi: out std_logic_vector(31 downto 0);
         data_miso: in std_logic_vector(31 downto 0);
         WR: out std_logic;
@@ -55,7 +55,7 @@ architecture cpu_arch of cpu is
             data: inout signed(31 downto 0);
             res: in std_logic;
             clk: in std_logic;
-            address: out std_logic_vector(17 downto 0);
+            address: out std_logic_vector(15 downto 0);
             data_mosi: out std_logic_vector(31 downto 0);
             data_miso: in std_logic_vector(31 downto 0);
             WRadd: in std_logic;

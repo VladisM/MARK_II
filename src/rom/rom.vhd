@@ -1,4 +1,3 @@
-
 library ieee, lpm;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
@@ -6,11 +5,11 @@ use lpm.lpm_components.all;
 
 entity rom is
     generic(
-        BASE_ADDRESS: unsigned(17 downto 0) := "000000000000000000"    --base address of the ROM 
+        BASE_ADDRESS: unsigned(15 downto 0) := x"0000"    --base address of the ROM 
     );
     port(
         clk: in std_logic;
-        address: in std_logic_vector(17 downto 0);
+        address: in std_logic_vector(15 downto 0);
         data_mosi: in std_logic_vector(31 downto 0);
         data_miso: out std_logic_vector(31 downto 0); 
         WR: in std_logic;

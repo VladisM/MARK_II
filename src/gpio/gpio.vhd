@@ -11,13 +11,13 @@ use ieee.numeric_std.all;
 
 entity gpio is 
     generic(
-        BASE_ADDRESS: unsigned(17 downto 0) := "000000000000000000";    --base address of the GPIO 
+        BASE_ADDRESS: unsigned(15 downto 0) := x"0000";    --base address of the GPIO 
         WIDE: natural := 32       --wide of the whole gpio
     );
     port(
         clk: in std_logic;
         res: in std_logic;
-        address: in std_logic_vector(17 downto 0);
+        address: in std_logic_vector(15 downto 0);
         data_mosi: in std_logic_vector((WIDE-1) downto 0);
         data_miso: out std_logic_vector((WIDE-1) downto 0);
         WR: in std_logic;
