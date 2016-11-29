@@ -10,7 +10,7 @@ use ieee.numeric_std.all;
 
 entity pwm is 
     generic(
-        BASE_ADDRESS: unsigned(15 downto 0) := x"0000";    --base address
+        BASE_ADDRESS: unsigned(19 downto 0) := x"00000";    --base address
         TIMER_WIDE: natural := 4;
         BUS_WIDE: natural := 32
     );
@@ -18,7 +18,7 @@ entity pwm is
         --main bus interface
         clk: in std_logic;
         res: in std_logic;
-        address: in std_logic_vector(15 downto 0);
+        address: in std_logic_vector(19 downto 0);
         data_mosi: in std_logic_vector((BUS_WIDE - 1) downto 0);
         data_miso: out std_logic_vector((BUS_WIDE - 1) downto 0);
         WR: in std_logic;

@@ -30,7 +30,7 @@ architecture MARK_II_arch of MARK_II is
             int: in std_logic;
             int_accept: out std_logic;
             int_completed: out std_logic;
-            address: out std_logic_vector(15 downto 0);
+            address: out std_logic_vector(19 downto 0);
             data_mosi: out std_logic_vector(31 downto 0);
             data_miso: in std_logic_vector(31 downto 0);
             WR: out std_logic;
@@ -40,13 +40,13 @@ architecture MARK_II_arch of MARK_II is
     
     component gpio is 
         generic(
-            BASE_ADDRESS: unsigned(15 downto 0) := x"0000";    --base address of the GPIO 
+            BASE_ADDRESS: unsigned(19 downto 0) := x"00000";    --base address of the GPIO 
             WIDE: natural := 32       --wide of the whole gpio
         );
         port(
 			  clk: in std_logic;
 			  res: in std_logic;
-			  address: in std_logic_vector(15 downto 0);
+			  address: in std_logic_vector(19 downto 0);
 			  data_mosi: in std_logic_vector((WIDE-1) downto 0);
 			  data_miso: out std_logic_vector((WIDE-1) downto 0);
 			  WR: in std_logic;
@@ -58,11 +58,11 @@ architecture MARK_II_arch of MARK_II is
     
     component ram is
         generic(
-            BASE_ADDRESS: unsigned(15 downto 0) := x"0000"    --base address of the RAM 
+            BASE_ADDRESS: unsigned(19 downto 0) := x"00000"    --base address of the RAM 
         );
         port(
             clk: in std_logic;
-            address: in std_logic_vector(15 downto 0);
+            address: in std_logic_vector(19 downto 0);
             data_mosi: in std_logic_vector(31 downto 0);
             data_miso: out std_logic_vector(31 downto 0); 
             WR: in std_logic;
@@ -72,11 +72,11 @@ architecture MARK_II_arch of MARK_II is
     
     component rom is
         generic(
-            BASE_ADDRESS: unsigned(15 downto 0) := x"0000"    --base address of the ROM 
+            BASE_ADDRESS: unsigned(19 downto 0) := x"00000"    --base address of the ROM 
         );
         port(
             clk: in std_logic;
-            address: in std_logic_vector(15 downto 0);
+            address: in std_logic_vector(19 downto 0);
             data_mosi: in std_logic_vector(31 downto 0);
             data_miso: out std_logic_vector(31 downto 0); 
             WR: in std_logic;
@@ -86,7 +86,7 @@ architecture MARK_II_arch of MARK_II is
     
     component pwm is 
         generic(
-            BASE_ADDRESS: unsigned(15 downto 0) := x"0000";    --base address
+            BASE_ADDRESS: unsigned(19 downto 0) := x"00000";    --base address
             TIMER_WIDE: natural := 4;
             BUS_WIDE: natural := 32
         );
@@ -94,7 +94,7 @@ architecture MARK_II_arch of MARK_II is
             --main bus interface
             clk: in std_logic;
             res: in std_logic;
-            address: in std_logic_vector(15 downto 0);
+            address: in std_logic_vector(19 downto 0);
             data_mosi: in std_logic_vector((BUS_WIDE - 1) downto 0);
             data_miso: out std_logic_vector((BUS_WIDE - 1) downto 0);
             WR: in std_logic;
@@ -106,7 +106,7 @@ architecture MARK_II_arch of MARK_II is
     end component pwm;
         
     --signal for internal bus
-    signal bus_address: std_logic_vector(15 downto 0);
+    signal bus_address: std_logic_vector(19 downto 0);
     signal bus_data_mosi, bus_data_miso: std_logic_vector(31 downto 0);
     signal bus_WR, bus_RD: std_logic;
     
@@ -118,27 +118,27 @@ begin
     
 	 --gpio block    (0x100 - 0x103)
     gpio_0: gpio
-        generic map(x"0100", 32)
+        generic map(x"00100", 32)
         port map(clk, res, bus_address, bus_data_mosi, bus_data_miso, bus_WR, bus_RD, port_a, port_b);
     
     --PWM generator A (0x104 - 0x105)
     pwm_0: pwm
-        generic map(x"0104", 16, 32)
+        generic map(x"00104", 16, 32)
         port map(clk, res, bus_address, bus_data_mosi, bus_data_miso, bus_WR, bus_RD, pwm_A, pwm_ext_clk_A);
     
     --PWM generator B (0x106 - 0x107)
     pwm_1: pwm
-        generic map(x"0106", 16, 32)
+        generic map(x"00106", 16, 32)
         port map(clk, res, bus_address, bus_data_mosi, bus_data_miso, bus_WR, bus_RD, pwm_B, pwm_ext_clk_B);
         
     --ram memory    (0x400 - 0x7FF)
     ram_0: ram
-        generic map(x"0400")
+        generic map(x"00400")
         port map(clk, bus_address, bus_data_mosi, bus_data_miso, bus_WR, bus_RD);
     
     --rom memory    (0x000 - 0x0FF)
     rom_0: rom
-        generic map(x"0000")
+        generic map(x"00000")
         port map(clk, bus_address, bus_data_mosi, bus_data_miso, bus_WR, bus_RD);
         
     

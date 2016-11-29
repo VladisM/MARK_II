@@ -7,7 +7,7 @@ entity bus_interface is
         data: inout signed(31 downto 0);
         res: in std_logic;
         clk: in std_logic;
-        address: out std_logic_vector(15 downto 0);
+        address: out std_logic_vector(19 downto 0);
         data_mosi: out std_logic_vector(31 downto 0);
         data_miso: in std_logic_vector(31 downto 0);
         WRadd: in std_logic;
@@ -26,7 +26,7 @@ begin
             address <= (others => '0');
         elsif(rising_edge(clk)) then
             if(WRadd = '1') then
-                address <= std_logic_vector(data(15 downto 0));
+                address <= std_logic_vector(data(19 downto 0));
             end if;
         end if;
     end process;
