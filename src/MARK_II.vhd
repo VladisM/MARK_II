@@ -11,8 +11,8 @@ entity MARK_II is
         int_accept: out std_logic;
         int_completed: out std_logic;
         --gpio
-        port_a: inout std_logic_vector(31 downto 0);
-        port_b: inout std_logic_vector(31 downto 0);
+        port_a: inout std_logic_vector(7 downto 0);
+        port_b: inout std_logic_vector(7 downto 0);
         --PWM
         pwm_A: out std_logic;
         pwm_ext_clk_A: in std_logic;
@@ -39,20 +39,22 @@ architecture MARK_II_arch of MARK_II is
     end component cpu;
     
     component gpio is 
-        generic(
-            BASE_ADDRESS: unsigned(19 downto 0) := x"00000";    --base address of the GPIO 
-            WIDE: natural := 32       --wide of the whole gpio
-        );
-        port(
+		  generic(
+			   BASE_ADDRESS: unsigned(19 downto 0) := x"00000";    --base address of the GPIO 
+			   GPIO_WIDE: natural := 32;       --wide of the gpios
+			   BUS_WIDE:natural := 32		--wide of the data bus
+		  );
+		  port(
 			  clk: in std_logic;
 			  res: in std_logic;
 			  address: in std_logic_vector(19 downto 0);
-			  data_mosi: in std_logic_vector((WIDE-1) downto 0);
-			  data_miso: out std_logic_vector((WIDE-1) downto 0);
+			  data_mosi: in std_logic_vector((BUS_WIDE-1) downto 0);
+			  data_miso: out std_logic_vector((BUS_WIDE-1) downto 0);
 			  WR: in std_logic;
 			  RD: in std_logic;
-			  port_a: inout std_logic_vector((WIDE-1) downto 0);
-			  port_b: inout std_logic_vector((WIDE-1) downto 0)
+			  --outputs
+			  port_a: inout std_logic_vector((GPIO_WIDE-1) downto 0);
+			  port_b: inout std_logic_vector((GPIO_WIDE-1) downto 0)
         );
     end component gpio;
     
@@ -118,7 +120,7 @@ begin
     
 	 --gpio block    (0x100 - 0x103)
     gpio_0: gpio
-        generic map(x"00100", 32)
+        generic map(x"00100", 8, 32)
         port map(clk, res, bus_address, bus_data_mosi, bus_data_miso, bus_WR, bus_RD, port_a, port_b);
     
     --PWM generator A (0x104 - 0x105)
