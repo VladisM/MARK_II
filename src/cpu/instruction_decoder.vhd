@@ -150,29 +150,29 @@ begin
                 when load_instr_inc_pc_4 => state <= load_instr_inc_pc_5;
                 when load_instr_inc_pc_5 =>  --we have instruction loaded so we must decide what instruction is it and execute it
                     if    instruction_word(31 downto 24) = "00000000" then state <= mov_0;
-                    elsif instruction_word(31 downto 24) = "00000001" then state <= ld_0;
-                    elsif instruction_word(31 downto 24) = "00000010" then state <= st_0;
-                    elsif instruction_word(31 downto 24) = "00000011" then state <= mvil_0;
-                    elsif instruction_word(31 downto 24) = "00000100" then state <= call_0;
-                    elsif instruction_word(31 downto 24) = "00000101" then state <= ret_0;
-                    elsif instruction_word(31 downto 24) = "00000110" then state <= beq_0;
-                    elsif instruction_word(31 downto 24) = "00000111" then state <= bne_0;
-                    elsif instruction_word(31 downto 24) = "00001000" then state <= add_0;
-                    elsif instruction_word(31 downto 24) = "00001001" then state <= sub_0;
-                    elsif instruction_word(31 downto 24) = "00001010" then state <= or_0;
-                    elsif instruction_word(31 downto 24) = "00001011" then state <= and_0;
-                    elsif instruction_word(31 downto 24) = "00001100" then state <= not_0;
-                    elsif instruction_word(31 downto 24) = "00001101" then state <= xor_0;
-                    elsif instruction_word(31 downto 24) = "00001110" then state <= rol_0;                
-                    elsif instruction_word(31 downto 24) = "00001111" then state <= ror_0;                
-                    elsif instruction_word(31 downto 24) = "00010000" then state <= blt_0;
-                    elsif instruction_word(31 downto 24) = "00010001" then state <= bltu_0;
-                    elsif instruction_word(31 downto 24) = "00010010" then state <= bge_0;
-                    elsif instruction_word(31 downto 24) = "00010011" then state <= bgeu_0;
-                    elsif instruction_word(31 downto 24) = "00010100" then state <= inc_0;
-                    elsif instruction_word(31 downto 24) = "00010101" then state <= dec_0;
-                    elsif instruction_word(31 downto 24) = "00010110" then state <= mvih_0;
-                    elsif instruction_word(31 downto 24) = "00010111" then state <= reti_0;
+                    elsif instruction_word(31 downto 24) = "00000001" then state <= mvil_0;
+                    elsif instruction_word(31 downto 24) = "00000010" then state <= ret_0;
+                    elsif instruction_word(31 downto 24) = "00000011" then state <= add_0;
+                    elsif instruction_word(31 downto 24) = "00000100" then state <= sub_0;
+                    elsif instruction_word(31 downto 24) = "00000101" then state <= or_0;
+                    elsif instruction_word(31 downto 24) = "00000110" then state <= and_0;
+                    elsif instruction_word(31 downto 24) = "00000111" then state <= not_0;
+                    elsif instruction_word(31 downto 24) = "00001000" then state <= xor_0;
+                    elsif instruction_word(31 downto 24) = "00001001" then state <= rol_0;
+                    elsif instruction_word(31 downto 24) = "00001010" then state <= ror_0;
+                    elsif instruction_word(31 downto 24) = "00001011" then state <= inc_0;
+                    elsif instruction_word(31 downto 24) = "00001100" then state <= dec_0;
+                    elsif instruction_word(31 downto 24) = "00001101" then state <= mvih_0;
+                    elsif instruction_word(31 downto 24) = "00001110" then state <= reti_0;                
+                    elsif instruction_word(31 downto 28) = "0111" 	 then state <= call_0;                
+                    elsif instruction_word(31 downto 28) = "1000" 	 then state <= ld_0;
+                    elsif instruction_word(31 downto 28) = "1001" 	 then state <= st_0;
+                    elsif instruction_word(31 downto 28) = "1010" 	 then state <= beq_0;
+                    elsif instruction_word(31 downto 28) = "1011" 	 then state <= bne_0;
+                    elsif instruction_word(31 downto 28) = "1100" 	 then state <= blt_0;
+                    elsif instruction_word(31 downto 28) = "1101" 	 then state <= bltu_0;
+                    elsif instruction_word(31 downto 28) = "1110" 	 then state <= bge_0;
+                    elsif instruction_word(31 downto 28) = "1111" 	 then state <= bgeu_0;
                     else state <= start;
                     end if;
                
@@ -694,7 +694,7 @@ begin
                 asyn_alu_oe <= '0'; asyn_alu_wrA <= '0'; asyn_alu_wrB <= '0'; asyn_alu_opcode <= x"0";                          --ALU
                 asyn_bus_ext_WR <= '0'; asyn_bus_ext_RD <= '0'; asyn_bus_WRadd <= '0'; asyn_bus_WRdat <= '0'; asyn_bus_RDdat <= '0'; --external BUS
                 asyn_instruction_reg_wr <= '0';                                                                  --IR
-                asyn_ins_arg_input <= x"0000" & instruction_word(15 downto 0); asyn_ins_arg_oe <= '1';                                            --IA
+                asyn_ins_arg_input <= x"000" & instruction_word(27 downto 24) & instruction_word(15 downto 0); asyn_ins_arg_oe <= '1';                                            --IA
                 
             when ld_1 => 
                 asyn_int_completed <= '0'; asyn_int_accept <= '0'; 
@@ -702,7 +702,7 @@ begin
                 asyn_alu_oe <= '0'; asyn_alu_wrA <= '0'; asyn_alu_wrB <= '0'; asyn_alu_opcode <= x"0";                          --ALU
                 asyn_bus_ext_WR <= '0'; asyn_bus_ext_RD <= '0'; asyn_bus_WRadd <= '1'; asyn_bus_WRdat <= '0'; asyn_bus_RDdat <= '0'; --external BUS
                 asyn_instruction_reg_wr <= '0';                                                                  --IR
-                asyn_ins_arg_input <= x"0000" & instruction_word(15 downto 0); asyn_ins_arg_oe <= '1';                      
+                asyn_ins_arg_input <= x"000" & instruction_word(27 downto 24) & instruction_word(15 downto 0); asyn_ins_arg_oe <= '1';                      
                 
             when ld_2 => 
                 asyn_int_completed <= '0'; asyn_int_accept <= '0'; 
@@ -728,7 +728,7 @@ begin
                 asyn_alu_oe <= '0'; asyn_alu_wrA <= '0'; asyn_alu_wrB <= '0'; asyn_alu_opcode <= x"0";                          --ALU
                 asyn_bus_ext_WR <= '0'; asyn_bus_ext_RD <= '0'; asyn_bus_WRadd <= '0'; asyn_bus_WRdat <= '0'; asyn_bus_RDdat <= '0'; --external BUS
                 asyn_instruction_reg_wr <= '0';                                                                  --IR
-                asyn_ins_arg_input <= x"0000" & instruction_word(15 downto 0); asyn_ins_arg_oe <= '1';                                            --IA
+                asyn_ins_arg_input <= x"000" & instruction_word(27 downto 24) & instruction_word(15 downto 0); asyn_ins_arg_oe <= '1';                                            --IA
             
             when st_1 => 
                 asyn_int_completed <= '0'; asyn_int_accept <= '0'; 
@@ -736,7 +736,7 @@ begin
                 asyn_alu_oe <= '0'; asyn_alu_wrA <= '0'; asyn_alu_wrB <= '0'; asyn_alu_opcode <= x"0";                          --ALU
                 asyn_bus_ext_WR <= '0'; asyn_bus_ext_RD <= '0'; asyn_bus_WRadd <= '1'; asyn_bus_WRdat <= '0'; asyn_bus_RDdat <= '0'; --external BUS
                 asyn_instruction_reg_wr <= '0';                                                                  --IR
-                asyn_ins_arg_input <= x"0000" & instruction_word(15 downto 0); asyn_ins_arg_oe <= '1';                                            --IA
+                asyn_ins_arg_input <= x"000" & instruction_word(27 downto 24) & instruction_word(15 downto 0); asyn_ins_arg_oe <= '1';                                            --IA
             
             when st_2 => 
                 asyn_int_completed <= '0'; asyn_int_accept <= '0'; 
@@ -842,7 +842,7 @@ begin
                 asyn_alu_oe <= '0'; asyn_alu_wrA <= '0'; asyn_alu_wrB <= '0'; asyn_alu_opcode <= x"0";                          --ALU
                 asyn_bus_ext_WR <= '1'; asyn_bus_ext_RD <= '0'; asyn_bus_WRadd <= '0'; asyn_bus_WRdat <= '0'; asyn_bus_RDdat <= '0'; --external BUS
                 asyn_instruction_reg_wr <= '0';                                                                  --IR
-                asyn_ins_arg_input <= x"0000" & instruction_word(15 downto 0); asyn_ins_arg_oe <= '1';                                            --IA
+                asyn_ins_arg_input <= x"000" & instruction_word(27 downto 24) & instruction_word(15 downto 0); asyn_ins_arg_oe <= '1';                                            --IA
                 
             when call_7 => 
                 asyn_int_completed <= '0'; asyn_int_accept <= '0';
@@ -850,7 +850,7 @@ begin
                 asyn_alu_oe <= '0'; asyn_alu_wrA <= '0'; asyn_alu_wrB <= '0'; asyn_alu_opcode <= x"0";                          --ALU
                 asyn_bus_ext_WR <= '1'; asyn_bus_ext_RD <= '0'; asyn_bus_WRadd <= '0'; asyn_bus_WRdat <= '0'; asyn_bus_RDdat <= '0'; --external BUS
                 asyn_instruction_reg_wr <= '0';                                                                  --IR
-                asyn_ins_arg_input <= x"0000" & instruction_word(15 downto 0); asyn_ins_arg_oe <= '1';                                            --IA
+                asyn_ins_arg_input <= x"000" & instruction_word(27 downto 24) & instruction_word(15 downto 0); asyn_ins_arg_oe <= '1';                                            --IA
               
             -- Instruction RET 
             when ret_0 => 
@@ -1301,14 +1301,14 @@ begin
                 asyn_alu_oe <= '0'; asyn_alu_wrA <= '0'; asyn_alu_wrB <= '0'; asyn_alu_opcode <= x"0";                          --ALU
                 asyn_bus_ext_WR <= '0'; asyn_bus_ext_RD <= '0'; asyn_bus_WRadd <= '0'; asyn_bus_WRdat <= '0'; asyn_bus_RDdat <= '0'; --external BUS
                 asyn_instruction_reg_wr <= '0';                                                                  --IR
-                asyn_ins_arg_input <= x"0000" & instruction_word(15 downto 0); asyn_ins_arg_oe <= '1';       --IA    
+                asyn_ins_arg_input <= x"000" & instruction_word(27 downto 24) & instruction_word(15 downto 0); asyn_ins_arg_oe <= '1';       --IA    
             when beq_5 => 
                 asyn_int_completed <= '0'; asyn_int_accept <= '0'; 
                 regs_wr <= '1'; regs_oe <= '0'; regs_wr_dest <= x"E"; regs_oe_dest <= x"0";                 --regs
                 asyn_alu_oe <= '0'; asyn_alu_wrA <= '0'; asyn_alu_wrB <= '0'; asyn_alu_opcode <= x"0";                          --ALU
                 asyn_bus_ext_WR <= '0'; asyn_bus_ext_RD <= '0'; asyn_bus_WRadd <= '0'; asyn_bus_WRdat <= '0'; asyn_bus_RDdat <= '0'; --external BUS
                 asyn_instruction_reg_wr <= '0';                                                                  --IR
-                asyn_ins_arg_input <= x"0000" & instruction_word(15 downto 0); asyn_ins_arg_oe <= '1';       --IA    
+                asyn_ins_arg_input <= x"000" & instruction_word(27 downto 24) & instruction_word(15 downto 0); asyn_ins_arg_oe <= '1';       --IA    
                 
             --instruction BNE
             when bne_0 => 
@@ -1345,14 +1345,14 @@ begin
                 asyn_alu_oe <= '0'; asyn_alu_wrA <= '0'; asyn_alu_wrB <= '0'; asyn_alu_opcode <= x"0";                          --ALU
                 asyn_bus_ext_WR <= '0'; asyn_bus_ext_RD <= '0'; asyn_bus_WRadd <= '0'; asyn_bus_WRdat <= '0'; asyn_bus_RDdat <= '0'; --external BUS
                 asyn_instruction_reg_wr <= '0';                                                                  --IR
-                asyn_ins_arg_input <= x"0000" & instruction_word(15 downto 0); asyn_ins_arg_oe <= '1';       --IA    
+                asyn_ins_arg_input <= x"000" & instruction_word(27 downto 24) & instruction_word(15 downto 0); asyn_ins_arg_oe <= '1';       --IA    
             when bne_5 => 
                 asyn_int_completed <= '0'; asyn_int_accept <= '0'; 
                 regs_wr <= '1'; regs_oe <= '0'; regs_wr_dest <= x"E"; regs_oe_dest <= x"0";                 --regs
                 asyn_alu_oe <= '0'; asyn_alu_wrA <= '0'; asyn_alu_wrB <= '0'; asyn_alu_opcode <= x"0";                          --ALU
                 asyn_bus_ext_WR <= '0'; asyn_bus_ext_RD <= '0'; asyn_bus_WRadd <= '0'; asyn_bus_WRdat <= '0'; asyn_bus_RDdat <= '0'; --external BUS
                 asyn_instruction_reg_wr <= '0';                                                                  --IR
-                asyn_ins_arg_input <= x"0000" & instruction_word(15 downto 0); asyn_ins_arg_oe <= '1';       --IA        
+                asyn_ins_arg_input <= x"000" & instruction_word(27 downto 24) & instruction_word(15 downto 0); asyn_ins_arg_oe <= '1';       --IA        
             
             --instruction blt
             when blt_0 => 
@@ -1389,14 +1389,14 @@ begin
                 asyn_alu_oe <= '0'; asyn_alu_wrA <= '0'; asyn_alu_wrB <= '0'; asyn_alu_opcode <= x"0";                          --ALU
                 asyn_bus_ext_WR <= '0'; asyn_bus_ext_RD <= '0'; asyn_bus_WRadd <= '0'; asyn_bus_WRdat <= '0'; asyn_bus_RDdat <= '0'; --external BUS
                 asyn_instruction_reg_wr <= '0';                                                                  --IR
-                asyn_ins_arg_input <= x"0000" & instruction_word(15 downto 0); asyn_ins_arg_oe <= '1';       --IA    
+                asyn_ins_arg_input <= x"000" & instruction_word(27 downto 24) & instruction_word(15 downto 0); asyn_ins_arg_oe <= '1';       --IA    
             when blt_5 => 
                 asyn_int_completed <= '0'; asyn_int_accept <= '0'; 
                 regs_wr <= '1'; regs_oe <= '0'; regs_wr_dest <= x"E"; regs_oe_dest <= x"0";                 --regs
                 asyn_alu_oe <= '0'; asyn_alu_wrA <= '0'; asyn_alu_wrB <= '0'; asyn_alu_opcode <= x"0";                          --ALU
                 asyn_bus_ext_WR <= '0'; asyn_bus_ext_RD <= '0'; asyn_bus_WRadd <= '0'; asyn_bus_WRdat <= '0'; asyn_bus_RDdat <= '0'; --external BUS
                 asyn_instruction_reg_wr <= '0';                                                                  --IR
-                asyn_ins_arg_input <= x"0000" & instruction_word(15 downto 0); asyn_ins_arg_oe <= '1';       --IA        
+                asyn_ins_arg_input <= x"000" & instruction_word(27 downto 24) & instruction_word(15 downto 0); asyn_ins_arg_oe <= '1';       --IA        
                 
             --instruction bltu
             when bltu_0 => 
@@ -1433,14 +1433,14 @@ begin
                 asyn_alu_oe <= '0'; asyn_alu_wrA <= '0'; asyn_alu_wrB <= '0'; asyn_alu_opcode <= x"0";                          --ALU
                 asyn_bus_ext_WR <= '0'; asyn_bus_ext_RD <= '0'; asyn_bus_WRadd <= '0'; asyn_bus_WRdat <= '0'; asyn_bus_RDdat <= '0'; --external BUS
                 asyn_instruction_reg_wr <= '0';                                                                  --IR
-                asyn_ins_arg_input <= x"0000" & instruction_word(15 downto 0); asyn_ins_arg_oe <= '1';       --IA    
+                asyn_ins_arg_input <= x"000" & instruction_word(27 downto 24) & instruction_word(15 downto 0); asyn_ins_arg_oe <= '1';       --IA    
             when bltu_5 => 
                 asyn_int_completed <= '0'; asyn_int_accept <= '0'; 
                 regs_wr <= '1'; regs_oe <= '0'; regs_wr_dest <= x"E"; regs_oe_dest <= x"0";                 --regs
                 asyn_alu_oe <= '0'; asyn_alu_wrA <= '0'; asyn_alu_wrB <= '0'; asyn_alu_opcode <= x"0";                          --ALU
                 asyn_bus_ext_WR <= '0'; asyn_bus_ext_RD <= '0'; asyn_bus_WRadd <= '0'; asyn_bus_WRdat <= '0'; asyn_bus_RDdat <= '0'; --external BUS
                 asyn_instruction_reg_wr <= '0';                                                                  --IR
-                asyn_ins_arg_input <= x"0000" & instruction_word(15 downto 0); asyn_ins_arg_oe <= '1';       --IA      
+                asyn_ins_arg_input <= x"000" & instruction_word(27 downto 24) & instruction_word(15 downto 0); asyn_ins_arg_oe <= '1';       --IA      
                 
             --instruction bge
             when bge_0 => 
@@ -1477,14 +1477,14 @@ begin
                 asyn_alu_oe <= '0'; asyn_alu_wrA <= '0'; asyn_alu_wrB <= '0'; asyn_alu_opcode <= x"0";                          --ALU
                 asyn_bus_ext_WR <= '0'; asyn_bus_ext_RD <= '0'; asyn_bus_WRadd <= '0'; asyn_bus_WRdat <= '0'; asyn_bus_RDdat <= '0'; --external BUS
                 asyn_instruction_reg_wr <= '0';                                                                  --IR
-                asyn_ins_arg_input <= x"0000" & instruction_word(15 downto 0); asyn_ins_arg_oe <= '1';       --IA    
+                asyn_ins_arg_input <= x"000" & instruction_word(27 downto 24) & instruction_word(15 downto 0); asyn_ins_arg_oe <= '1';       --IA    
             when bge_5 => 
                 asyn_int_completed <= '0'; asyn_int_accept <= '0'; 
                 regs_wr <= '1'; regs_oe <= '0'; regs_wr_dest <= x"E"; regs_oe_dest <= x"0";                 --regs
                 asyn_alu_oe <= '0'; asyn_alu_wrA <= '0'; asyn_alu_wrB <= '0'; asyn_alu_opcode <= x"0";                          --ALU
                 asyn_bus_ext_WR <= '0'; asyn_bus_ext_RD <= '0'; asyn_bus_WRadd <= '0'; asyn_bus_WRdat <= '0'; asyn_bus_RDdat <= '0'; --external BUS
                 asyn_instruction_reg_wr <= '0';                                                                  --IR
-                asyn_ins_arg_input <= x"0000" & instruction_word(15 downto 0); asyn_ins_arg_oe <= '1';       --IA       
+                asyn_ins_arg_input <= x"000" & instruction_word(27 downto 24) & instruction_word(15 downto 0); asyn_ins_arg_oe <= '1';       --IA       
                 
             --instruction bgeu
             when bgeu_0 => 
@@ -1521,14 +1521,14 @@ begin
                 asyn_alu_oe <= '0'; asyn_alu_wrA <= '0'; asyn_alu_wrB <= '0'; asyn_alu_opcode <= x"0";                          --ALU
                 asyn_bus_ext_WR <= '0'; asyn_bus_ext_RD <= '0'; asyn_bus_WRadd <= '0'; asyn_bus_WRdat <= '0'; asyn_bus_RDdat <= '0'; --external BUS
                 asyn_instruction_reg_wr <= '0';                                                                  --IR
-                asyn_ins_arg_input <= x"0000" & instruction_word(15 downto 0); asyn_ins_arg_oe <= '1';       --IA    
+                asyn_ins_arg_input <= x"000" & instruction_word(27 downto 24) & instruction_word(15 downto 0); asyn_ins_arg_oe <= '1';       --IA    
             when bgeu_5 => 
                 asyn_int_completed <= '0'; asyn_int_accept <= '0'; 
                 regs_wr <= '1'; regs_oe <= '0'; regs_wr_dest <= x"E"; regs_oe_dest <= x"0";                 --regs
                 asyn_alu_oe <= '0'; asyn_alu_wrA <= '0'; asyn_alu_wrB <= '0'; asyn_alu_opcode <= x"0";                          --ALU
                 asyn_bus_ext_WR <= '0'; asyn_bus_ext_RD <= '0'; asyn_bus_WRadd <= '0'; asyn_bus_WRdat <= '0'; asyn_bus_RDdat <= '0'; --external BUS
                 asyn_instruction_reg_wr <= '0';                                                                  --IR
-                asyn_ins_arg_input <= x"0000" & instruction_word(15 downto 0); asyn_ins_arg_oe <= '1';       --IA          
+                asyn_ins_arg_input <= x"000" & instruction_word(27 downto 24) & instruction_word(15 downto 0); asyn_ins_arg_oe <= '1';       --IA          
                 
             -- Instruction RET 
             when reti_0 => 

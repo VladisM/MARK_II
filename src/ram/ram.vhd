@@ -6,11 +6,11 @@ use ieee.numeric_std.all;
 
 entity ram is
     generic(
-        BASE_ADDRESS: unsigned(15 downto 0) := x"0000"    --base address of the RAM 
+        BASE_ADDRESS: unsigned(19 downto 0) := x"00000"    --base address of the RAM 
     );
     port(
         clk: in std_logic;
-        address: in std_logic_vector(15 downto 0);
+        address: in std_logic_vector(19 downto 0);
         data_mosi: in std_logic_vector(31 downto 0);
         data_miso: out std_logic_vector(31 downto 0); 
         WR: in std_logic;
