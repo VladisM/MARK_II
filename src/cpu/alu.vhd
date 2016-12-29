@@ -13,6 +13,9 @@ use ieee.numeric_std.all;
 --0x7       A>>1 rotate right
 --0x8       A+1
 --0x9       A-1
+--0xA		MVIL support, set lover half of A to 0, then add B using OR
+--0xB 		MVIH support, set higher half ....
+
 entity alu is
     generic(
         WIDE: natural := 32
@@ -71,6 +74,8 @@ begin
         signed(rotate_right(unsigned(opA), 1)) when "0111",
         opA + 1 when "1000",
         opA - 1 when "1001",
+        (opA(31 downto 16) & x"0000") or opB when "1010",        
+        (x"0000" & opA(15 downto 0)) or opB when "1011",     
         opA when others;
 
     --flags
