@@ -7,7 +7,7 @@ entity instruction_decoder is
         --main control inputs
         res: in std_logic;
         clk: in std_logic;
-        int: in std_logic;
+        int: in std_logic_vector(31 downto 0);
         --regs
         regs_wr_select: out std_logic_vector(15 downto 0);
         regs_oe_select: out std_logic_vector(15 downto 0);
@@ -101,7 +101,7 @@ architecture instruction_decoder_arch of instruction_decoder is
         --this is states for save pc into stack and decrement stack pointer 
         save_pc_dec_sp_0, save_pc_dec_sp_1, save_pc_dec_sp_2, save_pc_dec_sp_3, save_pc_dec_sp_4, save_pc_dec_sp_5,  
         --set interrupt vector
-        set_int_vec_0, set_int_vec_1
+        set_int_vec_0, set_int_vec_1, set_int_vec_2, set_int_vec_3
     );
     -- reg for current state
     signal state   : state_type;
@@ -130,6 +130,9 @@ architecture instruction_decoder_arch of instruction_decoder is
     
     --register for assychronous interrupt input
     signal interrupt_pending: std_logic;
+    
+    --this is place to jump when interrupt come
+    signal interrupt_vector: std_logic_vector(31 downto 0);    
         
 begin
     
@@ -535,7 +538,9 @@ begin
                 
                 --insert interrupt vector into program counter
                 when set_int_vec_0 => state <= set_int_vec_1;
-                when set_int_vec_1 => state <= load_instr_inc_pc_0; --return back to start and execute first instruction in interrupt routine :) 
+                when set_int_vec_1 => state <= set_int_vec_2;
+                when set_int_vec_2 => state <= set_int_vec_3;
+                when set_int_vec_3 => state <= load_instr_inc_pc_0; --return back to start and execute first instruction in interrupt routine :) 
             end case;
         end if;
     end process;
@@ -605,7 +610,7 @@ begin
             
             --save pc into stack and decrement stack pointer 
             when save_pc_dec_sp_0 => 
-                asyn_int_completed <= '0'; asyn_int_accept <= '1';  
+                asyn_int_completed <= '0'; asyn_int_accept <= '0';  
                 regs_wr <= '0'; regs_oe <= '1'; regs_wr_dest <= x"0"; regs_oe_dest <= x"F";                 --regs
                 asyn_alu_oe <= '0'; asyn_alu_wrA <= '0'; asyn_alu_wrB <= '0'; asyn_alu_opcode <= x"0";                          --ALU
                 asyn_bus_ext_WR <= '0'; asyn_bus_ext_RD <= '0'; asyn_bus_WRadd <= '0'; asyn_bus_WRdat <= '0'; asyn_bus_RDdat <= '0'; --external BUS
@@ -613,7 +618,7 @@ begin
                 asyn_ins_arg_input <= x"00000000"; asyn_ins_arg_oe <= '0';                                            --IA
                 
             when save_pc_dec_sp_1 => 
-                asyn_int_completed <= '0'; asyn_int_accept <= '1'; 
+                asyn_int_completed <= '0'; asyn_int_accept <= '0'; 
                 regs_wr <= '0'; regs_oe <= '1'; regs_wr_dest <= x"0"; regs_oe_dest <= x"F";                 --regs
                 asyn_alu_oe <= '0'; asyn_alu_wrA <= '1'; asyn_alu_wrB <= '0'; asyn_alu_opcode <= x"0";                          --ALU
                 asyn_bus_ext_WR <= '0'; asyn_bus_ext_RD <= '0'; asyn_bus_WRadd <= '1'; asyn_bus_WRdat <= '0'; asyn_bus_RDdat <= '0'; --external BUS
@@ -659,7 +664,7 @@ begin
                 asyn_alu_oe <= '0'; asyn_alu_wrA <= '0'; asyn_alu_wrB <= '0'; asyn_alu_opcode <= x"0";                          --ALU
                 asyn_bus_ext_WR <= '0'; asyn_bus_ext_RD <= '0'; asyn_bus_WRadd <= '0'; asyn_bus_WRdat <= '0'; asyn_bus_RDdat <= '0'; --external BUS
                 asyn_instruction_reg_wr <= '0';                                                                  --IR
-                asyn_ins_arg_input <= x"00000010"; asyn_ins_arg_oe <= '1';                                            --IA
+                asyn_ins_arg_input <= interrupt_vector; asyn_ins_arg_oe <= '1';                                            --IA
                 
             when set_int_vec_1 => 
                 asyn_int_completed <= '0'; asyn_int_accept <= '0'; 
@@ -667,8 +672,24 @@ begin
                 asyn_alu_oe <= '0'; asyn_alu_wrA <= '0'; asyn_alu_wrB <= '0'; asyn_alu_opcode <= x"0";                          --ALU
                 asyn_bus_ext_WR <= '0'; asyn_bus_ext_RD <= '0'; asyn_bus_WRadd <= '0'; asyn_bus_WRdat <= '0'; asyn_bus_RDdat <= '0'; --external BUS
                 asyn_instruction_reg_wr <= '0';                                                                  --IR
-                asyn_ins_arg_input <= x"00000010"; asyn_ins_arg_oe <= '1';                                            --IA
+                asyn_ins_arg_input <= interrupt_vector; asyn_ins_arg_oe <= '1';                                            --IA
                 
+            when set_int_vec_2 =>
+                asyn_int_completed <= '0'; asyn_int_accept <= '1'; 
+                regs_wr <= '0'; regs_oe <= '0'; regs_wr_dest <= x"E"; regs_oe_dest <= x"0";                 --regs
+                asyn_alu_oe <= '0'; asyn_alu_wrA <= '0'; asyn_alu_wrB <= '0'; asyn_alu_opcode <= x"0";                          --ALU
+                asyn_bus_ext_WR <= '0'; asyn_bus_ext_RD <= '0'; asyn_bus_WRadd <= '0'; asyn_bus_WRdat <= '0'; asyn_bus_RDdat <= '0'; --external BUS
+                asyn_instruction_reg_wr <= '0';                                                                  --IR
+                asyn_ins_arg_input <= x"00000000"; asyn_ins_arg_oe <= '0';                                            --IA
+            
+            when set_int_vec_3 =>
+                asyn_int_completed <= '0'; asyn_int_accept <= '1'; 
+                regs_wr <= '0'; regs_oe <= '0'; regs_wr_dest <= x"E"; regs_oe_dest <= x"0";                 --regs
+                asyn_alu_oe <= '0'; asyn_alu_wrA <= '0'; asyn_alu_wrB <= '0'; asyn_alu_opcode <= x"0";                          --ALU
+                asyn_bus_ext_WR <= '0'; asyn_bus_ext_RD <= '0'; asyn_bus_WRadd <= '0'; asyn_bus_WRdat <= '0'; asyn_bus_RDdat <= '0'; --external BUS
+                asyn_instruction_reg_wr <= '0';                                                                  --IR
+                asyn_ins_arg_input <= x"00000000"; asyn_ins_arg_oe <= '0';                                            --IA
+            
             --instruction MOV
             when mov_0 => 
                 asyn_int_completed <= '0'; asyn_int_accept <= '0';
@@ -1728,7 +1749,7 @@ begin
             ins_arg_input <= x"00000000";
             ins_arg_oe <= '0';
             int_completed <= '0';
-				int_accept <= '0';
+			int_accept <= '0';
         elsif(falling_edge(clk)) then
             regs_wr_select <= asyn_regs_wr_select;
             regs_oe_select <= asyn_regs_oe_select;
@@ -1745,18 +1766,54 @@ begin
             ins_arg_input <= asyn_ins_arg_input;
             ins_arg_oe <= asyn_ins_arg_oe;
             int_completed <= asyn_int_completed;
-				int_accept <= asyn_int_accept;
+            int_accept <= asyn_int_accept;
         end if;
     end process;
     
-    --this is RS latch for interrupt
-    process(res, int, int_accept)is begin
-        if res = '1' then
+    process(int) is begin
+        if(int = x"00000000") then
             interrupt_pending <= '0';
-        elsif int_accept = '1' then
-            interrupt_pending <= '0';
-        elsif rising_edge(int) then 
+        else
             interrupt_pending <= '1';
         end if;
     end process;
+    
+    process(int) is begin
+        case int is
+            when x"00000001" => interrupt_vector <= x"00000010";
+            when x"00000002" => interrupt_vector <= x"00000012";
+            when x"00000004" => interrupt_vector <= x"00000014";
+            when x"00000008" => interrupt_vector <= x"00000016";
+            when x"00000010" => interrupt_vector <= x"00000018";
+            when x"00000020" => interrupt_vector <= x"0000001A";
+            when x"00000040" => interrupt_vector <= x"0000001C";
+            when x"00000080" => interrupt_vector <= x"0000001E";
+            when x"00000100" => interrupt_vector <= x"00000020";
+            when x"00000200" => interrupt_vector <= x"00000022";
+            when x"00000400" => interrupt_vector <= x"00000024";
+            when x"00000800" => interrupt_vector <= x"00000026";
+            when x"00001000" => interrupt_vector <= x"00000028";
+            when x"00002000" => interrupt_vector <= x"0000002A";
+            when x"00004000" => interrupt_vector <= x"0000002C";
+            when x"00008000" => interrupt_vector <= x"0000002E";
+            when x"00010000" => interrupt_vector <= x"00000030";
+            when x"00020000" => interrupt_vector <= x"00000032";
+            when x"00040000" => interrupt_vector <= x"00000034";
+            when x"00080000" => interrupt_vector <= x"00000038";
+            when x"00100000" => interrupt_vector <= x"0000003A";
+            when x"00200000" => interrupt_vector <= x"0000003C";
+            when x"00400000" => interrupt_vector <= x"0000003E";
+            when x"00800000" => interrupt_vector <= x"00000040";
+            when x"01000000" => interrupt_vector <= x"00000042";
+            when x"02000000" => interrupt_vector <= x"00000044";
+            when x"04000000" => interrupt_vector <= x"00000048";
+            when x"08000000" => interrupt_vector <= x"0000004A";
+            when x"10000000" => interrupt_vector <= x"0000004C";
+            when x"20000000" => interrupt_vector <= x"0000004E";
+            when x"40000000" => interrupt_vector <= x"00000050";
+            when x"80000000" => interrupt_vector <= x"00000052";
+            when others => interrupt_vector <= x"00000000";
+        end case;
+    end process;
+    
 end architecture instruction_decoder_arch;

@@ -7,9 +7,6 @@ entity MARK_II is
         --constrol signals
         clk: in std_logic;
         res: in std_logic;
-        int: in std_logic;
-        int_accept: out std_logic;
-        int_completed: out std_logic;
         --gpio
         port_a: inout std_logic_vector(7 downto 0);
         port_b: inout std_logic_vector(7 downto 0);
@@ -27,7 +24,7 @@ architecture MARK_II_arch of MARK_II is
         port(
             clk: in std_logic;
             res: in std_logic;
-            int: in std_logic;
+            int: in std_logic_vector(31 downto 0);
             int_accept: out std_logic;
             int_completed: out std_logic;
             address: out std_logic_vector(19 downto 0);
@@ -106,12 +103,38 @@ architecture MARK_II_arch of MARK_II is
             ext_clk: in std_logic
         );
     end component pwm;
+    
+    component intController is 
+        generic(
+            BASE_ADDRESS: unsigned(19 downto 0) := x"00000"    --base address
+        );
+        port(
+            --bus
+            clk: in std_logic;
+            res: in std_logic;
+            address: in std_logic_vector(19 downto 0);
+            data_mosi: in std_logic_vector(31 downto 0);
+            data_miso: out std_logic_vector(31 downto 0);
+            WR: in std_logic;
+            RD: in std_logic;
+            --device
+            int_req: in std_logic_vector(31 downto 0);      --peripherals may request interrupt with this signal
+            int_accept: in std_logic;                       --from the CPU
+            int_completed: in std_logic;                    --from the CPU
+            int_cpu_req: out std_logic_vector(31 downto 0)  --connect this to the CPU, this is cpu interrupt
+            
+        );
+    end component intController;
         
     --signal for internal bus
     signal bus_address: std_logic_vector(19 downto 0);
     signal bus_data_mosi, bus_data_miso: std_logic_vector(31 downto 0);
     signal bus_WR, bus_RD: std_logic;
     
+    signal int_accept, int_completed: std_logic;
+    signal int: std_logic_vector(31 downto 0);
+    
+    signal int_req: std_logic_vector(31 downto 0);
 begin
 
     --main cpu
@@ -142,6 +165,11 @@ begin
     rom_0: rom
         generic map(x"00000")
         port map(clk, bus_address, bus_data_mosi, bus_data_miso, bus_WR, bus_RD);
+        
+    --interrupt controller (0x108)
+    int_cont_0: intController
+        generic map(x"00108")
+        port map(clk, res, bus_address, bus_data_mosi, bus_data_miso, bus_WR, bus_RD, int_req, int_accept, int_completed, int);
         
     
 end architecture MARK_II_arch;
