@@ -613,7 +613,7 @@ begin
                 asyn_ins_arg_input <= x"00000000"; asyn_ins_arg_oe <= '0';                                            --IA
                 
             when save_pc_dec_sp_1 => 
-                asyn_int_completed <= '0'; asyn_int_accept <= '0'; 
+                asyn_int_completed <= '0'; asyn_int_accept <= '1'; 
                 regs_wr <= '0'; regs_oe <= '1'; regs_wr_dest <= x"0"; regs_oe_dest <= x"F";                 --regs
                 asyn_alu_oe <= '0'; asyn_alu_wrA <= '1'; asyn_alu_wrB <= '0'; asyn_alu_opcode <= x"0";                          --ALU
                 asyn_bus_ext_WR <= '0'; asyn_bus_ext_RD <= '0'; asyn_bus_WRadd <= '1'; asyn_bus_WRdat <= '0'; asyn_bus_RDdat <= '0'; --external BUS
@@ -1560,7 +1560,7 @@ begin
                 asyn_instruction_reg_wr <= '0';                                                                  --IR
                 asyn_ins_arg_input <= x"00000000"; asyn_ins_arg_oe <= '0';                                            --IA
             when reti_4 => 
-                asyn_int_completed <= '0'; asyn_int_accept <= '0'; 
+                asyn_int_completed <= '1'; asyn_int_accept <= '0'; 
                 regs_wr <= '0'; regs_oe <= '0'; regs_wr_dest <= x"F"; regs_oe_dest <= x"0";                 --regs
                 asyn_alu_oe <= '1'; asyn_alu_wrA <= '0'; asyn_alu_wrB <= '0'; asyn_alu_opcode <= x"8";                          --ALU
                 asyn_bus_ext_WR <= '0'; asyn_bus_ext_RD <= '0'; asyn_bus_WRadd <= '0'; asyn_bus_WRdat <= '0'; asyn_bus_RDdat <= '0'; --external BUS
