@@ -1,14 +1,14 @@
 # Registers
-Register name | Purpose            |Register name | Purpose            
---------------|--------------------|--------------|--------------------------------
-**R0**        | zero register      |**R8**        | 32b GPR
-**R1**        | 32b GPR            |**R9**        | 32b GPR
-**R2**        | 32b GPR            |**R10**       | 32b GPR
-**R3**        | 32b GPR            |**R11**       | 32b GPR
-**R4**        | 32b GPR            |**R12**       | 32b GPR
-**R5**        | 32b GPR            |**R13**       | 32b GPR
-**R6**        | 32b GPR            |**R14**       | Program counter
-**R7**        | 32b GPR            |**R15**       | Stack pointer
+Register name | Purpose        |Register name | Purpose            
+--------------|----------------|--------------|---------------
+**R0**        | zero register  |**R8**        | 32b GPR
+**R1**        | 32b GPR        |**R9**        | 32b GPR
+**R2**        | 32b GPR        |**R10**       | 32b GPR
+**R3**        | 32b GPR        |**R11**       | 32b GPR
+**R4**        | 32b GPR        |**R12**       | 32b GPR
+**R5**        | 32b GPR        |**R13**       | 32b GPR
+**R6**        | 32b GPR        |**R14**       | Program counter
+**R7**        | 32b GPR        |**R15**       | Stack pointer
 
 GPR mean general purpose register, these registers are 32bit wide. Zero register is one of special registers, it always contain zero. You can write there whatever you want, but always read zero. Program counter (PC) and Stack pointer (SP) are implemented like any others registers but they are holding actual address in program and actual address of top of stack.
 
@@ -33,10 +33,10 @@ Instruction              | Explanation
 **RET**                  | return from subrutine
 **ADD RA RB**            | RA = RA + RB
 **SUB RA RB**            | RA = RA - RB 
-**OR RA RB**             | RA = RA | RB
-**AND RA RB**            | RA = RA & RB
+**OR RA RB**             | RA = RA or RB
+**AND RA RB**            | RA = RA and RB
 **NOT RA**               | RA = ~RA
-**XOR RA RB**            | RA = RA ^ RB
+**XOR RA RB**            | RA = RA xor RB
 **ROL RA**               | RA = RA << 1
 **ROR RA**               | RA = RA >> 1
 **INC RA**               | RA = ++RA
