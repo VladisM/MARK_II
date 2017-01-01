@@ -1,4 +1,5 @@
 # Registers
+
 Register name | Purpose
 --------------|--------------
 **R0**        | zero register
