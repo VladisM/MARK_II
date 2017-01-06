@@ -6,7 +6,7 @@ entity cpu is
     port(
         clk: in std_logic;
         res: in std_logic;
-        int: in std_logic;
+        int: in std_logic_vector(31 downto 0);
         int_accept: out std_logic;
         int_completed: out std_logic;
         address: out std_logic_vector(19 downto 0);
@@ -68,7 +68,7 @@ architecture cpu_arch of cpu is
             --main control inputs
             res: in std_logic;
             clk: in std_logic;
-            int: in std_logic;
+            int: in std_logic_vector(31 downto 0);
             --regs
             regs_wr_select: out std_logic_vector(15 downto 0);
             regs_oe_select: out std_logic_vector(15 downto 0);
