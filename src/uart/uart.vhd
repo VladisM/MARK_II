@@ -20,6 +20,9 @@
 --
 -- interrupt is triggered when byte is recieved or sending is completed
 -- for disabling interrupt use interrupt controller
+--
+-- clk is for bus interface, clk_uart is for baudrate generator and should 
+-- be something like 18,4320 MHz
 
 library ieee;
 use ieee.std_logic_1164.all;
@@ -42,7 +45,8 @@ entity uart is
         tx_int_req: out std_logic;
         rx_int_req: out std_logic;
         tx: out std_logic;
-        rx: in std_logic
+        rx: in std_logic;
+        clk_uart: in std_logic
     );
 end entity uart;
 
@@ -141,7 +145,7 @@ begin
     end process;
     
     baudgen_0: baudgen
-        port map(res, unsigned(control_reg(15 downto 0)), clk, clk_baud, clk_16x_baud);
+        port map(res, unsigned(control_reg(15 downto 0)), clk_uart, clk_baud, clk_16x_baud);
     reciever_0: reciever
         port map(res, clk, clk_16x_baud, rx, rx_int_req, open, rx_data);
     transmitter_0: transmitter
