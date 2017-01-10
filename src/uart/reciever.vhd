@@ -31,7 +31,7 @@ architecture reciever_arch of reciever is
 
     type rx_states is (idle, start, wait_for_sync, sync, wait_b0, sample_b0, wait_b1, sample_b1, wait_b2, sample_b2,
                        wait_b3, sample_b3, wait_b4, sample_b4, wait_b5, sample_b5, wait_b6, sample_b6, wait_b7, sample_b7,
-                       set_flags);
+                       stop_bit, set_flags);
     
     signal rx_fsm_state: rx_states;
 
@@ -60,8 +60,8 @@ begin
         if( res = '1') then
             sipo_reg <= (others => '0');
         elsif(rising_edge(shift_sipo_reg)) then
-            sipo_reg(7 downto 1) <= sipo_reg(6 downto 0);
-            sipo_reg(0) <= rx;
+            sipo_reg(6 downto 0) <= sipo_reg(7 downto 1);
+            sipo_reg(7) <= rx;
         end if;
     end process;
     
@@ -79,7 +79,7 @@ begin
                 when start => 
                     rx_fsm_state <= wait_for_sync;
                 when wait_for_sync =>
-                    if (counter = "00100") then
+                    if (counter = "01000") then
                         rx_fsm_state <= sync;
                     else
                         rx_fsm_state <= wait_for_sync;
@@ -149,7 +149,13 @@ begin
                         rx_fsm_state <= wait_b7;
                     end if;
                 when sample_b7 =>
-                    rx_fsm_state <= set_flags;
+                    rx_fsm_state <= stop_bit;
+                when stop_bit =>
+                    if(counter = "10000") then
+                        rx_fsm_state <= set_flags;
+                    else
+                        rx_fsm_state <= stop_bit;
+                    end if;
                 when set_flags =>
                     rx_fsm_state <= idle;
             end case;
@@ -198,6 +204,8 @@ begin
                 rx_int_req_asyn <= '0'; rx_rec_com_asyn <= '0'; shift_sipo_reg_asyn <= '0'; reset_counter_asyn <= '0';
             when sample_b7 =>
                 rx_int_req_asyn <= '0'; rx_rec_com_asyn <= '0'; shift_sipo_reg_asyn <= '1'; reset_counter_asyn <= '1';
+            when stop_bit =>
+                rx_int_req_asyn <= '0'; rx_rec_com_asyn <= '0'; shift_sipo_reg_asyn <= '0'; reset_counter_asyn <= '0';
             when set_flags =>
                 rx_int_req_asyn <= '1'; rx_rec_com_asyn <= '1'; shift_sipo_reg_asyn <= '0'; reset_counter_asyn <= '0';
         end case;
@@ -209,7 +217,7 @@ begin
             rx_rec_com <= '0';
             shift_sipo_reg <= '0';
             reset_counter <= '0';
-        elsif(rising_edge(clk_uart)) then
+        elsif(falling_edge(clk_uart)) then
             rx_int_req <= rx_int_req_asyn;
             rx_rec_com <= rx_rec_com_asyn;
             shift_sipo_reg <= shift_sipo_reg_asyn;

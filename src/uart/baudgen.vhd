@@ -51,7 +51,7 @@ begin
     end process;
     
     -- comparator for baud_clk
-    process(baud_counter, n_factor) is 
+    process(baud_counter) is 
     begin
         if(baud_counter = n_factor) then
             baud_counter_match <= '1';
@@ -86,7 +86,7 @@ begin
     end process;
     
     -- comparator for baud_16x_clk
-    process(baud_16x_counter, n_factor) is 
+    process(baud_16x_counter) is 
     begin
         if(baud_16x_counter = n_factor(15 downto 4)) then
             baud_16x_counter_match <= '1';
