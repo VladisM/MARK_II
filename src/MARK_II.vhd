@@ -160,7 +160,7 @@ architecture MARK_II_arch of MARK_II is
     signal bus_address: std_logic_vector(19 downto 0);
     signal bus_data_mosi, bus_data_miso: std_logic_vector(31 downto 0);
     signal bus_WR, bus_RD: std_logic;
-    signal int_req: std_logic_vector(31 downto 0);
+    signal int_req: std_logic_vector(31 downto 0) := x"00000000";
 begin
 
     --main cpu
@@ -200,5 +200,5 @@ begin
     --uart (0x10A - 0x10B) (tx int => 8, rx int => 9)
     uart_0: uart
         generic map(x"0010A")
-        port map(clk, res, bus_address, bus_data_mosi, bus_data_miso, bus_WR, bus_RD, int_req(8), int_reg(9), tx0, rx0, clk_uart);
+        port map(clk, res, bus_address, bus_data_mosi, bus_data_miso, bus_WR, bus_RD, int_req(8), int_req(9), tx0, rx0, clk_uart);
 end architecture MARK_II_arch;

@@ -95,7 +95,7 @@ architecture uart_arch of uart is
 
     --b15 downto b0 - n_factor
     --b16           - tx busy flag
-    signal control_reg: std_logic_vector(31 downto 0);
+    signal control_reg: std_logic_vector(31 downto 0) := x"00000000";
     signal n_factor: unsigned(15 downto 0);
     
     --send data signal, activated by write into TX reg
