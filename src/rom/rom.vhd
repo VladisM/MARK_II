@@ -28,7 +28,7 @@ begin
             lpm_widthad => 8,
             lpm_outdata => "UNREGISTERED",
             lpm_address_control => "REGISTERED",
-            lpm_file => "../src/rom/rom.mif",
+            lpm_file => "src/rom/rom.mif",
             lpm_width => 32
         ) 
         port map(

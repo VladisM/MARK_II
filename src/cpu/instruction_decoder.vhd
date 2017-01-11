@@ -546,7 +546,7 @@ begin
     end process;
     
     --outputs, this will be fucking long... 
-    process (state, clk, instruction_word) begin
+    process (state, clk, instruction_word, interrupt_vector) begin
         case state is
             --start of the instruction decoder
             when start => 
