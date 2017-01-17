@@ -10,11 +10,6 @@ entity MARK_II is
         --gpio
         port_a: inout std_logic_vector(7 downto 0);
         port_b: inout std_logic_vector(7 downto 0);
-        --PWM
-        pwm_A: out std_logic;
-        pwm_ext_clk_A: in std_logic;
-        pwm_B: out std_logic;
-        pwm_ext_clk_B: in std_logic;
         --uart
         clk_uart: in std_logic;
         tx0: out std_logic;
@@ -22,7 +17,17 @@ entity MARK_II is
         tx1: out std_logic;
         rx1: in std_logic;
         tx2: out std_logic;
-        rx2: in std_logic
+        rx2: in std_logic;
+        --timers
+        clk_timers: in std_logic;
+        tim0_pwma: out std_logic;
+        tim0_pwmb: out std_logic;
+        tim1_pwma: out std_logic;
+        tim1_pwmb: out std_logic;
+        tim2_pwma: out std_logic;
+        tim2_pwmb: out std_logic;
+        tim3_pwma: out std_logic;
+        tim3_pwmb: out std_logic;
     );
 end entity MARK_II;
 
@@ -91,27 +96,6 @@ architecture MARK_II_arch of MARK_II is
         );
     end component rom;
     
-    component pwm is 
-        generic(
-            BASE_ADDRESS: unsigned(19 downto 0) := x"00000";    --base address
-            TIMER_WIDE: natural := 4;
-            BUS_WIDE: natural := 32
-        );
-        port(
-            --main bus interface
-            clk: in std_logic;
-            res: in std_logic;
-            address: in std_logic_vector(19 downto 0);
-            data_mosi: in std_logic_vector((BUS_WIDE - 1) downto 0);
-            data_miso: out std_logic_vector((BUS_WIDE - 1) downto 0);
-            WR: in std_logic;
-            RD: in std_logic;
-            --pwm
-            pwm: out std_logic;
-            ext_clk: in std_logic
-        );
-    end component pwm;
-    
     component intController is 
         generic(
             BASE_ADDRESS: unsigned(19 downto 0) := x"00000"    --base address
@@ -155,6 +139,27 @@ architecture MARK_II_arch of MARK_II is
             clk_uart: in std_logic
         );
     end component uart;
+    
+    component timer is
+        generic(
+            BASE_ADDRESS: unsigned(19 downto 0) := x"00000"    --base address
+        );
+        port(
+            --bus
+            clk: in std_logic;
+            res: in std_logic;
+            address: in std_logic_vector(19 downto 0);
+            data_mosi: in std_logic_vector(31 downto 0);
+            data_miso: out std_logic_vector(31 downto 0);
+            WR: in std_logic;
+            RD: in std_logic;
+            --device
+            clk_timer: in std_logic;
+            pwma: out std_logic;
+            pwmb: out std_logic;
+            intrq: out std_logic
+        );
+    end component;
 
     --interconnect between CPU and intController
     signal int_accept, int_completed: std_logic;
@@ -175,17 +180,7 @@ begin
     gpio_0: gpio
         generic map(x"00100", 8, 32)
         port map(clk, res, bus_address, bus_data_mosi, bus_data_miso, bus_WR, bus_RD, port_a, port_b);
-    
-    --PWM generator A (0x104 - 0x105)
-    pwm_0: pwm
-        generic map(x"00104", 16, 32)
-        port map(clk, res, bus_address, bus_data_mosi, bus_data_miso, bus_WR, bus_RD, pwm_A, pwm_ext_clk_A);
-    
-    --PWM generator B (0x106 - 0x107)
-    pwm_1: pwm
-        generic map(x"00106", 16, 32)
-        port map(clk, res, bus_address, bus_data_mosi, bus_data_miso, bus_WR, bus_RD, pwm_B, pwm_ext_clk_B);
-        
+            
     --ram memory    (0x400 - 0x7FF)
     ram_0: ram
         generic map(x"00400")
@@ -215,5 +210,25 @@ begin
     uart_2: uart
         generic map(x"0010E")
         port map(clk, res, bus_address, bus_data_mosi, bus_data_miso, bus_WR, bus_RD, int_req(12), int_req(13), tx2, rx2, clk_uart);
+    
+    --tim0 (0x110 - 0x113) (int => 14)
+    tim0: timer
+        generic map(x"00110")
+        port map(clk, res, bus_address, bus_data_mosi, bus_data_miso, bus_WR, bus_RD, clk_timers, tim0_pwma, tim0_pwmb, int_req(14));
+        
+    --tim1 (0x114 - 0x117) (int => 15)
+    tim0: timer
+        generic map(x"00114")
+        port map(clk, res, bus_address, bus_data_mosi, bus_data_miso, bus_WR, bus_RD, clk_timers, tim1_pwma, tim1_pwmb, int_req(15));
+        
+    --tim2 (0x118 - 0x11B) (int => 16)
+    tim0: timer
+        generic map(x"00118")
+        port map(clk, res, bus_address, bus_data_mosi, bus_data_miso, bus_WR, bus_RD, clk_timers, tim2_pwma, tim2_pwmb, int_req(16));
+        
+    --tim3 (0x11C - 0x11F) (int => 17)
+    tim0: timer
+        generic map(x"0011C")
+        port map(clk, res, bus_address, bus_data_mosi, bus_data_miso, bus_WR, bus_RD, clk_timers, tim3_pwma, tim3_pwmb, int_req(17));
         
 end architecture MARK_II_arch;
