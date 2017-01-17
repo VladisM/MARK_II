@@ -27,7 +27,7 @@ entity MARK_II is
         tim2_pwma: out std_logic;
         tim2_pwmb: out std_logic;
         tim3_pwma: out std_logic;
-        tim3_pwmb: out std_logic;
+        tim3_pwmb: out std_logic
     );
 end entity MARK_II;
 
@@ -161,6 +161,24 @@ architecture MARK_II_arch of MARK_II is
         );
     end component;
 
+    component systim is
+        generic(
+            BASE_ADDRESS: unsigned(19 downto 0) := x"00000"    --base address
+        );
+        port(
+            --bus
+            clk: in std_logic;
+            res: in std_logic;
+            address: in std_logic_vector(19 downto 0);
+            data_mosi: in std_logic_vector(31 downto 0);
+            data_miso: out std_logic_vector(31 downto 0);
+            WR: in std_logic;
+            RD: in std_logic;
+            --device
+            intrq: out std_logic
+        );
+    end component systim;
+
     --interconnect between CPU and intController
     signal int_accept, int_completed: std_logic;
     signal int: std_logic_vector(31 downto 0);
@@ -190,6 +208,11 @@ begin
     rom_0: rom
         generic map(x"00000")
         port map(clk, bus_address, bus_data_mosi, bus_data_miso, bus_WR, bus_RD);
+    
+    --system timer (0x104 - 0x105) (int => 0)
+    systick0: systim
+        generic map(x"00104")
+        port map(clk, res, bus_address, bus_data_mosi, bus_data_miso, bus_WR, bus_RD, int_req(0));
         
     --interrupt controller (0x108)
     int_cont_0: intController
@@ -217,17 +240,17 @@ begin
         port map(clk, res, bus_address, bus_data_mosi, bus_data_miso, bus_WR, bus_RD, clk_timers, tim0_pwma, tim0_pwmb, int_req(14));
         
     --tim1 (0x114 - 0x117) (int => 15)
-    tim0: timer
+    tim1: timer
         generic map(x"00114")
         port map(clk, res, bus_address, bus_data_mosi, bus_data_miso, bus_WR, bus_RD, clk_timers, tim1_pwma, tim1_pwmb, int_req(15));
         
     --tim2 (0x118 - 0x11B) (int => 16)
-    tim0: timer
+    tim2: timer
         generic map(x"00118")
         port map(clk, res, bus_address, bus_data_mosi, bus_data_miso, bus_WR, bus_RD, clk_timers, tim2_pwma, tim2_pwmb, int_req(16));
         
     --tim3 (0x11C - 0x11F) (int => 17)
-    tim0: timer
+    tim3: timer
         generic map(x"0011C")
         port map(clk, res, bus_address, bus_data_mosi, bus_data_miso, bus_WR, bus_RD, clk_timers, tim3_pwma, tim3_pwmb, int_req(17));
         
