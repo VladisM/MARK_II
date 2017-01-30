@@ -446,7 +446,7 @@ begin
                             state <= load_instruction_0;
                         end if;
                     when bz0 =>
-                        if(zeroFlag = '0') then
+                        if(zeroFlag = '1') then
                             state <= bz1;
                         else
                             if(interrupt_pending = '1') then
@@ -462,7 +462,7 @@ begin
                             state <= load_instruction_0;
                         end if;
                     when bnz0 =>
-                        if(zeroFlag = '1') then
+                        if(zeroFlag = '0') then
                             state <= bnz1;
                         else
                             if(interrupt_pending = '1') then
@@ -478,7 +478,7 @@ begin
                             state <= load_instruction_0;
                         end if; 
                     when bzi0 =>
-                        if(zeroFlag = '0') then
+                        if(zeroFlag = '1') then
                             state <= bzi1;
                         else
                             if(interrupt_pending = '1') then
@@ -494,7 +494,7 @@ begin
                             state <= load_instruction_0;
                         end if;
                     when bnzi0 =>
-                        if(zeroFlag = '1') then
+                        if(zeroFlag = '0') then
                             state <= bnzi1;
                         else
                             if(interrupt_pending = '1') then
