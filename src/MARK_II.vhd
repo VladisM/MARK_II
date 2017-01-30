@@ -246,15 +246,15 @@ begin
         port map(clk, res, bus_address, bus_data_mosi, bus_data_miso, bus_WR, bus_RD, bus_ack, enclk2, enclk4, enclk8, tim0_pwma, tim0_pwmb, int_req(14));
         
     tim1: timer
-        generic map(x"000112")
+        generic map(x"000114")
         port map(clk, res, bus_address, bus_data_mosi, bus_data_miso, bus_WR, bus_RD, bus_ack, enclk2, enclk4, enclk8, tim1_pwma, tim1_pwmb, int_req(15));
         
     tim2: timer
-        generic map(x"000116")
+        generic map(x"000118")
         port map(clk, res, bus_address, bus_data_mosi, bus_data_miso, bus_WR, bus_RD, bus_ack, enclk2, enclk4, enclk8, tim2_pwma, tim2_pwmb, int_req(16));
         
     tim3: timer
-        generic map(x"000118")
+        generic map(x"00011C")
         port map(clk, res, bus_address, bus_data_mosi, bus_data_miso, bus_WR, bus_RD, bus_ack, enclk2, enclk4, enclk8, tim3_pwma, tim3_pwmb, int_req(17));
        
     uart0: uart

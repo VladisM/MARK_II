@@ -78,7 +78,7 @@ begin
         elsif (address = (BASE_ADDRESS + 2)) then
             reg_sel <= "0100"; -- OCRB
         elsif (address = (BASE_ADDRESS + 3)) then
-            reg_sel <= "1000"; -- TCR
+            reg_sel <= "1000"; -- TCNR
         else
             reg_sel <= "0000";
         end if;

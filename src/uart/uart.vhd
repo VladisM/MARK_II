@@ -106,7 +106,7 @@ begin
 
     ack <= '1' when ((WR = '1' and reg_sel /= "00") or (RD = '1' and reg_sel /= "00")) else 'Z';
     
-    data_miso <= x"000" & "00" & controlreg when RD = '1' and reg_sel = "01" else
-                 x"000000" & rxdata when RD = '1' and reg_sel = "10" else (others => 'Z');
+    data_miso <= x"000" & "00" & controlreg when RD = '1' and reg_sel = "10" else
+                 x"000000" & rxdata when RD = '1' and reg_sel = "01" else (others => 'Z');
     
  end architecture uart_arch;
