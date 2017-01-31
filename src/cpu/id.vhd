@@ -98,10 +98,8 @@ architecture id_arch of id is
     signal regs_oe, regs_we: std_logic;
     signal regs_we_dest, regs_oe_dest: unsigned(3 downto 0);
 
-    signal instructionSelect: std_logic_vector(5 downto 0);
     
 begin
-    instructionSelect <= instructionWord(31) & instructionWord(28) & instructionWord(24) & instructionWord(16) & instructionWord(12) & instructionWord(8);
     
     --logic to set up next state
     process(res, clk, ack, zeroFlag, interrupt_pending, interrupt_vector, instructionWord) is        
@@ -119,56 +117,56 @@ begin
                         end case;
                     when load_instruction_2 => state <= load_instruction_3;
                     when load_instruction_3 =>
-                        case instructionSelect is
-                            when "100000" =>                    
-                                case instructionWord(30 downto 28) is
-                                    when "000" => state <= call0;
-                                    when "001" => state <= ld0;
-                                    when "010" => state <= st0;
-                                    when "011" => state <= bz0;
-                                    when others => state <= bnz0;
-                                end case;
-                            when "010000" =>
-                                case instructionWord(20) is
-                                    when '1' => state <= mvih0;
-                                    when others => state <= mvil0;
-                                end case;
-                            when "001000" =>
-                                case instructionWord(19 downto 16) is
-                                    when "0000" => state <= cmp0;
-                                    when "0001" => state <= and0;
-                                    when "0010" => state <= or0;
-                                    when "0011" => state <= xor0;
-                                    when "0100" => state <= add0;
-                                    when "0101" => state <= sub0;
-                                    when "0110" => state <= inc0;
-                                    when "0111" => state <= dec0;
-                                    when "1000" => state <= lsl0;
-                                    when "1001" => state <= lsr0;
-                                    when "1010" => state <= rol0;
-                                    when others => state <= ror0;
-                                end case;
-                            when "000100" =>
-                                case instructionWord(10 downto 8) is
-                                    when "000" => state <= ldi0;
-                                    when "001" => state <= sti0;
-                                    when "010" => state <= bzi0;
-                                    when "011" => state <= bnzi0;
-                                    when others => state <= mov0;
-                                end case;   
-                            when "000010" =>   
-                                case instructionWord(5 downto 4) is
-                                    when "00" => state <= calli0;
-                                    when "01" => state <= push0;
-                                    when others => state <= pop0;
-                                end case;                 
-                            when "000001" =>
-                                case instructionWord(0) is
-                                    when '1' => state <= reti0;
-                                    when others => state <= ret0;
-                                end case;
-                            when others => state <= load_instruction_0;
-                        end case;
+                        if instructionWord(31) = '1' then
+                            case instructionWord(30 downto 28) is
+                                when "000" => state <= call0;
+                                when "001" => state <= ld0;
+                                when "010" => state <= st0;
+                                when "011" => state <= bz0;
+                                when others => state <= bnz0;
+                            end case;
+                        elsif instructionWord(28) = '1' then
+                            case instructionWord(20) is
+                                when '1' => state <= mvih0;
+                                when others => state <= mvil0;
+                            end case;
+                        elsif instructionWord(24) = '1' then
+                            case instructionWord(19 downto 16) is
+                                when "0000" => state <= cmp0;
+                                when "0001" => state <= and0;
+                                when "0010" => state <= or0;
+                                when "0011" => state <= xor0;
+                                when "0100" => state <= add0;
+                                when "0101" => state <= sub0;
+                                when "0110" => state <= inc0;
+                                when "0111" => state <= dec0;
+                                when "1000" => state <= lsl0;
+                                when "1001" => state <= lsr0;
+                                when "1010" => state <= rol0;
+                                when others => state <= ror0;
+                            end case;
+                        elsif instructionWord(16) = '1' then
+                            case instructionWord(10 downto 8) is
+                                when "000" => state <= ldi0;
+                                when "001" => state <= sti0;
+                                when "010" => state <= bzi0;
+                                when "011" => state <= bnzi0;
+                                when others => state <= mov0;
+                            end case;   
+                        elsif instructionWord(12) = '1' then
+                            case instructionWord(5 downto 4) is
+                                when "00" => state <= calli0;
+                                when "01" => state <= push0;
+                                when others => state <= pop0;
+                            end case;                 
+                        elsif instructionWord(8) = '1' then
+                            case instructionWord(0) is
+                                when '1' => state <= reti0;
+                                when others => state <= ret0;
+                            end case;
+                        else
+                            state <= load_instruction_0;
+                        end if;
                     when and0 => state <= and1;
                     when and1 => state <= and2;
                     when and2 => 
