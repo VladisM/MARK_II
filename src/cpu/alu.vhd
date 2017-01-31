@@ -38,7 +38,7 @@ begin
         OpA + 1     when "0101",
         OpA - 1     when "0110",
         opA(31 downto 16) & opB(15 downto 0) when "0111",        
-        opB(31 downto 16) & opA(15 downto 0) when "1000",  
+        opB(15 downto 0) & opA(15 downto 0) when "1000",
         OpA when others;
     
 end architecture;
