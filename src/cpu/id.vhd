@@ -98,8 +98,10 @@ architecture id_arch of id is
     signal regs_oe, regs_we: std_logic;
     signal regs_we_dest, regs_oe_dest: unsigned(3 downto 0);
 
+    signal instructionSelect: std_logic_vector(5 downto 0);
+    
 begin
-
+    instructionSelect <= instructionWord(31) & instructionWord(28) & instructionWord(24) & instructionWord(16) & instructionWord(12) & instructionWord(8);
     
     --logic to set up next state
     process(res, clk, ack, zeroFlag, interrupt_pending, interrupt_vector, instructionWord) is        
@@ -111,412 +113,337 @@ begin
                 case state is
                     when load_instruction_0 => state <= load_instruction_1;
                     when load_instruction_1 =>
-                        if(ack = '1') then  --wait for response
-                            state <= load_instruction_2;
-                        else
-                            state <= load_instruction_1;
-                        end if;
+                        case ack is 
+                            when '1' => state <= load_instruction_2;
+                            when others => state <= load_instruction_1;
+                        end case;
                     when load_instruction_2 => state <= load_instruction_3;
                     when load_instruction_3 =>
-
-                        if(instructionWord(31) = '1') then
-                            if(instructionWord(30 downto 28) = "000") then
-                                state <= call0;
-                            elsif (instructionWord(30 downto 28) = "001")  then
-                                state <= ld0;
-                            elsif (instructionWord(30 downto 28) = "010")  then
-                                state <= st0;
-                            elsif (instructionWord(30 downto 28) = "011")  then
-                                state <= bz0;
-                            else
-                                state <= bnz0;
-                            end if;
-                        else
-                            if(instructionWord(28) = '1') then
-                                if(instructionWord(20) = '1') then
-                                    state <= mvih0;
-                                else
-                                    state <= mvil0;
-                                end if;
-                            else
-                                if(instructionWord(24) = '1') then
-                                    if(instructionWord(19 downto 16) = "0000") then
-                                        state <= cmp0;
-                                    elsif(instructionWord(19 downto 16) = "0001") then
-                                        state <= and0;
-                                    elsif(instructionWord(19 downto 16) = "0010") then
-                                        state <= or0;
-                                    elsif(instructionWord(19 downto 16) = "0011") then
-                                        state <= xor0;
-                                    elsif(instructionWord(19 downto 16) = "0100") then
-                                        state <= add0;
-                                    elsif(instructionWord(19 downto 16) = "0101") then
-                                        state <= sub0;
-                                    elsif(instructionWord(19 downto 16) = "0110") then
-                                        state <= inc0;
-                                    elsif(instructionWord(19 downto 16) = "0111") then
-                                        state <= dec0;
-                                    elsif(instructionWord(19 downto 16) = "1000") then
-                                        state <= lsl0;
-                                    elsif(instructionWord(19 downto 16) = "1001") then
-                                        state <= lsr0;
-                                    elsif(instructionWord(19 downto 16) = "1010") then
-                                        state <= rol0;
-                                    else
-                                        state <= ror0;
-                                    end if;
-                                else
-                                    if(instructionWord(16) = '1') then
-                                        if(instructionWord(11 downto 8) = "000") then
-                                            state <= ldi0;
-                                        elsif(instructionWord(11 downto 8) = "001") then
-                                            state <= sti0;
-                                        elsif(instructionWord(11 downto 8) = "010") then
-                                            state <= bzi0;
-                                        elsif(instructionWord(11 downto 8) = "011") then
-                                            state <= bnzi0;
-                                        else
-                                            state <= mov0;
-                                        end if;
-                                    else
-                                        if(instructionWord(12) = '1') then
-                                            if(instructionWord(5 downto 4) = "00") then
-                                                state <= calli0;
-                                            elsif(instructionWord(5 downto 4) = "01") then
-                                                state <= push0;
-                                            else
-                                                state <= pop0;
-                                            end if;
-                                        else
-                                            if(instructionWord(8) = '1') then
-                                                if(instructionWord(0) = '1') then
-                                                    state <= reti0;
-                                                else
-                                                    state <= ret0;
-                                                end if;
-                                            end if;
-                                        end if;
-                                    end if;
-                                end if;
-                            end if;
-                        end if;
-
+                        case instructionSelect is
+                            when "100000" =>                    
+                                case instructionWord(30 downto 28) is
+                                    when "000" => state <= call0;
+                                    when "001" => state <= ld0;
+                                    when "010" => state <= st0;
+                                    when "011" => state <= bz0;
+                                    when others => state <= bnz0;
+                                end case;
+                            when "010000" =>
+                                case instructionWord(20) is
+                                    when '1' => state <= mvih0;
+                                    when others => state <= mvil0;
+                                end case;
+                            when "001000" =>
+                                case instructionWord(19 downto 16) is
+                                    when "0000" => state <= cmp0;
+                                    when "0001" => state <= and0;
+                                    when "0010" => state <= or0;
+                                    when "0011" => state <= xor0;
+                                    when "0100" => state <= add0;
+                                    when "0101" => state <= sub0;
+                                    when "0110" => state <= inc0;
+                                    when "0111" => state <= dec0;
+                                    when "1000" => state <= lsl0;
+                                    when "1001" => state <= lsr0;
+                                    when "1010" => state <= rol0;
+                                    when others => state <= ror0;
+                                end case;
+                            when "000100" =>
+                                case instructionWord(10 downto 8) is
+                                    when "000" => state <= ldi0;
+                                    when "001" => state <= sti0;
+                                    when "010" => state <= bzi0;
+                                    when "011" => state <= bnzi0;
+                                    when others => state <= mov0;
+                                end case;   
+                            when "000010" =>   
+                                case instructionWord(5 downto 4) is
+                                    when "00" => state <= calli0;
+                                    when "01" => state <= push0;
+                                    when others => state <= pop0;
+                                end case;                 
+                            when "000001" =>
+                                case instructionWord(0) is
+                                    when '1' => state <= reti0;
+                                    when others => state <= ret0;
+                                end case;
+                            when others => state <= load_instruction_0;
+                        end case;
                     when and0 => state <= and1;
                     when and1 => state <= and2;
                     when and2 => 
-                        if(interrupt_pending = '1') then
-                            state <= interrupt0;
-                        else
-                            state <= load_instruction_0;
-                        end if;
+                        case interrupt_pending is
+                            when '1' => state <= interrupt0;
+                            when others => state <= load_instruction_0;
+                        end case;
                     when or0 => state <= or1;
                     when or1 => state <= or2;
                     when or2 =>
-                        if(interrupt_pending = '1') then
-                            state <= interrupt0;
-                        else
-                            state <= load_instruction_0;
-                        end if;
+                        case interrupt_pending is
+                            when '1' => state <= interrupt0;
+                            when others => state <= load_instruction_0;
+                        end case;
                     when xor0 => state <= xor1;
                     when xor1 => state <= xor2;
                     when xor2 =>
-                        if(interrupt_pending = '1') then
-                            state <= interrupt0;
-                        else
-                            state <= load_instruction_0;
-                        end if;
+                        case interrupt_pending is
+                            when '1' => state <= interrupt0;
+                            when others => state <= load_instruction_0;
+                        end case;
                     when add0 => state <= add1;
                     when add1 => state <= add2;
                     when add2 =>
-                        if(interrupt_pending = '1') then
-                            state <= interrupt0;
-                        else
-                            state <= load_instruction_0;
-                        end if;
+                        case interrupt_pending is
+                            when '1' => state <= interrupt0;
+                            when others => state <= load_instruction_0;
+                        end case;
                     when sub0 => state <= sub1;
                     when sub1 => state <= sub2;
                     when sub2 =>
-                        if(interrupt_pending = '1') then
-                            state <= interrupt0;
-                        else
-                            state <= load_instruction_0;
-                        end if;
+                        case interrupt_pending is
+                            when '1' => state <= interrupt0;
+                            when others => state <= load_instruction_0;
+                        end case;
                     when cmp0 => state <= cmp1;
                     when cmp1 => state <= cmp2;
                     when cmp2 =>
-                        if(interrupt_pending = '1') then
-                            state <= interrupt0;
-                        else
-                            state <= load_instruction_0;
-                        end if;
+                        case interrupt_pending is
+                            when '1' => state <= interrupt0;
+                            when others => state <= load_instruction_0;
+                        end case;
                     when inc0 => state <= inc1;
                     when inc1 =>
-                        if(interrupt_pending = '1') then
-                            state <= interrupt0;
-                        else
-                            state <= load_instruction_0;
-                        end if;
+                        case interrupt_pending is
+                            when '1' => state <= interrupt0;
+                            when others => state <= load_instruction_0;
+                        end case;
                     when dec0 => state <= dec1;
                     when dec1 =>
-                        if(interrupt_pending = '1') then
-                            state <= interrupt0;
-                        else
-                            state <= load_instruction_0;
-                        end if;
+                        case interrupt_pending is
+                            when '1' => state <= interrupt0;
+                            when others => state <= load_instruction_0;
+                        end case;
                     when lsl0 => state <= lsl1;
                     when lsl1 =>
-                        if(interrupt_pending = '1') then
-                            state <= interrupt0;
-                        else
-                            state <= load_instruction_0;
-                        end if;
+                        case interrupt_pending is
+                            when '1' => state <= interrupt0;
+                            when others => state <= load_instruction_0;
+                        end case;
                     when lsr0 => state <= lsr1;
                     when lsr1 =>
-                        if(interrupt_pending = '1') then
-                            state <= interrupt0;
-                        else
-                            state <= load_instruction_0;
-                        end if;
+                        case interrupt_pending is
+                            when '1' => state <= interrupt0;
+                            when others => state <= load_instruction_0;
+                        end case;
                     when rol0 => state <= rol1;
                     when rol1 =>
-                        if(interrupt_pending = '1') then
-                            state <= interrupt0;
-                        else
-                            state <= load_instruction_0;
-                        end if;
+                        case interrupt_pending is
+                            when '1' => state <= interrupt0;
+                            when others => state <= load_instruction_0;
+                        end case;
                     when ror0 => state <= ror1;
                     when ror1 =>
-                        if(interrupt_pending = '1') then
-                            state <= interrupt0;
-                        else
-                            state <= load_instruction_0;
-                        end if;
+                        case interrupt_pending is
+                            when '1' => state <= interrupt0;
+                            when others => state <= load_instruction_0;
+                        end case;
                     when mov0 =>
-                        if(interrupt_pending = '1') then
-                            state <= interrupt0;
-                        else
-                            state <= load_instruction_0;
-                        end if;
+                        case interrupt_pending is
+                            when '1' => state <= interrupt0;
+                            when others => state <= load_instruction_0;
+                        end case;
                     when call0 => state <= call1;
                     when call1 => state <= call2;
                     when call2 => 
-                        if(ack = '1') then
-                            state <= call3;
-                        else
-                            state <= call2;
-                        end if;
+                        case ack is 
+                            when '1' => state <= call3;
+                            when others => state <= call2;
+                        end case;
                     when call3 => 
-                        if(interrupt_pending = '1') then
-                            state <= interrupt0;
-                        else
-                            state <= load_instruction_0;
-                        end if;
+                        case interrupt_pending is
+                            when '1' => state <= interrupt0;
+                            when others => state <= load_instruction_0;
+                        end case;
                     when calli0 => state <= calli1;
                     when calli1 => state <= calli2;
                     when calli2 => 
-                        if(ack = '1') then
-                            state <= calli3;
-                        else
-                            state <= calli2;
-                        end if;
+                        case ack is 
+                            when '1' => state <= calli3;
+                            when others => state <= calli2;
+                        end case;
                     when calli3 =>
-                        if(interrupt_pending = '1') then
-                            state <= interrupt0;
-                        else
-                            state <= load_instruction_0;
-                        end if;
+                        case interrupt_pending is
+                            when '1' => state <= interrupt0;
+                            when others => state <= load_instruction_0;
+                        end case;
                     when ret0 => state <= ret1;
                     when ret1 => state <= ret2;
                     when ret2 => 
-                        if(ack = '1') then
-                            state <= ret3;
-                        else
-                            state <= ret2;
-                        end if;
+                        case ack is 
+                            when '1' => state <= ret3;
+                            when others => state <= ret2;
+                        end case;
                     when ret3 =>
-                        if(interrupt_pending = '1') then
-                            state <= interrupt0;
-                        else
-                            state <= load_instruction_0;
-                        end if;
+                        case interrupt_pending is
+                            when '1' => state <= interrupt0;
+                            when others => state <= load_instruction_0;
+                        end case;
                     when reti0 => state <= reti1;
                     when reti1 => state <= reti2;
                     when reti2 => 
-                        if(ack = '1') then
-                            state <= reti3;
-                        else
-                            state <= reti2;
-                        end if;
+                        case ack is 
+                            when '1' => state <= reti3;
+                            when others => state <= reti2;
+                        end case;
                     when reti3 => 
-                        if(interrupt_pending = '1') then
-                            state <= interrupt0;
-                        else
-                            state <= load_instruction_0;
-                        end if;
+                        case interrupt_pending is
+                            when '1' => state <= interrupt0;
+                            when others => state <= load_instruction_0;
+                        end case;
                     when push0 => state <= push1;
                     when push1 => state <= push2;
                     when push2 => 
-                        if(ack = '1') then
-                            if(interrupt_pending = '1') then
-                                state <= interrupt0;
-                            else
-                                state <= load_instruction_0;
-                            end if;
-                        else
-                            state <= push2;
-                        end if;
+                        case ack is
+                            when '1' => 
+                                case interrupt_pending is
+                                    when '1' => state <= interrupt0;
+                                    when others => state <= load_instruction_0;
+                                end case;
+                            when others => state <= push2;
+                        end case;
                     when pop0 => state <= pop1;
                     when pop1 => state <= pop2;
                     when pop2 => 
-                        if(ack = '1') then
-                            state <= pop3;
-                        else
-                            state <= pop2;
-                        end if;
+                        case ack is 
+                            when '1' => state <= pop3;
+                            when others => state <= pop2;
+                        end case;
                     when pop3 => 
-                        if(interrupt_pending = '1') then
-                            state <= interrupt0;
-                        else
-                            state <= load_instruction_0;
-                        end if;
+                        case interrupt_pending is
+                            when '1' => state <= interrupt0;
+                            when others => state <= load_instruction_0;
+                        end case;
                     when ld0 => state <= ld1;
                     when ld1 => 
-                        if(ack = '1') then
-                            state <= ld2;
-                        else
-                            state <= ld1;
-                        end if;
+                        case ack is 
+                            when '1' => state <= ld2;
+                            when others => state <= ld1;
+                        end case;
                     when ld2 =>                     
-                        if(interrupt_pending = '1') then
-                            state <= interrupt0;
-                        else
-                            state <= load_instruction_0;
-                        end if;
+                        case interrupt_pending is
+                            when '1' => state <= interrupt0;
+                            when others => state <= load_instruction_0;
+                        end case;
                     when ldi0 => state <= ldi1;
                     when ldi1 => 
-                        if(ack = '1') then
-                            state <= ldi2;
-                        else
-                            state <= ldi1;
-                        end if;
+                        case ack is 
+                            when '1' => state <= ldi2;
+                            when others => state <= ldi1;
+                        end case;
                     when ldi2 =>                     
-                        if(interrupt_pending = '1') then
-                            state <= interrupt0;
-                        else
-                            state <= load_instruction_0;
-                        end if;
+                        case interrupt_pending is
+                            when '1' => state <= interrupt0;
+                            when others => state <= load_instruction_0;
+                        end case;
                     when st0 => state <= st1;
                     when st1 => state <= st2;
                     when st2 => 
-                        if(ack = '1') then
-                            if(interrupt_pending = '1') then
-                                state <= interrupt0;
-                            else
-                                state <= load_instruction_0;
-                            end if;
-                        else
-                            state <= st2;
-                        end if;
+                        case ack is
+                            when '1' =>
+                                case interrupt_pending is
+                                    when '1' => state <= interrupt0;
+                                    when others => state <= load_instruction_0;
+                                end case;
+                            when others => state <= st2;
+                        end case;
                     when sti0 => state <= sti1;
                     when sti1 => state <= sti2;
                     when sti2 => 
-                        if(ack = '1') then
-                            if(interrupt_pending = '1') then
-                                state <= interrupt0;
-                            else
-                                state <= load_instruction_0;
-                            end if;
-                        else
-                            state <= sti2;
-                        end if;
+                        case ack is
+                            when '1' =>
+                                case interrupt_pending is
+                                    when '1' => state <= interrupt0;
+                                    when others => state <= load_instruction_0;
+                                end case;
+                            when others => state <= sti2;
+                        end case;
                     when mvil0 => state <= mvil1;
                     when mvil1 => state <= mvil2;
                     when mvil2 =>
-                        if(interrupt_pending = '1') then
-                            state <= interrupt0;
-                        else
-                            state <= load_instruction_0;
-                        end if;
+                        case interrupt_pending is
+                            when '1' => state <= interrupt0;
+                            when others => state <= load_instruction_0;
+                        end case;
                     when mvih0 => state <= mvih1;
                     when mvih1 => state <= mvih2;
                     when mvih2 =>
-                        if(interrupt_pending = '1') then
-                            state <= interrupt0;
-                        else
-                            state <= load_instruction_0;
-                        end if;
+                        case interrupt_pending is
+                            when '1' => state <= interrupt0;
+                            when others => state <= load_instruction_0;
+                        end case;
                     when bz0 =>
-                        if(zeroFlag = '1') then
-                            state <= bz1;
-                        else
-                            if(interrupt_pending = '1') then
-                                state <= interrupt0;
-                            else
-                                state <= load_instruction_0;
-                            end if;
-                        end if;
+                        case zeroFlag is
+                            when '1' => state <= bz1;
+                            when others =>
+                                case interrupt_pending is
+                                    when '1' => state <= interrupt0;
+                                    when others => state <= load_instruction_0;
+                                end case;
+                        end case;
                     when bz1 =>
-                        if(interrupt_pending = '1') then
-                            state <= interrupt0;
-                        else
-                            state <= load_instruction_0;
-                        end if;
+                        case interrupt_pending is
+                            when '1' => state <= interrupt0;
+                            when others => state <= load_instruction_0;
+                        end case;
                     when bnz0 =>
-                        if(zeroFlag = '0') then
-                            state <= bnz1;
-                        else
-                            if(interrupt_pending = '1') then
-                                state <= interrupt0;
-                            else
-                                state <= load_instruction_0;
-                            end if;
-                        end if;
+                        case zeroFlag is
+                            when '0' => state <= bnz1;
+                            when others =>
+                                case interrupt_pending is
+                                    when '1' => state <= interrupt0;
+                                    when others => state <= load_instruction_0;
+                                end case;
+                        end case;
                     when bnz1 =>
-                        if(interrupt_pending = '1') then
-                            state <= interrupt0;
-                        else
-                            state <= load_instruction_0;
-                        end if; 
+                        case interrupt_pending is
+                            when '1' => state <= interrupt0;
+                            when others => state <= load_instruction_0;
+                        end case;
                     when bzi0 =>
-                        if(zeroFlag = '1') then
-                            state <= bzi1;
-                        else
-                            if(interrupt_pending = '1') then
-                                state <= interrupt0;
-                            else
-                                state <= load_instruction_0;
-                            end if;
-                        end if;
+                        case zeroFlag is
+                            when '1' => state <= bzi1;
+                            when others =>
+                                case interrupt_pending is
+                                    when '1' => state <= interrupt0;
+                                    when others => state <= load_instruction_0;
+                                end case;
+                        end case;
                     when bzi1 =>
-                        if(interrupt_pending = '1') then
-                            state <= interrupt0;
-                        else
-                            state <= load_instruction_0;
-                        end if;
+                        case interrupt_pending is
+                            when '1' => state <= interrupt0;
+                            when others => state <= load_instruction_0;
+                        end case;
                     when bnzi0 =>
-                        if(zeroFlag = '0') then
-                            state <= bnzi1;
-                        else
-                            if(interrupt_pending = '1') then
-                                state <= interrupt0;
-                            else
-                                state <= load_instruction_0;
-                            end if;
-                        end if;
+                        case zeroFlag is
+                            when '0' => state <= bnzi1;
+                            when others =>
+                                case interrupt_pending is
+                                    when '1' => state <= interrupt0;
+                                    when others => state <= load_instruction_0;
+                                end case;
+                        end case;
                     when bnzi1 =>
-                        if(interrupt_pending = '1') then
-                            state <= interrupt0;
-                        else
-                            state <= load_instruction_0;
-                        end if;
+                        case interrupt_pending is
+                            when '1' => state <= interrupt0;
+                            when others => state <= load_instruction_0;
+                        end case;
                     when interrupt0 => state <= interrupt1;
                     when interrupt1 => state <= interrupt2;
                     when interrupt2 => 
-                        if(ack = '1') then  --wait for response
-                            state <= interrupt3;
-                        else
-                            state <= interrupt2;
-                        end if;
+                        case ack is 
+                            when '1' => state <= interrupt3;
+                            when others => state <= interrupt2;
+                        end case;
                     when interrupt3 => state <= load_instruction_0;
                 end case;
             end if;
