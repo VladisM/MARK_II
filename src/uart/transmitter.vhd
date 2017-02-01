@@ -2,238 +2,233 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
-entity transmitter is
+entity transmitter is 
     port(
-        res: in std_logic;
         clk: in std_logic;
-        clk_baud: in std_logic;
+        res: in std_logic;
+        baud16_clk_en: in std_logic;
         tx_data: in unsigned(7 downto 0);
-        tx_send: in std_logic;
-        tx_int_req: out std_logic;
-        tx: out std_logic
+        tx: out std_logic;
+        tx_intrq: out std_logic;
+        send: in std_logic
     );
 end entity transmitter;
 
-architecture transmitter_arch of transmitter is 
+architecture transmitter_arch of transmitter is
+    signal count: unsigned(3 downto 0);
+    signal baud_clk_en: std_logic;
     
-    component int_fsm is
-        port(
-            clk: in std_logic;
-            res: in std_logic;
-            int_raw: in std_logic;
-            intrq: out std_logic
-        );
-    end component int_fsm;
-
+    type tx_state_type is (idle,sample_data, set_startbit, wait_startbit, set_b0, wait_b0, set_b1, wait_b1,
+                      set_b2, wait_b2, set_b3, wait_b3, set_b4, wait_b4, set_b5, wait_b5,
+                      set_b6, wait_b6, set_b7, wait_b7, set_stopbit, wait_stopbit, set_flags);
+    signal state: tx_state_type;
     
-    --for FSM 
-    type tx_states is (idle, start_bit, resstartbit, b0, resb0, b1, resb1, b2, resb2, b3, resb3, b4, resb4, b5, resb5, b6, resb6, b7, resb7, stop_bit, resstopbit);
-    signal tx_state: tx_states;
+    signal send_reg, send_started: std_logic;
     
-    signal sel: std_logic_vector(3 downto 0);     -- this is select signal for output mux
-    signal send_started: std_logic;      -- this will reset RS ff for holding "send" input
-    signal send_reg: std_logic;
-    
-    signal intrq: std_logic;
-    
-    signal counter: unsigned(4 downto 0);
-    signal reset_counter: std_logic;
-    
-    
+    signal shift_data, load_data: std_logic;
+    signal sync_counter: std_logic;
 begin
-
-    process(res, clk, clk_baud, reset_counter) is 
-        variable counter_var: unsigned(4 downto 0);
+    txcounter:
+    process(clk, res) is
+        variable counter: unsigned(3 downto 0);
     begin
         if rising_edge(clk) then
-            if res = '1'  then
-                counter_var := (others => '0');
-            elsif reset_counter = '1' then
-                counter_var := (others => '0');
-            elsif clk_baud = '1' then
-                counter_var := counter_var + 1;
+            if res = '1' then
+                counter := (others => '0');
+            elsif sync_counter = '1' then
+                counter := (others => '0');
+            elsif baud16_clk_en = '1' then
+                counter := counter + 1;
             end if;
         end if;
-        counter <= counter_var;
+        count <= counter;
     end process;
     
-    --this is output value selector
-    process(sel, tx_data) is begin
-        case sel is
-            when x"0" => tx <= '1';
-            when x"1" => tx <= std_logic(tx_data(0));
-            when x"2" => tx <= std_logic(tx_data(1));
-            when x"3" => tx <= std_logic(tx_data(2));
-            when x"4" => tx <= std_logic(tx_data(3));
-            when x"5" => tx <= std_logic(tx_data(4));
-            when x"6" => tx <= std_logic(tx_data(5));
-            when x"7" => tx <= std_logic(tx_data(6));
-            when x"8" => tx <= std_logic(tx_data(7));
-            when x"9" => tx <= '0';
-            when others => tx <= '-';
-        end case;
+    process(count, baud16_clk_en) is
+    begin
+        if count = x"F" then
+            baud_clk_en <= baud16_clk_en;
+        else
+            baud_clk_en <= '0';
+        end if;
     end process;
     
-    -- logic for solving next state
-    process(res, clk_baud, clk) is begin
+    process(clk, res, send, send_started) is begin
         if rising_edge(clk) then
             if res = '1' then
-                tx_state <= idle;
-            else
-                case tx_state is
-                
-                    when idle =>
-                        if send_reg = '1' then
-                            tx_state <= start_bit;
-                        else
-                            tx_state <= idle;
-                        end if;
-                        
-                    when start_bit => 
-                        if(counter = "10000") then
-                            tx_state <= resstartbit;
-                        else
-                            tx_state <= start_bit;
-                        end if;
-                    when resstartbit => tx_state <= b0;
-                    
-                    when b0 => 
-                        if(counter = "10000") then
-                            tx_state <= resb0;
-                        else
-                            tx_state <= b0;
-                        end if;
-                    when resb0 => tx_state <= b1;
-                    
-                    when b1 => 
-                        if(counter = "10000") then
-                            tx_state <= resb1;
-                        else
-                            tx_state <= b1;
-                        end if;
-                    when resb1 => tx_state <= b2;
-                    
-                    when b2 => 
-                        if(counter = "10000") then
-                            tx_state <= resb2;
-                        else
-                            tx_state <= b2;
-                        end if;
-                    when resb2 => tx_state <= b3;
-                    
-                    when b3 => 
-                        if(counter = "10000") then
-                            tx_state <= resb3;
-                        else
-                            tx_state <= b3;
-                        end if;
-                    when resb3 => tx_state <= b4;
-                    
-                    when b4 => 
-                        if(counter = "10000") then
-                            tx_state <= resb4;
-                        else
-                            tx_state <= b4;
-                        end if;
-                    when resb4 => tx_state <= b5;
-                    
-                    when b5 => 
-                        if(counter = "10000") then
-                            tx_state <= resb5;
-                        else
-                            tx_state <= b5;
-                        end if;
-                    when resb5 => tx_state <= b6;
-                    
-                    when b6 => 
-                        if(counter = "10000") then
-                            tx_state <= resb6;
-                        else
-                            tx_state <= b6;
-                        end if;
-                    when resb6 => tx_state <= b7;
-                    
-                    when b7 => 
-                        if(counter = "10000") then
-                            tx_state <= resb7;
-                        else
-                            tx_state <= b7;
-                        end if;
-                    when resb7 => tx_state <= stop_bit;
-                    
-                    when stop_bit => 
-                        if(counter = "10000") then
-                            tx_state <= resstopbit;
-                        else
-                            tx_state <= stop_bit;
-                        end if;
-                    when resstopbit => tx_state <= idle;
-                    
-                end case;
-            end if;
-        end if;
-    end process;
-    
-    --output functions
-    process(tx_state) is begin
-        case tx_state is
-            when idle =>
-                sel <= x"0"; intrq <= '0'; send_started <= '0'; reset_counter <= '0';
-            when start_bit =>
-                sel <= x"9"; intrq <= '0'; send_started <= '1'; reset_counter <= '0';
-            when b0 =>
-                sel <= x"1"; intrq <= '0'; send_started <= '0'; reset_counter <= '0';
-            when b1 =>
-                sel <= x"2"; intrq <= '0'; send_started <= '0'; reset_counter <= '0';
-            when b2 =>
-                sel <= x"3"; intrq <= '0'; send_started <= '0'; reset_counter <= '0';
-            when b3 =>
-                sel <= x"4"; intrq <= '0'; send_started <= '0'; reset_counter <= '0';
-            when b4 =>
-                sel <= x"5"; intrq <= '0'; send_started <= '0'; reset_counter <= '0';
-            when b5 =>
-                sel <= x"6"; intrq <= '0'; send_started <= '0'; reset_counter <= '0';
-            when b6 =>
-                sel <= x"7"; intrq <= '0'; send_started <= '0'; reset_counter <= '0';
-            when b7 =>
-                sel <= x"8"; intrq <= '0'; send_started <= '0'; reset_counter <= '0';
-            when stop_bit =>
-                sel <= x"0"; intrq <= '1'; send_started <= '0'; reset_counter <= '0';            
-            when resstartbit =>
-                sel <= x"9"; intrq <= '0'; send_started <= '0'; reset_counter <= '1';
-            when resb0 =>
-                sel <= x"1"; intrq <= '0'; send_started <= '0'; reset_counter <= '1';
-            when resb1 =>
-                sel <= x"2"; intrq <= '0'; send_started <= '0'; reset_counter <= '1';
-            when resb2 =>
-                sel <= x"3"; intrq <= '0'; send_started <= '0'; reset_counter <= '1';
-            when resb3 =>
-                sel <= x"4"; intrq <= '0'; send_started <= '0'; reset_counter <= '1';
-            when resb4 =>
-                sel <= x"5"; intrq <= '0'; send_started <= '0'; reset_counter <= '1';
-            when resb5 =>
-                sel <= x"6"; intrq <= '0'; send_started <= '0'; reset_counter <= '1';
-            when resb6 =>
-                sel <= x"7"; intrq <= '0'; send_started <= '0'; reset_counter <= '1';
-            when resb7 =>
-                sel <= x"8"; intrq <= '0'; send_started <= '0'; reset_counter <= '1';
-            when resstopbit =>
-                sel <= x"0"; intrq <= '0'; send_started <= '0'; reset_counter <= '1';
-        end case;
-    end process;
-    
-    --RSff for "send" input
-    process(clk, res, tx_send, send_started) is begin
-        if rising_edge(clk) then
-            if (res or send_started) = '1' then
                 send_reg <= '0';
-            elsif tx_send = '1' then
+            elsif send_started = '1' then
+                send_reg <= '0';
+            elsif send = '1' then
                 send_reg <= '1';
             end if;
         end if;
     end process;
     
-    int_fsm0: int_fsm
-        port map(clk, res, intrq, tx_int_req);
+    process(clk, res, baud_clk_en) is begin
+        if rising_edge(clk) then
+            if res = '1' then
+                state <= idle;
+            else
+                case state is
+                    when idle =>
+                        if send_reg = '1' then
+                            state <= sample_data;
+                        else
+                            state <= idle;
+                        end if;
+                    when sample_data => state <= set_startbit;
+                    when set_startbit => state <= wait_startbit;
+                    when wait_startbit =>
+                        if baud_clk_en = '1' then
+                            state <= set_b0;
+                        else
+                            state <= wait_startbit;
+                        end if;
+                    
+                    when set_b0 => state <= wait_b0;
+                    when wait_b0 =>
+                        if baud_clk_en = '1' then
+                            state <= set_b1;
+                        else
+                            state <= wait_b0;
+                        end if;
+                        
+                    when set_b1 => state <= wait_b1;
+                    when wait_b1 =>
+                        if baud_clk_en = '1' then
+                            state <= set_b2;
+                        else
+                            state <= wait_b1;
+                        end if;
+                    
+                    when set_b2 => state <= wait_b2;
+                    when wait_b2 =>
+                        if baud_clk_en = '1' then
+                            state <= set_b3;
+                        else
+                            state <= wait_b2;
+                        end if;
+                        
+                    when set_b3 => state <= wait_b3;
+                    when wait_b3 =>
+                        if baud_clk_en = '1' then
+                            state <= set_b4;
+                        else
+                            state <= wait_b3;
+                        end if;
+                    
+                    when set_b4 => state <= wait_b4;
+                    when wait_b4 =>
+                        if baud_clk_en = '1' then
+                            state <= set_b5;
+                        else
+                            state <= wait_b4;
+                        end if;
+                    
+                    when set_b5 => state <= wait_b5;
+                    when wait_b5 =>
+                        if baud_clk_en = '1' then
+                            state <= set_b6;
+                        else
+                            state <= wait_b5;
+                        end if;
+                    
+                    when set_b6 => state <= wait_b6;
+                    when wait_b6 =>
+                        if baud_clk_en = '1' then
+                            state <= set_b7;
+                        else
+                            state <= wait_b6;
+                        end if;
+            
+                    when set_b7 => state <= wait_b7;
+                    when wait_b7 =>
+                        if baud_clk_en = '1' then
+                            state <= set_stopbit;
+                        else
+                            state <= wait_b7;
+                        end if;
+                        
+                    when set_stopbit => state <= wait_stopbit;
+                    when wait_stopbit =>
+                        if baud_clk_en = '1' then
+                            state <= set_flags;
+                        else
+                            state <= wait_stopbit;
+                        end if;
+                    
+                    when set_flags => state <= idle;
+                end case;
+            end if;
+        end if;
+    end process;
+    
+    process(state) is begin
+        case state is 
+            when idle  =>
+                send_started <= '0'; shift_data <= '0'; load_data <= '0'; tx_intrq <= '0'; sync_counter <= '0';
+            when sample_data =>
+                send_started <= '1'; shift_data <= '0'; load_data <= '1'; tx_intrq <= '0'; sync_counter <= '0';
+            when set_startbit =>
+                send_started <= '0'; shift_data <= '1'; load_data <= '0'; tx_intrq <= '0'; sync_counter <= '1';
+            when wait_startbit =>
+                send_started <= '0'; shift_data <= '0'; load_data <= '0'; tx_intrq <= '0'; sync_counter <= '0';
+            when set_b0 =>
+                send_started <= '0'; shift_data <= '1'; load_data <= '0'; tx_intrq <= '0'; sync_counter <= '0';
+            when wait_b0 =>
+                send_started <= '0'; shift_data <= '0'; load_data <= '0'; tx_intrq <= '0'; sync_counter <= '0';
+            when set_b1 =>
+                send_started <= '0'; shift_data <= '1'; load_data <= '0'; tx_intrq <= '0'; sync_counter <= '0';
+            when wait_b1 =>
+                send_started <= '0'; shift_data <= '0'; load_data <= '0'; tx_intrq <= '0'; sync_counter <= '0';
+            when set_b2 =>
+                send_started <= '0'; shift_data <= '1'; load_data <= '0'; tx_intrq <= '0'; sync_counter <= '0';
+            when wait_b2 =>
+                send_started <= '0'; shift_data <= '0'; load_data <= '0'; tx_intrq <= '0'; sync_counter <= '0';
+            when set_b3 =>
+                send_started <= '0'; shift_data <= '1'; load_data <= '0'; tx_intrq <= '0'; sync_counter <= '0';
+            when wait_b3 =>
+                send_started <= '0'; shift_data <= '0'; load_data <= '0'; tx_intrq <= '0'; sync_counter <= '0';
+            when set_b4 =>
+                send_started <= '0'; shift_data <= '1'; load_data <= '0'; tx_intrq <= '0'; sync_counter <= '0';
+            when wait_b4 =>
+                send_started <= '0'; shift_data <= '0'; load_data <= '0'; tx_intrq <= '0'; sync_counter <= '0';
+            when set_b5 =>
+                send_started <= '0'; shift_data <= '1'; load_data <= '0'; tx_intrq <= '0'; sync_counter <= '0';
+            when wait_b5 =>
+                send_started <= '0'; shift_data <= '0'; load_data <= '0'; tx_intrq <= '0'; sync_counter <= '0';
+            when set_b6 =>
+                send_started <= '0'; shift_data <= '1'; load_data <= '0'; tx_intrq <= '0'; sync_counter <= '0';
+            when wait_b6 =>
+                send_started <= '0'; shift_data <= '0'; load_data <= '0'; tx_intrq <= '0'; sync_counter <= '0';
+            when set_b7 =>
+                send_started <= '0'; shift_data <= '1'; load_data <= '0'; tx_intrq <= '0'; sync_counter <= '0';
+            when wait_b7 =>
+                send_started <= '0'; shift_data <= '0'; load_data <= '0'; tx_intrq <= '0'; sync_counter <= '0';
+            when set_stopbit =>
+                send_started <= '0'; shift_data <= '1'; load_data <= '0'; tx_intrq <= '0'; sync_counter <= '0';
+            when wait_stopbit =>
+                send_started <= '0'; shift_data <= '0'; load_data <= '0'; tx_intrq <= '0'; sync_counter <= '0';
+            when set_flags =>
+                send_started <= '0'; shift_data <= '0'; load_data <= '0'; tx_intrq <= '1'; sync_counter <= '0';
+        end case;
+    end process;
+    
+    process(clk, res, shift_data, load_data) is
+        variable data: std_logic_vector(10 downto 0);
+    begin
+        if rising_edge(clk) then
+            if res = '1' then
+                data := (others => '1');
+            elsif load_data = '1' then
+                data := '1' & std_logic_vector(tx_data) & '0' & '1';
+            elsif shift_data = '1' then
+                data(9 downto 0) := data(10 downto 1);
+                data(10) := '1';
+            end if;
+        end if;
+        tx <= data(0);
+    end process;
     
 end architecture transmitter_arch;

@@ -190,9 +190,6 @@ architecture MARK_II_arch of MARK_II is
             WR: in std_logic;
             RD: in std_logic;
             ack: out std_logic;
-            enclk2: in std_logic;
-            enclk4: in std_logic;
-            enclk8: in std_logic;
             --device
             rx: in std_logic;
             tx: out std_logic;
@@ -259,15 +256,15 @@ begin
        
     uart0: uart
         generic map(x"00010A")
-        port map(clk, res, bus_address, bus_data_mosi, bus_data_miso, bus_WR, bus_RD, bus_ack, enclk2, enclk4, enclk8, rx0, tx0, int_req(9), int_req(8));
+        port map(clk, res, bus_address, bus_data_mosi, bus_data_miso, bus_WR, bus_RD, bus_ack, rx0, tx0, int_req(9), int_req(8));
     
     uart1: uart
         generic map(x"00010C")
-        port map(clk, res, bus_address, bus_data_mosi, bus_data_miso, bus_WR, bus_RD, bus_ack, enclk2, enclk4, enclk8, rx1, tx1, int_req(11), int_req(10));
+        port map(clk, res, bus_address, bus_data_mosi, bus_data_miso, bus_WR, bus_RD, bus_ack, rx1, tx1, int_req(11), int_req(10));
     
     uart2: uart
         generic map(x"00010E")
-        port map(clk, res, bus_address, bus_data_mosi, bus_data_miso, bus_WR, bus_RD, bus_ack, enclk2, enclk4, enclk8, rx2, tx2, int_req(13), int_req(12));
+        port map(clk, res, bus_address, bus_data_mosi, bus_data_miso, bus_WR, bus_RD, bus_ack, rx2, tx2, int_req(13), int_req(12));
    
         
 end architecture MARK_II_arch;
