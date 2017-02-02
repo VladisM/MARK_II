@@ -15,7 +15,7 @@ end entity reciever;
 
 architecture reciever_arch of reciever is
     
-    type tx_state_type is (idle, wait_for_sync, sync, wait_b0, get_b0, wait_b1, get_b1,wait_b2, get_b2,
+    type tx_state_type is (idle, start_sync, wait_for_sync, sync, wait_b0, get_b0, wait_b1, get_b1,wait_b2, get_b2,
                            wait_b3, get_b3,wait_b4, get_b4,wait_b5, get_b5,wait_b6, get_b6,wait_b7, get_b7,
                            wait_stopbit, store_data);
     
@@ -92,10 +92,13 @@ begin
                 case state is
                     when idle =>
                         if rx = '0' then
-                            state <= wait_for_sync;
+                            state <= start_sync;
                         else
                             state <= idle;
                         end if;
+                        
+                    when start_sync => state <= wait_for_sync;    
+                        
                     when wait_for_sync =>
                         if count = "0111" then
                             state <= sync;
@@ -184,6 +187,7 @@ begin
     begin
         case state is 
             when idle =>            rx_rec_com <= '0'; res_counter <= '0'; shift_sipo_reg <= '0'; rx_intrq <= '0';
+            when start_sync =>      rx_rec_com <= '0'; res_counter <= '1'; shift_sipo_reg <= '0'; rx_intrq <= '0';
             when wait_for_sync =>   rx_rec_com <= '0'; res_counter <= '0'; shift_sipo_reg <= '0'; rx_intrq <= '0';
             when sync =>            rx_rec_com <= '0'; res_counter <= '1'; shift_sipo_reg <= '0'; rx_intrq <= '0';
             when wait_b0 =>         rx_rec_com <= '0'; res_counter <= '0'; shift_sipo_reg <= '0'; rx_intrq <= '0';
