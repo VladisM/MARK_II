@@ -4,17 +4,18 @@ use ieee.numeric_std.all;
 
 entity systim is
     generic(
-        BASE_ADDRESS: unsigned(19 downto 0) := x"00000"    --base address
+        BASE_ADDRESS: unsigned(23 downto 0) := x"000000"    --base address
     );
     port(
         --bus
 		clk: in std_logic;
         res: in std_logic;
-        address: in std_logic_vector(19 downto 0);
-        data_mosi: in std_logic_vector(31 downto 0);
-        data_miso: out std_logic_vector(31 downto 0);
+        address: in unsigned(23 downto 0);
+        data_mosi: in unsigned(31 downto 0);
+        data_miso: out unsigned(31 downto 0);
         WR: in std_logic;
         RD: in std_logic;
+        ack: out std_logic;
         --device
         intrq: out std_logic
     );
@@ -34,16 +35,17 @@ architecture systim_arch of systim is
     --for bus interface
     signal reg_sel: std_logic_vector(1 downto 0);
     signal clear_from_write: std_logic; --clear the counter when value is writen to its register
+    
 begin
 
     --this is core timer
     process (clk, res, compare_match, clear_from_write)
         variable cnt: unsigned(23 downto 0) := (others => '0');
     begin
-        if (res = '1' or clear_from_write = '1' or compare_match = '1') then
-            cnt := (others => '0');
-        elsif(rising_edge(clk)) then
-            if(timeren = '1') then
+        if(rising_edge(clk)) then
+            if (res = '1' or clear_from_write = '1' or compare_match = '1') then
+                cnt := (others => '0');
+            elsif(timeren = '1') then
                 cnt := cnt + 1;
             end if;
         end if;
@@ -73,9 +75,9 @@ begin
     
     --chip select
     process(address) is begin
-        if    (unsigned(address) = BASE_ADDRESS) then
+        if    (address = BASE_ADDRESS) then
             reg_sel <= "01"; -- control register
-        elsif (unsigned(address) = (BASE_ADDRESS + 1)) then
+        elsif (address = (BASE_ADDRESS + 1)) then
             reg_sel <= "10"; -- counter
         else
             reg_sel <= "00";
@@ -84,18 +86,18 @@ begin
     
     --registers
     process(clk, res, WR, data_mosi, reg_sel) is begin
-        if res = '1' then
-            control_reg <= (others => '0');
-        elsif rising_edge(clk) then
-            if (reg_sel = "01" and WR = '1') then
-                control_reg <= unsigned(data_mosi(25 downto 0));
+        if rising_edge(clk) then
+            if res = '1' then
+                control_reg <= (others => '0');
+            elsif (reg_sel = "01" and WR = '1') then
+                control_reg <= data_mosi(25 downto 0);
             end if;
         end if;
     end process;
     
     --output from registers
-    data_miso <= "000000" & std_logic_vector(control_reg) when (RD = '1' and reg_sel = "01") else
-                 x"00"    & std_logic_vector(counter)     when (RD = '1' and reg_sel = "10") else (others => 'Z');
+    data_miso <= "000000" & control_reg when (RD = '1' and reg_sel = "01") else
+                 x"00"    & counter     when (RD = '1' and reg_sel = "10") else (others => 'Z');
     
     --generate signal when there is write acces to counter
     process(WR, reg_sel) is begin
@@ -105,6 +107,8 @@ begin
             clear_from_write <= '0';
         end if;
     end process;
+    
+    ack <= '1' when ((WR = '1' and reg_sel /= "00") or (RD = '1' and reg_sel /= "00")) else 'Z';
     
 end architecture systim_arch;
         

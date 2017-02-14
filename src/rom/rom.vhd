@@ -5,15 +5,16 @@ use lpm.lpm_components.all;
 
 entity rom is
     generic(
-        BASE_ADDRESS: unsigned(19 downto 0) := x"00000"    --base address of the ROM 
+        BASE_ADDRESS: unsigned(23 downto 0) := x"000000"    --base address of the ROM 
     );
     port(
         clk: in std_logic;
-        address: in std_logic_vector(19 downto 0);
-        data_mosi: in std_logic_vector(31 downto 0);
-        data_miso: out std_logic_vector(31 downto 0); 
+        address: in unsigned(23 downto 0);
+        data_mosi: in unsigned(31 downto 0);
+        data_miso: out unsigned(31 downto 0); 
         WR: in std_logic;
-        RD: in std_logic
+        RD: in std_logic;
+        ack: out std_logic
     );
 end entity rom;
 
@@ -28,12 +29,12 @@ begin
             lpm_widthad => 8,
             lpm_outdata => "UNREGISTERED",
             lpm_address_control => "REGISTERED",
-            lpm_file => "src/rom/rom.mif",
+            lpm_file => "../src/rom/rom.mif",
             lpm_width => 32
         ) 
         port map(
             inclock=>clk, 
-            address=>address(7 downto 0), 
+            address=>std_logic_vector(address(7 downto 0)), 
             q=>data_for_read
         );   
     
@@ -47,6 +48,8 @@ begin
     end process;
     
     --tri state outputs
-    data_miso <= data_for_read when (cs = '1' and RD = '1') else (others => 'Z');
-    
+    data_miso <= unsigned(data_for_read) when (cs = '1' and RD = '1') else (others => 'Z');
+
+    ack <= '1' when (cs = '1' and RD = '1') else 'Z';
+
 end architecture rom_arch;

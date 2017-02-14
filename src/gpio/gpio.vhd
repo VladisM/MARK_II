@@ -11,18 +11,18 @@ use ieee.numeric_std.all;
 
 entity gpio is 
     generic(
-        BASE_ADDRESS: unsigned(19 downto 0) := x"00000";    --base address of the GPIO 
-        GPIO_WIDE: natural := 32;       --wide of the gpios
-		  BUS_WIDE:natural := 32		--wide of the data bus
+        BASE_ADDRESS: unsigned(23 downto 0) := x"000000";    --base address of the GPIO 
+        GPIO_WIDE: natural := 32       --wide of the gpios
     );
     port(
         clk: in std_logic;
         res: in std_logic;
-        address: in std_logic_vector(19 downto 0);
-        data_mosi: in std_logic_vector((BUS_WIDE-1) downto 0);
-        data_miso: out std_logic_vector((BUS_WIDE-1) downto 0);
+        address: in unsigned(23 downto 0);
+        data_mosi: in unsigned(31 downto 0);
+        data_miso: out unsigned(31 downto 0);
         WR: in std_logic;
         RD: in std_logic;
+        ack: out std_logic;
         --outputs
         port_a: inout std_logic_vector((GPIO_WIDE-1) downto 0);
         port_b: inout std_logic_vector((GPIO_WIDE-1) downto 0)
@@ -40,8 +40,8 @@ architecture gpio_arch of gpio is
         );
     end component pin_selector;
     
-    signal data_from_pin_pa, data_output_reg_pa, pin_direction_reg_pa: std_logic_vector((GPIO_WIDE -1) downto 0);
-    signal data_from_pin_pb, data_output_reg_pb, pin_direction_reg_pb: std_logic_vector((GPIO_WIDE -1) downto 0);
+    signal data_from_pin_pa, data_output_reg_pa, pin_direction_reg_pa: unsigned((GPIO_WIDE -1) downto 0);
+    signal data_from_pin_pb, data_output_reg_pb, pin_direction_reg_pb: unsigned((GPIO_WIDE -1) downto 0);
     
     --internal chip select signal 
     signal reg_sel: std_logic_vector(3 downto 0);
@@ -49,13 +49,13 @@ architecture gpio_arch of gpio is
 begin
     --this is just chip select decoder
     process(address) is begin
-        if (unsigned(address) = BASE_ADDRESS) then 
+        if (address = BASE_ADDRESS) then 
             reg_sel <= "0001";
-        elsif (unsigned(address) = (BASE_ADDRESS + 1)) then
+        elsif (address = (BASE_ADDRESS + 1)) then
             reg_sel <= "0010";
-        elsif (unsigned(address) = (BASE_ADDRESS + 2)) then
+        elsif (address = (BASE_ADDRESS + 2)) then
             reg_sel <= "0100";
-        elsif (unsigned(address) = (BASE_ADDRESS + 3)) then
+        elsif (address = (BASE_ADDRESS + 3)) then
             reg_sel <= "1000";
         else 
             reg_sel <= "0000";
@@ -76,58 +76,40 @@ begin
     
     --register for data_output_reg_pa
     process(clk, res, WR, data_mosi, reg_sel) is begin
-        if res = '1' then
-            data_output_reg_pa <= (others => '0');
-        elsif rising_edge(clk) then
-            if (WR = '1' and reg_sel(0) = '1') then
+
+        if rising_edge(clk) then
+
+            if res = '1' then
+                data_output_reg_pa <= (others => '0');
+                data_output_reg_pb <= (others => '0');
+                pin_direction_reg_pa <= (others => '0');
+                pin_direction_reg_pb <= (others => '0');
+            elsif (WR = '1' and reg_sel = "0001") then
                 data_output_reg_pa <= data_mosi((GPIO_WIDE - 1) downto 0);
-            end if;
-        end if;
-    end process;
- 
-    --register for data_output_reg_pb
-    process(clk, res, WR, data_mosi, reg_sel) is begin
-        if res = '1' then
-            data_output_reg_pb <= (others => '0');
-        elsif rising_edge(clk) then
-            if (WR = '1' and reg_sel(2) = '1') then
-                data_output_reg_pb <= data_mosi((GPIO_WIDE - 1) downto 0);
-            end if;
-        end if;
-    end process;
- 
-    --register for pin_direction_reg_pa
-    process(clk, res, WR, data_mosi, reg_sel) is begin
-        if res = '1' then
-            pin_direction_reg_pa <= (others => '0');
-        elsif rising_edge(clk) then
-            if (WR = '1' and reg_sel(1) = '1') then
+            elsif (WR = '1' and reg_sel = "0010") then
                 pin_direction_reg_pa <= data_mosi((GPIO_WIDE - 1) downto 0);
-            end if;
-        end if;
-    end process;
-    
-    --register for pin_direction_reg_pb
-    process(clk, res, WR, data_mosi, reg_sel) is begin
-        if res = '1' then
-            pin_direction_reg_pb <= (others => '0');
-        elsif rising_edge(clk) then
-            if (WR = '1' and reg_sel(3) = '1') then
+            elsif (WR = '1' and reg_sel = "0100") then
+                data_output_reg_pb <= data_mosi((GPIO_WIDE - 1) downto 0);
+            elsif (WR = '1' and reg_sel = "1000") then
                 pin_direction_reg_pb <= data_mosi((GPIO_WIDE - 1) downto 0);
             end if;
+
         end if;
+
     end process;
     
     --output from registers
     data_miso((GPIO_WIDE - 1) downto 0) <= 
-        data_from_pin_pa     when (RD = '1' and reg_sel(0) = '1') else
-        pin_direction_reg_pa when (RD = '1' and reg_sel(1) = '1') else
-        data_from_pin_pb     when (RD = '1' and reg_sel(2) = '1') else
-        pin_direction_reg_pb when (RD = '1' and reg_sel(3) = '1') else
+        data_from_pin_pa     when (RD = '1' and reg_sel = "0001") else
+        pin_direction_reg_pa when (RD = '1' and reg_sel = "0010") else
+        data_from_pin_pb     when (RD = '1' and reg_sel = "0100") else
+        pin_direction_reg_pb when (RD = '1' and reg_sel = "1000") else
         (others => 'Z');
 		  
-    data_miso((BUS_WIDE - 1) downto GPIO_WIDE) <= (others => 'Z');
-	 
+    data_miso(31 downto GPIO_WIDE) <= (others => 'Z');
+
+    ack <= '1' when ((WR = '1' and reg_sel /= "0000") or (RD = '1' and reg_sel /= "0000")) else 'Z';
+
 end architecture gpio_arch;
 
 

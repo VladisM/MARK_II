@@ -8,18 +8,9 @@ entity MARK_II is
         clk: in std_logic;
         res: in std_logic;
         --gpio
-        port_a: inout std_logic_vector(7 downto 0);
-        port_b: inout std_logic_vector(7 downto 0);
-        --uart
-        clk_uart: in std_logic;
-        tx0: out std_logic;
-        rx0: in std_logic;
-        tx1: out std_logic;
-        rx1: in std_logic;
-        tx2: out std_logic;
-        rx2: in std_logic;
+        porta: inout std_logic_vector(7 downto 0);
+        portb: inout std_logic_vector(7 downto 0);
         --timers
-        clk_timers: in std_logic;
         tim0_pwma: out std_logic;
         tim0_pwmb: out std_logic;
         tim1_pwma: out std_logic;
@@ -27,231 +18,300 @@ entity MARK_II is
         tim2_pwma: out std_logic;
         tim2_pwmb: out std_logic;
         tim3_pwma: out std_logic;
-        tim3_pwmb: out std_logic
+        tim3_pwmb: out std_logic;
+        --uarts
+        tx0: out std_logic;
+        rx0: in std_logic;
+        tx1: out std_logic;
+        rx1: in std_logic;
+        tx2: out std_logic;
+        rx2: in std_logic;
+        --vga
+        h_sync: out std_logic;
+        v_sync: out std_logic;
+        red: out std_logic;
+        green: out std_logic;
+        blue: out std_logic
     );
 end entity MARK_II;
 
 architecture MARK_II_arch of MARK_II is 
-
-    component cpu is
+    
+    component clkControl is
         port(
             clk: in std_logic;
             res: in std_logic;
+            enclk2: out std_logic;
+            enclk4: out std_logic;
+            enclk8: out std_logic
+        );
+    end component clkControl;
+
+    component cpu is
+        port(
+            --system interface
+            clk: in std_logic;
+            res: in std_logic;
+            --bus interface
+            address: out unsigned(23 downto 0);
+            data_mosi: out unsigned(31 downto 0);
+            data_miso: in unsigned(31 downto 0);
+            we: out std_logic;
+            oe: out std_logic;
+            ack: in std_logic;
+            --interrupts
             int: in std_logic_vector(31 downto 0);
             int_accept: out std_logic;
-            int_completed: out std_logic;
-            address: out std_logic_vector(19 downto 0);
-            data_mosi: out std_logic_vector(31 downto 0);
-            data_miso: in std_logic_vector(31 downto 0);
-            WR: out std_logic;
-            RD: out std_logic
+            int_completed: out std_logic
         );
     end component cpu;
-    
-    component gpio is 
-		  generic(
-			   BASE_ADDRESS: unsigned(19 downto 0) := x"00000";    --base address of the GPIO 
-			   GPIO_WIDE: natural := 32;       --wide of the gpios
-			   BUS_WIDE:natural := 32		--wide of the data bus
-		  );
-		  port(
-			  clk: in std_logic;
-			  res: in std_logic;
-			  address: in std_logic_vector(19 downto 0);
-			  data_mosi: in std_logic_vector((BUS_WIDE-1) downto 0);
-			  data_miso: out std_logic_vector((BUS_WIDE-1) downto 0);
-			  WR: in std_logic;
-			  RD: in std_logic;
-			  --outputs
-			  port_a: inout std_logic_vector((GPIO_WIDE-1) downto 0);
-			  port_b: inout std_logic_vector((GPIO_WIDE-1) downto 0)
-        );
-    end component gpio;
-    
-    component ram is
-        generic(
-            BASE_ADDRESS: unsigned(19 downto 0) := x"00000"    --base address of the RAM 
-        );
-        port(
-            clk: in std_logic;
-            address: in std_logic_vector(19 downto 0);
-            data_mosi: in std_logic_vector(31 downto 0);
-            data_miso: out std_logic_vector(31 downto 0); 
-            WR: in std_logic;
-            RD: in std_logic
-        );
-    end component ram;
-    
-    component rom is
-        generic(
-            BASE_ADDRESS: unsigned(19 downto 0) := x"00000"    --base address of the ROM 
-        );
-        port(
-            clk: in std_logic;
-            address: in std_logic_vector(19 downto 0);
-            data_mosi: in std_logic_vector(31 downto 0);
-            data_miso: out std_logic_vector(31 downto 0); 
-            WR: in std_logic;
-            RD: in std_logic
-        );
-    end component rom;
-    
+
     component intController is 
         generic(
-            BASE_ADDRESS: unsigned(19 downto 0) := x"00000"    --base address
+            BASE_ADDRESS: unsigned(23 downto 0) := x"000000"    --base address
         );
         port(
             --bus
             clk: in std_logic;
             res: in std_logic;
-            address: in std_logic_vector(19 downto 0);
-            data_mosi: in std_logic_vector(31 downto 0);
-            data_miso: out std_logic_vector(31 downto 0);
+            address: in unsigned(23 downto 0);
+            data_mosi: in unsigned(31 downto 0);
+            data_miso: out unsigned(31 downto 0);
             WR: in std_logic;
             RD: in std_logic;
+            ack: out std_logic;
             --device
             int_req: in std_logic_vector(31 downto 0);      --peripherals may request interrupt with this signal
             int_accept: in std_logic;                       --from the CPU
             int_completed: in std_logic;                    --from the CPU
-            int_cpu_req: out std_logic_vector(31 downto 0)  --connect this to the CPU, this is cpu interrupt
-            
+            int_cpu_req: out std_logic_vector(31 downto 0)  --connect this to the CPU, this is cpu interrupt            
         );
     end component intController;
 
-    component uart is 
+    component gpio is 
         generic(
-            BASE_ADDRESS: unsigned(19 downto 0) := x"00000"    --base address
+            BASE_ADDRESS: unsigned(23 downto 0) := x"000000";    --base address of the GPIO 
+            GPIO_WIDE: natural := 32       --wide of the gpios
+        );
+        port(
+            clk: in std_logic;
+            res: in std_logic;
+            address: in unsigned(23 downto 0);
+            data_mosi: in unsigned(31 downto 0);
+            data_miso: out unsigned(31 downto 0);
+            WR: in std_logic;
+            RD: in std_logic;
+            ack: out std_logic;
+            --outputs
+            port_a: inout std_logic_vector((GPIO_WIDE-1) downto 0);
+            port_b: inout std_logic_vector((GPIO_WIDE-1) downto 0)
+        );
+    end component gpio;
+
+    component rom is
+        generic(
+            BASE_ADDRESS: unsigned(23 downto 0) := x"000000"    --base address of the ROM 
+        );
+        port(
+            clk: in std_logic;
+            address: in unsigned(23 downto 0);
+            data_mosi: in unsigned(31 downto 0);
+            data_miso: out unsigned(31 downto 0); 
+            WR: in std_logic;
+            RD: in std_logic;
+            ack: out std_logic
+        );
+    end component rom;
+
+    component ram is
+        generic(
+            BASE_ADDRESS: unsigned(23 downto 0) := x"000000"    --base address of the RAM 
+        );
+        port(
+            clk: in std_logic;
+            address: in unsigned(23 downto 0);
+            data_mosi: in unsigned(31 downto 0);
+            data_miso: out unsigned(31 downto 0); 
+            WR: in std_logic;
+            RD: in std_logic;
+            ack: out std_logic
+        );
+    end component ram;
+
+    component systim is
+        generic(
+            BASE_ADDRESS: unsigned(23 downto 0) := x"000000"    --base address
         );
         port(
             --bus
             clk: in std_logic;
             res: in std_logic;
-            address: in std_logic_vector(19 downto 0);
-            data_mosi: in std_logic_vector(31 downto 0);
-            data_miso: out std_logic_vector(31 downto 0);
+            address: in unsigned(23 downto 0);
+            data_mosi: in unsigned(31 downto 0);
+            data_miso: out unsigned(31 downto 0);
             WR: in std_logic;
             RD: in std_logic;
+            ack: out std_logic;
             --device
-            tx_int_req: out std_logic;
-            rx_int_req: out std_logic;
-            tx: out std_logic;
-            rx: in std_logic;
-            clk_uart: in std_logic
+            intrq: out std_logic
         );
-    end component uart;
-    
+    end component systim;
+
     component timer is
         generic(
-            BASE_ADDRESS: unsigned(19 downto 0) := x"00000"    --base address
+            BASE_ADDRESS: unsigned(23 downto 0) := x"000000"    --base address
         );
         port(
             --bus
             clk: in std_logic;
             res: in std_logic;
-            address: in std_logic_vector(19 downto 0);
-            data_mosi: in std_logic_vector(31 downto 0);
-            data_miso: out std_logic_vector(31 downto 0);
+            address: in unsigned(23 downto 0);
+            data_mosi: in unsigned(31 downto 0);
+            data_miso: out unsigned(31 downto 0);
             WR: in std_logic;
             RD: in std_logic;
+            ack: out std_logic;
+            enclk2: in std_logic;
+            enclk4: in std_logic;
+            enclk8: in std_logic;
             --device
-            clk_timer: in std_logic;
             pwma: out std_logic;
             pwmb: out std_logic;
             intrq: out std_logic
         );
     end component;
 
-    component systim is
+    component uart is
         generic(
-            BASE_ADDRESS: unsigned(19 downto 0) := x"00000"    --base address
+            BASE_ADDRESS: unsigned(23 downto 0) := x"000000"    --base address of the GPIO 
         );
         port(
-            --bus
             clk: in std_logic;
             res: in std_logic;
-            address: in std_logic_vector(19 downto 0);
-            data_mosi: in std_logic_vector(31 downto 0);
-            data_miso: out std_logic_vector(31 downto 0);
+            address: in unsigned(23 downto 0);
+            data_mosi: in unsigned(31 downto 0);
+            data_miso: out unsigned(31 downto 0);
             WR: in std_logic;
             RD: in std_logic;
+            ack: out std_logic;
             --device
-            intrq: out std_logic
+            rx: in std_logic;
+            tx: out std_logic;
+            rx_int: out std_logic;
+            tx_int: out std_logic
         );
-    end component systim;
+    end component uart;
+    
+    component vga is
+        generic(
+            BASE_ADDRESS: unsigned(23 downto 0) := x"000000"    --base address of the RAM 
+        );
+        port(
+            clk_bus: in std_logic;
+            address: in unsigned(23 downto 0);
+            data_mosi: in unsigned(31 downto 0);
+            data_miso: out unsigned(31 downto 0); 
+            WR: in std_logic;
+            RD: in std_logic;
+            ack: out std_logic;
+            --device
+            clk_31M5: in std_logic;
+            h_sync: out std_logic;
+            v_sync: out std_logic;
+            red: out std_logic;
+            green: out std_logic;
+            blue: out std_logic
+        );
+    end component vga;
 
-    --interconnect between CPU and intController
-    signal int_accept, int_completed: std_logic;
-    signal int: std_logic_vector(31 downto 0);
+    component pll
+        port(
+            inclk0: in std_logic:= '0';
+            c0: out std_logic;
+            c1: out std_logic
+        );
+    end component;
 
     --signal for internal bus
-    signal bus_address: std_logic_vector(19 downto 0);
-    signal bus_data_mosi, bus_data_miso: std_logic_vector(31 downto 0);
-    signal bus_WR, bus_RD: std_logic;
+    signal bus_address: unsigned(23 downto 0);
+    signal bus_data_mosi, bus_data_miso: unsigned(31 downto 0);
+    signal bus_ack, bus_WR, bus_RD: std_logic;
     signal int_req: std_logic_vector(31 downto 0) := x"00000000";
+    
+    --signal for interconnect CPU and int controller
+    signal intCompleted, intAccepted: std_logic;
+    signal intCPUReq: std_logic_vector(31 downto 0);
+    
+    signal enclk2, enclk4, enclk8: std_logic;
+    signal resi: std_logic;
+
+    signal clk_31M5: std_logic;     -- 31,5 MHz clk for vga
+    signal clki: std_logic;         -- 14,4 MHz clk for all others
+    
+    
 begin
 
-    --main cpu
-    cpu_0: cpu
-        port map(clk, res, int, int_accept, int_completed, bus_address, bus_data_mosi, bus_data_miso, bus_WR, bus_RD);
-    
-	 --gpio block    (0x100 - 0x103)
-    gpio_0: gpio
-        generic map(x"00100", 8, 32)
-        port map(clk, res, bus_address, bus_data_mosi, bus_data_miso, bus_WR, bus_RD, port_a, port_b);
-            
-    --ram memory    (0x400 - 0x7FF)
-    ram_0: ram
-        generic map(x"00400")
-        port map(clk, bus_address, bus_data_mosi, bus_data_miso, bus_WR, bus_RD);
-    
-    --rom memory    (0x000 - 0x0FF)
-    rom_0: rom
-        generic map(x"00000")
-        port map(clk, bus_address, bus_data_mosi, bus_data_miso, bus_WR, bus_RD);
-    
-    --system timer (0x104 - 0x105) (int => 0)
-    systick0: systim
-        generic map(x"00104")
-        port map(clk, res, bus_address, bus_data_mosi, bus_data_miso, bus_WR, bus_RD, int_req(0));
-        
-    --interrupt controller (0x108)
-    int_cont_0: intController
-        generic map(x"00108")
-        port map(clk, res, bus_address, bus_data_mosi, bus_data_miso, bus_WR, bus_RD, int_req, int_accept, int_completed, int);
+    resi <= not(res);    
 
-    --uart0 (0x10A - 0x10B) (tx int => 8, rx int => 9)
-    uart_0: uart
-        generic map(x"0010A")
-        port map(clk, res, bus_address, bus_data_mosi, bus_data_miso, bus_WR, bus_RD, int_req(8), int_req(9), tx0, rx0, clk_uart);
+    pll0: pll
+        port map(clk, clki, clk_31M5);
     
-    --uart1 (0x10C - 0x10D) (tx int => 10, rx int => 11)
-    uart_1: uart
-        generic map(x"0010C")
-        port map(clk, res, bus_address, bus_data_mosi, bus_data_miso, bus_WR, bus_RD, int_req(10), int_req(11), tx1, rx1, clk_uart);
+    clk0: clkControl
+        port map(clki, resi, enclk2, enclk4, enclk8);
     
-    --uart2 (0x10E - 0x10F) (tx int => 12, rx int => 13)
-    uart_2: uart
-        generic map(x"0010E")
-        port map(clk, res, bus_address, bus_data_mosi, bus_data_miso, bus_WR, bus_RD, int_req(12), int_req(13), tx2, rx2, clk_uart);
+    cpu0: cpu
+        port map(clki, resi, bus_address, bus_data_mosi, bus_data_miso, bus_WR, bus_RD, bus_ack, intCPUReq, intAccepted, intCompleted);
     
-    --tim0 (0x110 - 0x113) (int => 14)
+    int0: intController
+        generic map(x"000108")
+        port map(clki, resi, bus_address, bus_data_mosi, bus_data_miso, bus_WR, bus_RD, bus_ack, int_req, intAccepted, intCompleted, intCPUReq);
+
+    gpio0: gpio
+        generic map(x"000100", 8)
+        port map(clki, resi, bus_address, bus_data_mosi, bus_data_miso, bus_WR, bus_RD, bus_ack, porta, portb);
+
+    rom0: rom
+        generic map(x"000000")
+        port map(clki, bus_address, bus_data_mosi, bus_data_miso, bus_WR, bus_RD, bus_ack);
+
+    ram0: ram
+        generic map(x"000400")
+        port map(clki, bus_address, bus_data_mosi, bus_data_miso, bus_WR, bus_RD, bus_ack);
+    
+    systim0: systim
+        generic map(x"000104")
+        port map(clki, resi, bus_address, bus_data_mosi, bus_data_miso, bus_WR, bus_RD, bus_ack, int_req(0));
+       
     tim0: timer
-        generic map(x"00110")
-        port map(clk, res, bus_address, bus_data_mosi, bus_data_miso, bus_WR, bus_RD, clk_timers, tim0_pwma, tim0_pwmb, int_req(14));
+        generic map(x"000110")
+        port map(clki, resi, bus_address, bus_data_mosi, bus_data_miso, bus_WR, bus_RD, bus_ack, enclk2, enclk4, enclk8, tim0_pwma, tim0_pwmb, int_req(14));
         
-    --tim1 (0x114 - 0x117) (int => 15)
     tim1: timer
-        generic map(x"00114")
-        port map(clk, res, bus_address, bus_data_mosi, bus_data_miso, bus_WR, bus_RD, clk_timers, tim1_pwma, tim1_pwmb, int_req(15));
+        generic map(x"000114")
+        port map(clki, resi, bus_address, bus_data_mosi, bus_data_miso, bus_WR, bus_RD, bus_ack, enclk2, enclk4, enclk8, tim1_pwma, tim1_pwmb, int_req(15));
         
-    --tim2 (0x118 - 0x11B) (int => 16)
     tim2: timer
-        generic map(x"00118")
-        port map(clk, res, bus_address, bus_data_mosi, bus_data_miso, bus_WR, bus_RD, clk_timers, tim2_pwma, tim2_pwmb, int_req(16));
+        generic map(x"000118")
+        port map(clki, resi, bus_address, bus_data_mosi, bus_data_miso, bus_WR, bus_RD, bus_ack, enclk2, enclk4, enclk8, tim2_pwma, tim2_pwmb, int_req(16));
         
-    --tim3 (0x11C - 0x11F) (int => 17)
     tim3: timer
-        generic map(x"0011C")
-        port map(clk, res, bus_address, bus_data_mosi, bus_data_miso, bus_WR, bus_RD, clk_timers, tim3_pwma, tim3_pwmb, int_req(17));
-        
+        generic map(x"00011C")
+        port map(clki, resi, bus_address, bus_data_mosi, bus_data_miso, bus_WR, bus_RD, bus_ack, enclk2, enclk4, enclk8, tim3_pwma, tim3_pwmb, int_req(17));
+       
+    uart0: uart
+        generic map(x"00010A")
+        port map(clki, resi, bus_address, bus_data_mosi, bus_data_miso, bus_WR, bus_RD, bus_ack, rx0, tx0, int_req(9), int_req(8));
+    
+    uart1: uart
+        generic map(x"00010C")
+        port map(clki, resi, bus_address, bus_data_mosi, bus_data_miso, bus_WR, bus_RD, bus_ack, rx1, tx1, int_req(11), int_req(10));
+    
+    uart2: uart
+        generic map(x"00010E")
+        port map(clki, resi, bus_address, bus_data_mosi, bus_data_miso, bus_WR, bus_RD, bus_ack, rx2, tx2, int_req(13), int_req(12));
+   
+    vga0: vga
+        generic map(x"001000")
+        port map(clki, bus_address, bus_data_mosi, bus_data_miso, bus_WR, bus_RD, bus_ack, clk_31M5, h_sync, v_sync, red, green, blue);
+
 end architecture MARK_II_arch;
