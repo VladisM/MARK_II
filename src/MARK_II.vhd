@@ -25,7 +25,13 @@ entity MARK_II is
         tx1: out std_logic;
         rx1: in std_logic;
         tx2: out std_logic;
-        rx2: in std_logic
+        rx2: in std_logic;
+        --vga
+        h_sync: out std_logic;
+        v_sync: out std_logic;
+        red: out std_logic;
+        green: out std_logic;
+        blue: out std_logic
     );
 end entity MARK_II;
 
@@ -78,8 +84,7 @@ architecture MARK_II_arch of MARK_II is
             int_req: in std_logic_vector(31 downto 0);      --peripherals may request interrupt with this signal
             int_accept: in std_logic;                       --from the CPU
             int_completed: in std_logic;                    --from the CPU
-            int_cpu_req: out std_logic_vector(31 downto 0)  --connect this to the CPU, this is cpu interrupt
-            
+            int_cpu_req: out std_logic_vector(31 downto 0)  --connect this to the CPU, this is cpu interrupt            
         );
     end component intController;
 
@@ -132,7 +137,6 @@ architecture MARK_II_arch of MARK_II is
             ack: out std_logic
         );
     end component ram;
-
 
     component systim is
         generic(
@@ -197,6 +201,36 @@ architecture MARK_II_arch of MARK_II is
             tx_int: out std_logic
         );
     end component uart;
+    
+    component vga is
+        generic(
+            BASE_ADDRESS: unsigned(23 downto 0) := x"000000"    --base address of the RAM 
+        );
+        port(
+            clk_bus: in std_logic;
+            address: in unsigned(23 downto 0);
+            data_mosi: in unsigned(31 downto 0);
+            data_miso: out unsigned(31 downto 0); 
+            WR: in std_logic;
+            RD: in std_logic;
+            ack: out std_logic;
+            --device
+            clk_31M5: in std_logic;
+            h_sync: out std_logic;
+            v_sync: out std_logic;
+            red: out std_logic;
+            green: out std_logic;
+            blue: out std_logic
+        );
+    end component vga;
+
+    component pll
+        port(
+            inclk0: in std_logic:= '0';
+            c0: out std_logic;
+            c1: out std_logic
+        );
+    end component;
 
     --signal for internal bus
     signal bus_address: unsigned(23 downto 0);
@@ -209,62 +243,75 @@ architecture MARK_II_arch of MARK_II is
     signal intCPUReq: std_logic_vector(31 downto 0);
     
     signal enclk2, enclk4, enclk8: std_logic;
+    signal resi: std_logic;
+
+    signal clk_31M5: std_logic;     -- 31,5 MHz clk for vga
+    signal clki: std_logic;         -- 14,4 MHz clk for all others
+    
     
 begin
+
+    resi <= not(res);    
+
+    pll0: pll
+        port map(clk, clki, clk_31M5);
     
     clk0: clkControl
-        port map(clk, res, enclk2, enclk4, enclk8);
+        port map(clki, resi, enclk2, enclk4, enclk8);
     
     cpu0: cpu
-        port map(clk, res, bus_address, bus_data_mosi, bus_data_miso, bus_WR, bus_RD, bus_ack, intCPUReq, intAccepted, intCompleted);
+        port map(clki, resi, bus_address, bus_data_mosi, bus_data_miso, bus_WR, bus_RD, bus_ack, intCPUReq, intAccepted, intCompleted);
     
     int0: intController
         generic map(x"000108")
-        port map(clk, res, bus_address, bus_data_mosi, bus_data_miso, bus_WR, bus_RD, bus_ack, int_req, intAccepted, intCompleted, intCPUReq);
+        port map(clki, resi, bus_address, bus_data_mosi, bus_data_miso, bus_WR, bus_RD, bus_ack, int_req, intAccepted, intCompleted, intCPUReq);
 
     gpio0: gpio
         generic map(x"000100", 8)
-        port map(clk, res, bus_address, bus_data_mosi, bus_data_miso, bus_WR, bus_RD, bus_ack, porta, portb);
+        port map(clki, resi, bus_address, bus_data_mosi, bus_data_miso, bus_WR, bus_RD, bus_ack, porta, portb);
 
     rom0: rom
         generic map(x"000000")
-        port map(clk, bus_address, bus_data_mosi, bus_data_miso, bus_WR, bus_RD, bus_ack);
+        port map(clki, bus_address, bus_data_mosi, bus_data_miso, bus_WR, bus_RD, bus_ack);
 
     ram0: ram
         generic map(x"000400")
-        port map(clk, bus_address, bus_data_mosi, bus_data_miso, bus_WR, bus_RD, bus_ack);
+        port map(clki, bus_address, bus_data_mosi, bus_data_miso, bus_WR, bus_RD, bus_ack);
     
     systim0: systim
         generic map(x"000104")
-        port map(clk, res, bus_address, bus_data_mosi, bus_data_miso, bus_WR, bus_RD, bus_ack, int_req(0));
+        port map(clki, resi, bus_address, bus_data_mosi, bus_data_miso, bus_WR, bus_RD, bus_ack, int_req(0));
        
     tim0: timer
         generic map(x"000110")
-        port map(clk, res, bus_address, bus_data_mosi, bus_data_miso, bus_WR, bus_RD, bus_ack, enclk2, enclk4, enclk8, tim0_pwma, tim0_pwmb, int_req(14));
+        port map(clki, resi, bus_address, bus_data_mosi, bus_data_miso, bus_WR, bus_RD, bus_ack, enclk2, enclk4, enclk8, tim0_pwma, tim0_pwmb, int_req(14));
         
     tim1: timer
         generic map(x"000114")
-        port map(clk, res, bus_address, bus_data_mosi, bus_data_miso, bus_WR, bus_RD, bus_ack, enclk2, enclk4, enclk8, tim1_pwma, tim1_pwmb, int_req(15));
+        port map(clki, resi, bus_address, bus_data_mosi, bus_data_miso, bus_WR, bus_RD, bus_ack, enclk2, enclk4, enclk8, tim1_pwma, tim1_pwmb, int_req(15));
         
     tim2: timer
         generic map(x"000118")
-        port map(clk, res, bus_address, bus_data_mosi, bus_data_miso, bus_WR, bus_RD, bus_ack, enclk2, enclk4, enclk8, tim2_pwma, tim2_pwmb, int_req(16));
+        port map(clki, resi, bus_address, bus_data_mosi, bus_data_miso, bus_WR, bus_RD, bus_ack, enclk2, enclk4, enclk8, tim2_pwma, tim2_pwmb, int_req(16));
         
     tim3: timer
         generic map(x"00011C")
-        port map(clk, res, bus_address, bus_data_mosi, bus_data_miso, bus_WR, bus_RD, bus_ack, enclk2, enclk4, enclk8, tim3_pwma, tim3_pwmb, int_req(17));
+        port map(clki, resi, bus_address, bus_data_mosi, bus_data_miso, bus_WR, bus_RD, bus_ack, enclk2, enclk4, enclk8, tim3_pwma, tim3_pwmb, int_req(17));
        
     uart0: uart
         generic map(x"00010A")
-        port map(clk, res, bus_address, bus_data_mosi, bus_data_miso, bus_WR, bus_RD, bus_ack, rx0, tx0, int_req(9), int_req(8));
+        port map(clki, resi, bus_address, bus_data_mosi, bus_data_miso, bus_WR, bus_RD, bus_ack, rx0, tx0, int_req(9), int_req(8));
     
     uart1: uart
         generic map(x"00010C")
-        port map(clk, res, bus_address, bus_data_mosi, bus_data_miso, bus_WR, bus_RD, bus_ack, rx1, tx1, int_req(11), int_req(10));
+        port map(clki, resi, bus_address, bus_data_mosi, bus_data_miso, bus_WR, bus_RD, bus_ack, rx1, tx1, int_req(11), int_req(10));
     
     uart2: uart
         generic map(x"00010E")
-        port map(clk, res, bus_address, bus_data_mosi, bus_data_miso, bus_WR, bus_RD, bus_ack, rx2, tx2, int_req(13), int_req(12));
+        port map(clki, resi, bus_address, bus_data_mosi, bus_data_miso, bus_WR, bus_RD, bus_ack, rx2, tx2, int_req(13), int_req(12));
    
-        
+    vga0: vga
+        generic map(x"001000")
+        port map(clki, bus_address, bus_data_mosi, bus_data_miso, bus_WR, bus_RD, bus_ack, clk_31M5, h_sync, v_sync, red, green, blue);
+
 end architecture MARK_II_arch;
