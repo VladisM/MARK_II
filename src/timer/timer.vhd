@@ -107,7 +107,7 @@ begin
                  x"0000"         & OCRBreg        when (RD = '1' and reg_sel = "0100") else
                  x"0000"         & timerValue     when (RD = '1' and reg_sel = "1000") else (others => 'Z');
     
-    ack <= '1' when ((WR = '1' and reg_sel /= "0000") or (RD = '1' and reg_sel /= "0000")) else 'Z';
+    ack <= '1' when ((WR = '1' and reg_sel /= "0000") or (RD = '1' and reg_sel /= "0000")) else '0';
     
     
     --generate signal whenever there is write acces

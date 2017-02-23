@@ -85,7 +85,7 @@ begin
     --output from register
     data_miso <= unsigned(interrupt_mask_reg) when (RD = '1' and reg_sel = '1') else (others => 'Z');
     
-    ack <= '1' when (WR = '1' and reg_sel = '1') or (RD = '1' and reg_sel = '1') else 'Z';
+    ack <= '1' when (WR = '1' and reg_sel = '1') or (RD = '1' and reg_sel = '1') else '0';
     
     --this is 32 RS flip flops, for asynchronous inputs
     gen_intrsff:

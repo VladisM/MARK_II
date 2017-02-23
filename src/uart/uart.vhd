@@ -97,7 +97,7 @@ begin
     uartcore0: uart_core
         port map(clk, res, controlreg, txregwe, tx, txdata, tx_int, rx, rxdata, rx_int);
 
-    ack <= '1' when ((WR = '1' and reg_sel /= "00") or (RD = '1' and reg_sel /= "00")) else 'Z';
+    ack <= '1' when ((WR = '1' and reg_sel /= "00") or (RD = '1' and reg_sel /= "00")) else '0';
     
     data_miso <= x"0000"  & controlreg when RD = '1' and reg_sel = "10" else
                  x"000000" & rxdata when RD = '1' and reg_sel = "01" else (others => 'Z');

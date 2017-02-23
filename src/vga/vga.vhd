@@ -31,11 +31,6 @@
 --
 -- All characters are using ASCII encoding, see full docs for more
 -- details about charset.
---
---
--- Note: Characters are displayed on monitor with white color, and black
--- background. If you want change this and have for example green
--- characters on black background please see line 239 - 241.
 
 library ieee;
 use ieee.std_logic_1164.all;
@@ -77,12 +72,12 @@ architecture vga_arch of vga is
         port(
             clk_a   : in std_logic;
             addr_a  : in unsigned(11 downto 0);
-            data_a  : in unsigned(6 downto 0);
+            data_a  : in unsigned(12 downto 0);
             we_a    : in std_logic;
-            q_a     : out unsigned(6 downto 0);
+            q_a     : out unsigned(12 downto 0);
             clk_b   : in std_logic;
             addr_b  : in unsigned(11 downto 0);
-            q_b     : out unsigned(6 downto 0)
+            q_b     : out unsigned(12 downto 0)
         );
     end component vram;
 
@@ -96,17 +91,19 @@ architecture vga_arch of vga is
     signal cell_row: unsigned(2 downto 0);
     signal cell_row_s: unsigned(2 downto 0);
 
-    signal char_from_vram: unsigned(6 downto 0);
+    signal char_from_vram: unsigned(12 downto 0);
     signal line_from_charrom: unsigned(7 downto 0);
     signal pixel: std_logic;
 
     signal blank_r, blank, h_sync_r, v_sync_r: std_logic;
 
+    signal bg_color, fg_color: unsigned(2 downto 0);
+
     --BUS interface
     signal addr_a  : unsigned(11 downto 0);
-    signal data_a  : unsigned(6 downto 0);
+    signal data_a  : unsigned(12 downto 0);
     signal we_a    : std_logic;
-    signal q_a     : unsigned(6 downto 0);
+    signal q_a     : unsigned(12 downto 0);
     signal cs: std_logic;
 begin
 
@@ -236,10 +233,31 @@ begin
         end case;
     end process;
 
-    red <= pixel and not(blank);
-    green <= pixel and not(blank);
-    blue <= pixel and not(blank);
-
+    process(clk_31M5, char_from_vram) is
+        variable fg_color_v, bg_color_v: unsigned(2 downto 0);
+    begin
+        if rising_edge(clk_31M5) then
+            fg_color_v := char_from_vram(9 downto 7);
+            bg_color_v := char_from_vram(12 downto 10);
+        end if;
+        fg_color <= fg_color_v;
+        bg_color <= bg_color_v;
+    end process;
+    
+    process(pixel, fg_color, bg_color, blank) is
+    begin
+        case pixel is
+            when '1' =>
+                red   <= fg_color(0) and not(blank);
+                green <= fg_color(1) and not(blank);
+                blue  <= fg_color(2) and not(blank);
+            when '0' =>
+                red   <= bg_color(0) and not(blank);
+                green <= bg_color(1) and not(blank);
+                blue  <= bg_color(2) and not(blank);
+        end case;
+    end process;
+        
     --BUS interface
     process(address) is begin
         if (address >= BASE_ADDRESS and address <= (BASE_ADDRESS + 4095)) then
@@ -249,10 +267,10 @@ begin
         end if;
     end process;
 
-    ack <= '1' when ((WR = '1' and cs = '1') or (RD = '1' and cs = '1')) else 'Z';
+    ack <= '1' when ((WR = '1' and cs = '1') or (RD = '1' and cs = '1')) else '0';
 
-    data_miso <= x"000000" & '0' & q_a when ((RD = '1') and (cs = '1')) else (others => 'Z');
-    data_a <= data_mosi(6 downto 0);
+    data_miso <= x"0000" & "000" & q_a when ((RD = '1') and (cs = '1')) else (others => 'Z');
+    data_a <= data_mosi(12 downto 0);
 
     we_a <= WR and cs;
 

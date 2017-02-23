@@ -50,6 +50,6 @@ begin
     --tri state outputs
     data_miso <= unsigned(data_for_read) when (cs = '1' and RD = '1') else (others => 'Z');
 
-    ack <= '1' when (cs = '1' and RD = '1') else 'Z';
+    ack <= '1' when (cs = '1' and RD = '1') else '0';
 
 end architecture rom_arch;

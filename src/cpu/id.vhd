@@ -73,14 +73,14 @@ architecture id_arch of id is
         mov0,
         call0, call1, call2, call3,
         calli0, calli1, calli2, calli3,
-        ret0, ret1, ret2, ret3,
-        reti0, reti1, reti2, reti3,
-        push0, push1, push2,
-        pop0, pop1, pop2, pop3,
-        ld0, ld1, ld2,
-        ldi0, ldi1, ldi2,
-        st0, st1, st2,
-        sti0, sti1, sti2,
+        ret0, ret1, ret2, ret3, ret4,
+        reti0, reti1, reti2, reti3, reti4,
+        push0, push1, push2, push3,
+        pop0, pop1, pop2, pop3, pop4,
+        ld0, ld1, ld2, ld3,
+        ldi0, ldi1, ldi2, ldi3,
+        st0, st1, st2, st3,
+        sti0, sti1, sti2, sti3,
         mvil0, mvil1, mvil2,
         mvih0, mvih1, mvih2,
         bz0, bz1,
@@ -276,24 +276,26 @@ begin
                         end case;
                     when ret0 => state <= ret1;
                     when ret1 => state <= ret2;
-                    when ret2 => 
+                    when ret2 => state <= ret3;
+                    when ret3 => 
                         case ack is 
-                            when '1' => state <= ret3;
-                            when others => state <= ret2;
+                            when '1' => state <= ret4;
+                            when others => state <= ret3;
                         end case;
-                    when ret3 =>
+                    when ret4 =>
                         case interrupt_pending is
                             when '1' => state <= interrupt0;
                             when others => state <= load_instruction_0;
                         end case;
                     when reti0 => state <= reti1;
                     when reti1 => state <= reti2;
-                    when reti2 => 
-                        case ack is 
-                            when '1' => state <= reti3;
-                            when others => state <= reti2;
-                        end case;
+                    when reti2 => state <= reti3;
                     when reti3 => 
+                        case ack is 
+                            when '1' => state <= reti4;
+                            when others => state <= reti3;
+                        end case;
+                    when reti4 => 
                         case interrupt_pending is
                             when '1' => state <= interrupt0;
                             when others => state <= load_instruction_0;
@@ -302,12 +304,13 @@ begin
                     when push1 => state <= push2;
                     when push2 => 
                         case ack is
-                            when '1' => 
-                                case interrupt_pending is
-                                    when '1' => state <= interrupt0;
-                                    when others => state <= load_instruction_0;
-                                end case;
+                            when '1' => state <= push3;
                             when others => state <= push2;
+                        end case;
+                    when push3 =>
+                        case interrupt_pending is
+                            when '1' => state <= interrupt0;
+                            when others => state <= load_instruction_0;
                         end case;
                     when pop0 => state <= pop1;
                     when pop1 => state <= pop2;
@@ -316,7 +319,8 @@ begin
                             when '1' => state <= pop3;
                             when others => state <= pop2;
                         end case;
-                    when pop3 => 
+                    when pop3 => state <= pop4;
+                    when pop4 => 
                         case interrupt_pending is
                             when '1' => state <= interrupt0;
                             when others => state <= load_instruction_0;
@@ -327,7 +331,8 @@ begin
                             when '1' => state <= ld2;
                             when others => state <= ld1;
                         end case;
-                    when ld2 =>                     
+                    when ld2 => state <= ld3;
+                    when ld3 =>               
                         case interrupt_pending is
                             when '1' => state <= interrupt0;
                             when others => state <= load_instruction_0;
@@ -338,7 +343,8 @@ begin
                             when '1' => state <= ldi2;
                             when others => state <= ldi1;
                         end case;
-                    when ldi2 =>                     
+                    when ldi2 => state <= ldi3;
+                    when ldi3 =>                     
                         case interrupt_pending is
                             when '1' => state <= interrupt0;
                             when others => state <= load_instruction_0;
@@ -347,23 +353,25 @@ begin
                     when st1 => state <= st2;
                     when st2 => 
                         case ack is
-                            when '1' =>
-                                case interrupt_pending is
-                                    when '1' => state <= interrupt0;
-                                    when others => state <= load_instruction_0;
-                                end case;
-                            when others => state <= st2;
+                            when '1' => state <= sti3;
+                            when others => state <= sti2;
+                        end case;
+                    when st3 =>
+                        case interrupt_pending is
+                            when '1' => state <= interrupt0;
+                            when others => state <= load_instruction_0;
                         end case;
                     when sti0 => state <= sti1;
                     when sti1 => state <= sti2;
                     when sti2 => 
                         case ack is
-                            when '1' =>
-                                case interrupt_pending is
-                                    when '1' => state <= interrupt0;
-                                    when others => state <= load_instruction_0;
-                                end case;
+                            when '1' => state <= sti3;
                             when others => state <= sti2;
+                        end case;
+                    when sti3 =>
+                        case interrupt_pending is
+                            when '1' => state <= interrupt0;
+                            when others => state <= load_instruction_0;
                         end case;
                     when mvil0 => state <= mvil1;
                     when mvil1 => state <= mvil2;
@@ -945,6 +953,18 @@ begin
                 addrRegwe <= '0'; mosiRegwe <= '0'; misooe <= '1';
                 wr <= '0'; rd <= '1';
                 addressSel <= '0'; flagRegSel <= x"0";
+            when ret4 =>
+                int_accept <= '0'; int_completed <= '0';
+                aluOpCode <= x"0"; aluoe <= '0'; aluOpAwe <= '0'; aluOpBwe <= '0';
+                compOpCode <= "000"; compoe <= '0'; compOpAwe <= '0'; compOpBwe <= '0';
+                barDistance <= x"0"; barDir <= '0'; barMode <= '0'; baroe <= '0'; barOpAwe <= '0';
+                regs_oe <= '0'; regs_oe_dest <= x"0"; regs_we <= '0'; regs_we_dest <= x"0";
+                incSP <= '0'; decSP <= '0'; incPC <= '0'; decPC <= '0';
+                instRegwe <= '0';
+                instructionArgument <= x"00000000"; instrArgoe <= '0';
+                addrRegwe <= '0'; mosiRegwe <= '0'; misooe <= '0';
+                wr <= '0'; rd <= '0';
+                addressSel <= '0'; flagRegSel <= x"0"; 
             
             --RETI instruction
             when reti0 =>
@@ -995,6 +1015,18 @@ begin
                 addrRegwe <= '0'; mosiRegwe <= '0'; misooe <= '1';
                 wr <= '0'; rd <= '1';
                 addressSel <= '0'; flagRegSel <= x"0";
+            when reti4 =>
+                int_accept <= '0'; int_completed <= '0';
+                aluOpCode <= x"0"; aluoe <= '0'; aluOpAwe <= '0'; aluOpBwe <= '0';
+                compOpCode <= "000"; compoe <= '0'; compOpAwe <= '0'; compOpBwe <= '0';
+                barDistance <= x"0"; barDir <= '0'; barMode <= '0'; baroe <= '0'; barOpAwe <= '0';
+                regs_oe <= '0'; regs_oe_dest <= x"0"; regs_we <= '0'; regs_we_dest <= x"0";
+                incSP <= '0'; decSP <= '0'; incPC <= '0'; decPC <= '0';
+                instRegwe <= '0';
+                instructionArgument <= x"00000000"; instrArgoe <= '0';
+                addrRegwe <= '0'; mosiRegwe <= '0'; misooe <= '0';
+                wr <= '0'; rd <= '0';
+                addressSel <= '0'; flagRegSel <= x"0"; 
 
             --POP instruction
             when pop0 =>
@@ -1045,6 +1077,18 @@ begin
                 addrRegwe <= '0'; mosiRegwe <= '0'; misooe <= '1';
                 wr <= '0'; rd <= '1';
                 addressSel <= '0'; flagRegSel <= x"0";
+            when pop4 =>
+                int_accept <= '0'; int_completed <= '0';
+                aluOpCode <= x"0"; aluoe <= '0'; aluOpAwe <= '0'; aluOpBwe <= '0';
+                compOpCode <= "000"; compoe <= '0'; compOpAwe <= '0'; compOpBwe <= '0';
+                barDistance <= x"0"; barDir <= '0'; barMode <= '0'; baroe <= '0'; barOpAwe <= '0';
+                regs_oe <= '0'; regs_oe_dest <= x"0"; regs_we <= '0'; regs_we_dest <= x"0";
+                incSP <= '0'; decSP <= '0'; incPC <= '0'; decPC <= '0';
+                instRegwe <= '0';
+                instructionArgument <= x"00000000"; instrArgoe <= '0';
+                addrRegwe <= '0'; mosiRegwe <= '0'; misooe <= '0';
+                wr <= '0'; rd <= '0';
+                addressSel <= '0'; flagRegSel <= x"0"; 
 
 
             --push instruction
@@ -1084,6 +1128,18 @@ begin
                 addrRegwe <= '0'; mosiRegwe <= '0'; misooe <= '0';
                 wr <= '1'; rd <= '0';
                 addressSel <= '0'; flagRegSel <= x"0";
+            when push3 =>
+                int_accept <= '0'; int_completed <= '0';
+                aluOpCode <= x"0"; aluoe <= '0'; aluOpAwe <= '0'; aluOpBwe <= '0';
+                compOpCode <= "000"; compoe <= '0'; compOpAwe <= '0'; compOpBwe <= '0';
+                barDistance <= x"0"; barDir <= '0'; barMode <= '0'; baroe <= '0'; barOpAwe <= '0';
+                regs_oe <= '0'; regs_oe_dest <= x"0"; regs_we <= '0'; regs_we_dest <= x"0";
+                incSP <= '0'; decSP <= '0'; incPC <= '0'; decPC <= '0';
+                instRegwe <= '0';
+                instructionArgument <= x"00000000"; instrArgoe <= '0';
+                addrRegwe <= '0'; mosiRegwe <= '0'; misooe <= '0';
+                wr <= '0'; rd <= '0';
+                addressSel <= '0'; flagRegSel <= x"0"; 
             
             -- call instruction
             when call0 =>
@@ -1224,6 +1280,18 @@ begin
                 addrRegwe <= '0'; mosiRegwe <= '0'; misooe <= '0';
                 wr <= '1'; rd <= '0';
                 addressSel <= '0'; flagRegSel <= x"0";
+            when sti3 =>
+                int_accept <= '0'; int_completed <= '0';
+                aluOpCode <= x"0"; aluoe <= '0'; aluOpAwe <= '0'; aluOpBwe <= '0';
+                compOpCode <= "000"; compoe <= '0'; compOpAwe <= '0'; compOpBwe <= '0';
+                barDistance <= x"0"; barDir <= '0'; barMode <= '0'; baroe <= '0'; barOpAwe <= '0';
+                regs_oe <= '0'; regs_oe_dest <= x"0"; regs_we <= '0'; regs_we_dest <= x"0";
+                incSP <= '0'; decSP <= '0'; incPC <= '0'; decPC <= '0';
+                instRegwe <= '0';
+                instructionArgument <= x"00000000"; instrArgoe <= '0';
+                addrRegwe <= '0'; mosiRegwe <= '0'; misooe <= '0';
+                wr <= '0'; rd <= '0';
+                addressSel <= '0'; flagRegSel <= x"0";             
             
             --st instruction
             when st0 =>
@@ -1262,6 +1330,18 @@ begin
                 addrRegwe <= '0'; mosiRegwe <= '0'; misooe <= '0';
                 wr <= '1'; rd <= '0';
                 addressSel <= '0'; flagRegSel <= x"0";
+            when st3 =>
+                int_accept <= '0'; int_completed <= '0';
+                aluOpCode <= x"0"; aluoe <= '0'; aluOpAwe <= '0'; aluOpBwe <= '0';
+                compOpCode <= "000"; compoe <= '0'; compOpAwe <= '0'; compOpBwe <= '0';
+                barDistance <= x"0"; barDir <= '0'; barMode <= '0'; baroe <= '0'; barOpAwe <= '0';
+                regs_oe <= '0'; regs_oe_dest <= x"0"; regs_we <= '0'; regs_we_dest <= x"0";
+                incSP <= '0'; decSP <= '0'; incPC <= '0'; decPC <= '0';
+                instRegwe <= '0';
+                instructionArgument <= x"00000000"; instrArgoe <= '0';
+                addrRegwe <= '0'; mosiRegwe <= '0'; misooe <= '0';
+                wr <= '0'; rd <= '0';
+                addressSel <= '0'; flagRegSel <= x"0"; 
 
 
 
@@ -1432,6 +1512,18 @@ begin
                 addrRegwe <= '0'; mosiRegwe <= '0'; misooe <= '1';
                 wr <= '0'; rd <= '1';
                 addressSel <= '0'; flagRegSel <= x"0";
+            when ld3 =>
+                int_accept <= '0'; int_completed <= '0';
+                aluOpCode <= x"0"; aluoe <= '0'; aluOpAwe <= '0'; aluOpBwe <= '0';
+                compOpCode <= "000"; compoe <= '0'; compOpAwe <= '0'; compOpBwe <= '0';
+                barDistance <= x"0"; barDir <= '0'; barMode <= '0'; baroe <= '0'; barOpAwe <= '0';
+                regs_oe <= '0'; regs_oe_dest <= x"0"; regs_we <= '0'; regs_we_dest <= x"0";
+                incSP <= '0'; decSP <= '0'; incPC <= '0'; decPC <= '0';
+                instRegwe <= '0';
+                instructionArgument <= x"00000000"; instrArgoe <= '0';
+                addrRegwe <= '0'; mosiRegwe <= '0'; misooe <= '0';
+                wr <= '0'; rd <= '0';
+                addressSel <= '0'; flagRegSel <= x"0"; 
 
             --LDI instruction
             when ldi0 =>
@@ -1470,6 +1562,18 @@ begin
                 addrRegwe <= '0'; mosiRegwe <= '0'; misooe <= '1';
                 wr <= '0'; rd <= '1';
                 addressSel <= '0'; flagRegSel <= x"0";        
+            when ldi3 =>
+                int_accept <= '0'; int_completed <= '0';
+                aluOpCode <= x"0"; aluoe <= '0'; aluOpAwe <= '0'; aluOpBwe <= '0';
+                compOpCode <= "000"; compoe <= '0'; compOpAwe <= '0'; compOpBwe <= '0';
+                barDistance <= x"0"; barDir <= '0'; barMode <= '0'; baroe <= '0'; barOpAwe <= '0';
+                regs_oe <= '0'; regs_oe_dest <= x"0"; regs_we <= '0'; regs_we_dest <= x"0";
+                incSP <= '0'; decSP <= '0'; incPC <= '0'; decPC <= '0';
+                instRegwe <= '0';
+                instructionArgument <= x"00000000"; instrArgoe <= '0';
+                addrRegwe <= '0'; mosiRegwe <= '0'; misooe <= '0';
+                wr <= '0'; rd <= '0';
+                addressSel <= '0'; flagRegSel <= x"0"; 
             
             --BZ instruction
             when bz0 =>

@@ -108,7 +108,7 @@ begin
 		  
     data_miso(31 downto GPIO_WIDE) <= (others => 'Z');
 
-    ack <= '1' when ((WR = '1' and reg_sel /= "0000") or (RD = '1' and reg_sel /= "0000")) else 'Z';
+    ack <= '1' when ((WR = '1' and reg_sel /= "0000") or (RD = '1' and reg_sel /= "0000")) else '0';
 
 end architecture gpio_arch;
 

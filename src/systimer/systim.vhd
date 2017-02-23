@@ -108,7 +108,7 @@ begin
         end if;
     end process;
     
-    ack <= '1' when ((WR = '1' and reg_sel /= "00") or (RD = '1' and reg_sel /= "00")) else 'Z';
+    ack <= '1' when ((WR = '1' and reg_sel /= "00") or (RD = '1' and reg_sel /= "00")) else '0';
     
 end architecture systim_arch;
         
