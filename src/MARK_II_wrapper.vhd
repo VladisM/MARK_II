@@ -32,7 +32,10 @@ entity MARK_II_wrapper is
         sram_we: out std_logic;
         sram_ce: out std_logic;
         sram_ube: out std_logic;
-        sram_lbe: out std_logic
+        sram_lbe: out std_logic;
+        
+        ps2clk: in std_logic; 
+        ps2dat: in std_logic
     );
 end entity MARK_II_wrapper;
 
@@ -59,8 +62,9 @@ architecture MARK_II_wrapper_arch of MARK_II_wrapper is
     attribute chip_pin of sram_we       : signal is "AE10";
     attribute chip_pin of sram_ce       : signal is "AC11";
     attribute chip_pin of sram_ube      : signal is "AF9";
-    attribute chip_pin of sram_lbe      : signal is "AE9";
-    
+    attribute chip_pin of sram_lbe      : signal is "AE9";    
+    attribute chip_pin of ps2dat        : signal is "C24";
+    attribute chip_pin of ps2clk        : signal is "D26";
     
     component MARK_II is
         port(
@@ -97,7 +101,10 @@ architecture MARK_II_wrapper_arch of MARK_II_wrapper is
             sram_address: out unsigned(17 downto 0);
             sram_data: inout unsigned(15 downto 0);
             sram_oe: out std_logic;
-            sram_we: out std_logic
+            sram_we: out std_logic;
+            --keyboard
+            ps2clk: in std_logic; 
+            ps2dat: in std_logic
         );
     end component MARK_II;
 
@@ -119,7 +126,9 @@ begin
             --vga
             vga_hs_i, vga_vs_i, red, green, blue, vga_clk,
             --sram
-            sram_address, sram_data, sram_oe, sram_we
+            sram_address, sram_data, sram_oe, sram_we,
+            --keyboard
+            ps2clk, ps2dat
         );   
     
     

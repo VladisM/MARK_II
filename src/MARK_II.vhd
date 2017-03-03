@@ -37,7 +37,10 @@ entity MARK_II is
         sram_address: out unsigned(17 downto 0);
         sram_data: inout unsigned(15 downto 0);
         sram_oe: out std_logic;
-        sram_we: out std_logic
+        sram_we: out std_logic;
+        --keyboard
+        ps2clk: in std_logic; 
+        ps2dat: in std_logic
     );
 end entity MARK_II;
 
@@ -251,6 +254,24 @@ architecture MARK_II_arch of MARK_II is
         );
     end component ex_sram;
 
+    component ps2 is 
+        generic(
+            BASE_ADDRESS: unsigned(23 downto 0) := x"000000"
+        );
+        port(
+            clk: in std_logic;
+            res: in std_logic;
+            address: in unsigned(23 downto 0);
+            data_miso: out unsigned(31 downto 0);
+            RD: in std_logic;
+            ack: out std_logic;
+            --device
+            ps2clk: in std_logic;
+            ps2dat: in std_logic;
+            intrq: out std_logic
+        );
+    end component ps2;
+
     component pll
         port(
             inclk0: in std_logic:= '0';
@@ -276,7 +297,8 @@ architecture MARK_II_arch of MARK_II is
     
     
     signal rom_ack, ram_ack, int_ack, gpio_ack, systim_ack, vga_ack, exsram_ack,
-           tim0_ack,tim1_ack,tim2_ack,tim3_ack, uart0_ack, uart1_ack, uart2_ack: std_logic;
+           tim0_ack,tim1_ack,tim2_ack,tim3_ack, uart0_ack, uart1_ack, uart2_ack,
+           ps2_ack : std_logic;
     
 begin
 
@@ -347,8 +369,12 @@ begin
         generic map(x"100000")
         port map(clki, res, bus_address, bus_data_mosi, bus_data_miso, bus_WR, bus_RD, exsram_ack, sram_address, sram_data, sram_oe, sram_we);
     
+    ps2keyboard0: ps2
+        generic map(x"000109")
+        port map(clki, res, bus_address, bus_data_miso, bus_RD, ps2_ack, ps2clk, ps2dat, int_req(18));
+            
     bus_ack <= 
         rom_ack or ram_ack or int_ack or gpio_ack or systim_ack or vga_ack or exsram_ack or
-        tim0_ack or tim1_ack or tim2_ack or tim3_ack or uart0_ack or uart1_ack or uart2_ack;
+        tim0_ack or tim1_ack or tim2_ack or tim3_ack or uart0_ack or uart1_ack or uart2_ack or ps2_ack;
     
 end architecture MARK_II_arch;
