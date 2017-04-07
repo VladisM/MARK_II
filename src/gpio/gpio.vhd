@@ -106,7 +106,12 @@ begin
         pin_direction_reg_pb when (RD = '1' and reg_sel = "1000") else
         (others => 'Z');
 		  
-    data_miso(31 downto GPIO_WIDE) <= (others => 'Z');
+    data_miso(31 downto GPIO_WIDE) <= 
+        (others => '0')      when (RD = '1' and reg_sel = "0001") else
+        (others => '0')      when (RD = '1' and reg_sel = "0010") else
+        (others => '0')      when (RD = '1' and reg_sel = "0100") else
+        (others => '0')      when (RD = '1' and reg_sel = "1000") else
+        (others => 'Z');
 
     ack <= '1' when ((WR = '1' and reg_sel /= "0000") or (RD = '1' and reg_sel /= "0000")) else '0';
 

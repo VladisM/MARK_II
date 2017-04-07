@@ -52,9 +52,9 @@ entity vga is
         clk_31M5: in std_logic;
         h_sync: out std_logic;
         v_sync: out std_logic;
-        red: out std_logic;
-        green: out std_logic;
-        blue: out std_logic
+        red: out std_logic_vector(1 downto 0);
+        green: out std_logic_vector(1 downto 0);
+        blue: out std_logic_vector(1 downto 0)
     );
 end entity vga;
 
@@ -72,12 +72,12 @@ architecture vga_arch of vga is
         port(
             clk_a   : in std_logic;
             addr_a  : in unsigned(11 downto 0);
-            data_a  : in unsigned(12 downto 0);
+            data_a  : in unsigned(14 downto 0);
             we_a    : in std_logic;
-            q_a     : out unsigned(12 downto 0);
+            q_a     : out unsigned(14 downto 0);
             clk_b   : in std_logic;
             addr_b  : in unsigned(11 downto 0);
-            q_b     : out unsigned(12 downto 0)
+            q_b     : out unsigned(14 downto 0)
         );
     end component vram;
 
@@ -91,19 +91,19 @@ architecture vga_arch of vga is
     signal cell_row: unsigned(2 downto 0);
     signal cell_row_s: unsigned(2 downto 0);
 
-    signal char_from_vram: unsigned(12 downto 0);
+    signal char_from_vram: unsigned(14 downto 0);
     signal line_from_charrom: unsigned(7 downto 0);
     signal pixel: std_logic;
 
     signal blank_r, blank, h_sync_r, v_sync_r: std_logic;
 
-    signal bg_color, fg_color: unsigned(2 downto 0);
+    signal bg_color, fg_color: unsigned(3 downto 0);
 
     --BUS interface
     signal addr_a  : unsigned(11 downto 0);
-    signal data_a  : unsigned(12 downto 0);
+    signal data_a  : unsigned(14 downto 0);
     signal we_a    : std_logic;
-    signal q_a     : unsigned(12 downto 0);
+    signal q_a     : unsigned(14 downto 0);
     signal cs: std_logic;
 begin
 
@@ -234,11 +234,11 @@ begin
     end process;
 
     process(clk_31M5, char_from_vram) is
-        variable fg_color_v, bg_color_v: unsigned(2 downto 0);
+        variable fg_color_v, bg_color_v: unsigned(3 downto 0);
     begin
         if rising_edge(clk_31M5) then
-            fg_color_v := char_from_vram(9 downto 7);
-            bg_color_v := char_from_vram(12 downto 10);
+            fg_color_v := char_from_vram(10 downto 7);
+            bg_color_v := char_from_vram(14 downto 11);
         end if;
         fg_color <= fg_color_v;
         bg_color <= bg_color_v;
@@ -248,13 +248,19 @@ begin
     begin
         case pixel is
             when '1' =>
-                red   <= fg_color(0) and not(blank);
-                green <= fg_color(1) and not(blank);
-                blue  <= fg_color(2) and not(blank);
+                red(0)   <= fg_color(0) and not(blank);
+                green(0) <= fg_color(0) and not(blank);
+                blue(0)  <= fg_color(0) and not(blank);                
+                red(1)   <= fg_color(1) and not(blank);
+                green(1) <= fg_color(2) and not(blank);
+                blue(1)  <= fg_color(3) and not(blank);
             when '0' =>
-                red   <= bg_color(0) and not(blank);
-                green <= bg_color(1) and not(blank);
-                blue  <= bg_color(2) and not(blank);
+                red(0)   <= bg_color(0) and not(blank);
+                green(0) <= bg_color(0) and not(blank);
+                blue(0)  <= bg_color(0) and not(blank);                
+                red(1)   <= bg_color(1) and not(blank);
+                green(1) <= bg_color(2) and not(blank);
+                blue(1)  <= bg_color(3) and not(blank);
         end case;
     end process;
         
@@ -269,8 +275,8 @@ begin
 
     ack <= '1' when ((WR = '1' and cs = '1') or (RD = '1' and cs = '1')) else '0';
 
-    data_miso <= x"0000" & "000" & q_a when ((RD = '1') and (cs = '1')) else (others => 'Z');
-    data_a <= data_mosi(12 downto 0);
+    data_miso <= x"0000" & "0" & q_a when ((RD = '1') and (cs = '1')) else (others => 'Z');
+    data_a <= data_mosi(14 downto 0);
 
     we_a <= WR and cs;
 

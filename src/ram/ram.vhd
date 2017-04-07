@@ -6,7 +6,8 @@ use ieee.numeric_std.all;
 
 entity ram is
     generic(
-        BASE_ADDRESS: unsigned(23 downto 0) := x"000000"    --base address of the RAM 
+        BASE_ADDRESS: unsigned(23 downto 0) := x"000000";    --base address of the RAM 
+        ADDRESS_WIDE: natural := 8  --default address range  
     );
     port(
         clk: in std_logic;
@@ -22,19 +23,19 @@ end entity ram;
 architecture ram_arch of ram is
     -- Build a 2-D array type for the RAM
     subtype word_t is unsigned(31 downto 0);
-    type memory_t is array(1023 downto 0) of word_t;
+    type memory_t is array((2**ADDRESS_WIDE)-1 downto 0) of word_t;
 
     -- Declare the RAM signal.  
     signal ram : memory_t;
     
     --register for address
-    signal reg_address: unsigned(9 downto 0);
+    signal reg_address: unsigned(ADDRESS_WIDE-1 downto 0);
     
     --select this block, from address decoder
     signal cs: std_logic;
 begin
     process(address) is begin
-        if (address >= BASE_ADDRESS and address <= (BASE_ADDRESS + 1023)) then
+        if (address >= BASE_ADDRESS and address <= (BASE_ADDRESS + (2**ADDRESS_WIDE)-1)) then
             cs <= '1';
         else
             cs <= '0';
@@ -46,7 +47,7 @@ begin
             if(WR = '1' and cs = '1') then
                 ram(to_integer(address)) <= data_mosi;
             end if;
-            reg_address <= address(9 downto 0);
+            reg_address <= address(ADDRESS_WIDE-1 downto 0);
         end if;
     end process;
     

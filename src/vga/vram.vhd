@@ -19,18 +19,18 @@ entity vram is
     port(
         clk_a   : in std_logic;
         addr_a  : in unsigned(11 downto 0);
-        data_a  : in unsigned(12 downto 0);
+        data_a  : in unsigned(14 downto 0);
         we_a    : in std_logic;
-        q_a     : out unsigned(12 downto 0);
+        q_a     : out unsigned(14 downto 0);
         clk_b   : in std_logic;
         addr_b  : in unsigned(11 downto 0);
-        q_b     : out unsigned(12 downto 0)
+        q_b     : out unsigned(14 downto 0)
     );
 end entity vram;
 
 architecture vram_arch of vram is
 
-    subtype word_t is unsigned(12 downto 0);
+    subtype word_t is unsigned(14 downto 0);
     type memory_t is array(2**12-1 downto 0) of word_t;
 
     shared variable ram : memory_t;
