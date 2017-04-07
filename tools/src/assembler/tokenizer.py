@@ -2,8 +2,6 @@
 # -*- coding: utf-8 -*-
 #
 #  tokenizer.py
-#
-#  Copyright 2017 Vladislav <vladislav.mlejnecky@student.upce.cz>
 
 import getopt, os, sys, common
 

@@ -2,8 +2,6 @@
 # -*- coding: utf-8 -*-
 #
 #  assembler.py
-#
-#  Copyright 2017 Vladislav <vladislav.mlejnecky@student.upce.cz>
 
 import version
 

@@ -2,8 +2,6 @@
 # -*- coding: utf-8 -*-
 #
 #  common.py
-#
-#  Copyright 2017 Vladislav <vladislav.mlejnecky@student.upce.cz>
 
 import sys
 

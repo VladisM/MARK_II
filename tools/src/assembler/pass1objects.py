@@ -2,8 +2,6 @@
 # -*- coding: utf-8 -*-
 #
 #  pass1objects.py
-#
-#  Copyright 2017 Vladislav <vladislav.mlejnecky@student.upce.cz>
 
 from common import *
 
