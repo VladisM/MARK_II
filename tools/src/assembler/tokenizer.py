@@ -42,9 +42,15 @@ class instruction(item):
         self.operands = operands
 
 class macro():
-    def __init__(self, name):
+    def __init__(self, name, arguments):
         self.name = name
         self.buff = []
+        self.arguments = arguments
+
+    def invoke(self, parser_buffer, given_args):
+        print "Invoking an macro is not implemented yet! exiting"
+        sys.exit(1)
+        #TODO: Přidat kód k rozvinutí makra, nahrazovat argumenty při rozvíjení
 
 class tokenizer():
 
@@ -185,15 +191,14 @@ class tokenizer():
                     print "Nested macros are not supported!"
                     sys.exit(1)
 
-                if len(line_for_save) > 2:
-                    print "Too many arguments given to #macro"
-                    sys.exit(1)
                 elif len(line_for_save) == 1:
                     print "Missing name for new macro"
                     sys.exit(1)
 
                 macro_name = line_for_save[1]
-                self.new_macro = macro(macro_name)
+                arguments_list  = line_for_save[2:]
+
+                self.new_macro = macro(macro_name, arguments_list)
 
                 self.macro_solving = True
 
@@ -222,8 +227,8 @@ class tokenizer():
                 for macro_item in self.macro_table:
                     if macro_item.name != line_for_save[0].split("$")[1]: continue
                     found = True
-                    for macro_line in macro_item.buff:
-                        self.parser_buffer.append(macro_line)
+                    given_args = line_for_save[1:]
+                    macro_item.invoke(self.parser_buffer, given_args)
 
                 if found == False:
                     print "Macro is not found in macro table!"
