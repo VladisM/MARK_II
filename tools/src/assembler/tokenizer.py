@@ -47,10 +47,36 @@ class macro():
         self.buff = []
         self.arguments = arguments
 
+    def __find_arg_value(self, given_args, key):
+        counter = 0
+        found = False
+        for item in self.arguments:
+            if item == key:
+                found = True
+                break
+            else:
+                counter = counter + 1
+
+        if found == False:
+            counter = 0
+
+        return found, given_args[counter]
+
+
     def invoke(self, parser_buffer, given_args):
-        print "Invoking an macro is not implemented yet! exiting"
-        sys.exit(1)
-        #TODO: Přidat kód k rozvinutí makra, nahrazovat argumenty při rozvíjení
+        for line in self.buff:
+            new_line = []
+            for line_token in line.tokens:
+                found, value = self.__find_arg_value(given_args, line_token)
+
+                if found == True:
+                    new_line.append(value)
+                else:
+                    new_line.append(line_token)
+
+            new_item = item(line.lineNumber, line.fileName, line.lineString, new_line)
+            parser_buffer.append(new_item)
+
 
 class tokenizer():
 
