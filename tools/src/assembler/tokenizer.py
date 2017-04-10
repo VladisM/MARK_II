@@ -64,6 +64,10 @@ class macro():
 
 
     def invoke(self, parser_buffer, given_args):
+        if len(given_args) != self.arguments:
+            print "Error! Invalid arguments count when invoking macro " + self.name
+            sys.exit(1)
+
         for line in self.buff:
             new_line = []
             for line_token in line.tokens:
@@ -214,11 +218,11 @@ class tokenizer():
                 if pre_if_false != 0: continue
 
                 if self.macro_solving == True:
-                    print "Nested macros are not supported!"
+                    print "Error! Nested macros are not supported!"
                     sys.exit(1)
 
                 elif len(line_for_save) == 1:
-                    print "Missing name for new macro"
+                    print "Error! Missing name for new macro!"
                     sys.exit(1)
 
                 macro_name = line_for_save[1]
@@ -235,11 +239,11 @@ class tokenizer():
 
                 for macro_item in self.macro_table:
                     if macro_item.name == self.new_macro.name:
-                        print "Macro '" + self.new_macro.name + "' is already defined. "
+                        print "Error! Macro '" + self.new_macro.name + "' is already defined. "
                         sys.exit(1)
 
                 if self.macro_solving == False:
-                    print "Found #endmacro without opening an macro."
+                    print "Error! Found #endmacro without opening an macro."
                     sys.exit(1)
 
                 self.macro_table.append(self.new_macro)
