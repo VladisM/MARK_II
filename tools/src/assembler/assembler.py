@@ -146,9 +146,12 @@ class assembler():
                         print "At least one operand excepted at: " + token.fileName + "@" + str(token.lineNumber) + "." + str(len(token.operands)) + " given."
                         sys.exit(1)
 
-                    #FIXME Add control for type of operands! They have to be string!
-
                     for label in token.operands:
+
+                        if type(label) != str:
+                            print "Error! Operand of EXPORT pseudo instruction at " + token.fileName + "@" + str(token.lineNumber) + " have to be string but it is not."
+                            sys.exit(1)
+
                         new_spec_symbol = special_symbol(label, token, "export")
                         self.special_symbol_table.append(new_spec_symbol)
 
@@ -158,9 +161,12 @@ class assembler():
                         print "At least one operand excepted at: " + token.fileName + "@" + str(token.lineNumber) + "." + str(len(token.operands)) + " given."
                         sys.exit(1)
 
-                    #FIXME Add control for type of operands! They have to be string!
-
                     for label in token.operands:
+
+                        if type(label) != str:
+                            print "Error! Operand of IMPORT pseudo instruction at " + token.fileName + "@" + str(token.lineNumber) + " have to be string but it is not."
+                            sys.exit(1)
+
                         new_spec_symbol = special_symbol(label, token, "import")
                         self.special_symbol_table.append(new_spec_symbol)
                 else:
