@@ -18,9 +18,6 @@ class special_symbol():
         self.relocation = True
         self.address = ""
 
-    def echo(self):
-        print "Special symbol '" + self.label + "' from " + self.parrent.fileName + "@" +str(self.parrent.lineNumber) + " mode: " + self.mode
-
 class symbol():
 
     def __init__(self, label, address, parrent, relocation):
@@ -28,9 +25,6 @@ class symbol():
         self.address = address
         self.parrent = parrent
         self.relocation = relocation
-
-    def echo(self):
-        print "Symbol '" + self.label + "' equal to " + hex(self.address) + " from " + self.parrent.fileName + "@" +str(self.parrent.lineNumber) + " relocation: " + str(self.relocation)
 
 class p2buffer_item():
 
@@ -47,8 +41,6 @@ class assembler():
         self.mainFileName = fileName
         self.t = None
 
-        self.debug = False
-
         self.symbol_table = []
         self.special_symbol_table = []
 
@@ -57,23 +49,13 @@ class assembler():
 
         self.top_address = 0
 
-    def pass0(self, debug=False):
-
-        self.debug = debug
-
-        if self.debug == True: print "Execute pass0 to tokenize input file."
+    def pass0(self):
 
         #read input file and parse it (also invoke preprocesor)
-        self.t = tokenizer.tokenizer(self.debug)
+        self.t = tokenizer.tokenizer()
         self.t.parse(self.mainFileName)
 
-        if self.debug == True: print "Pass 0 finished."
-
-    def pass1(self, debug=False):
-
-        self.debug = debug
-
-        if self.debug == True: print "Execute pass1 to prepare symbol table and calculate locations."
+    def pass1(self):
 
         location_counter = 0
 
@@ -81,8 +63,6 @@ class assembler():
 
             if token.__name__ == "label":
                 #if there is an label, store it into symbol table, but take care about multiple declaration
-
-                if self.debug == True: print "Label found at: " + token.fileName + "@" + str(token.lineNumber) + ", trying to save it as: " + token.labelName + "@" + hex(location_counter)
 
                 for item in self.symbol_table:
                     if item.label == token.labelName:
@@ -107,8 +87,6 @@ class assembler():
                         sys.exit(1)
 
                     location_counter = address
-
-                    if self.debug == True: print "Found '.ORG' PseudoOp at: " + token.fileName + "@" + str(token.lineNumber) + ", I will set location counter to: " + hex(address)
 
                 elif token.opcode == "CONS":
                     if len(token.operands) != 2:
@@ -135,14 +113,10 @@ class assembler():
                     new_symbol = symbol(name, value, token, False)
                     self.symbol_table.append(new_symbol)
 
-                    if self.debug == True: print "Found '.CONS' PseudoOp  at: " + token.fileName + "@" + str(token.lineNumber) + ", I will add an symbol '" + name + "' with value: " + str(value) + "(" + hex(value) + ")"
-
                 elif token.opcode == "DAT":
                     if len(token.operands) == 0:
                         print "Invalid operands count at: " + token.fileName + "@" + str(token.lineNumber) + ". PseudoOp .DAT expected at least 1 argument, " + str(len(token.operands)) + " given."
                         sys.exit(1)
-
-                    if self.debug == True: print "Found '.DAT' PseudoOp at: " + token.fileName + "@" + str(token.lineNumber) + ", I will fill " + str(len(token.operands)) + " words with PseudoOp arguments."
 
                     for operand in token.operands:
                         if type(operand) != int:
@@ -150,7 +124,6 @@ class assembler():
                             sys.exit(1)
                         new_blob = p1o.blob(token, location_counter, operand)
 
-                        if self.debug == True: print "Added blob with location: " + hex(location_counter) + " and data: " + hex(operand)
                         self.pass1_buffer.append(new_blob)
                         location_counter = location_counter + 1
 
@@ -164,8 +137,6 @@ class assembler():
                     if type(size) != int:
                         print "Invalid operand type at: " + token.fileName + "@" + str(token.lineNumber) + ". PseudoOp .DS expected <type 'int'> as <size> argument, " + str(type(value)) + " given."
                         sys.exit(1)
-
-                    if self.debug == True: print "Found '.DS' PseudoOp at: " + token.fileName + "@" + str(token.lineNumber) + ", I will left following " + str(size) + " words empty."
 
                     location_counter = location_counter + size
 
@@ -210,8 +181,6 @@ class assembler():
                     self.pass1_buffer.append(new_instruction)
                     location_counter = location_counter + 1
 
-                    if self.debug == True: print "Found instruction '"+new_instruction.opcode+"' from " + token.fileName + "@" + str(token.lineNumber) + " place it at address "+ hex(new_instruction.address)
-
                 elif token.opcode == "RETI":
 
                     arguments_count = 0
@@ -224,8 +193,6 @@ class assembler():
                     new_instruction = p1o.RETI(token, location_counter)
                     self.pass1_buffer.append(new_instruction)
                     location_counter = location_counter + 1
-
-                    if self.debug == True: print "Found instruction '"+new_instruction.opcode+"' from " + token.fileName + "@" + str(token.lineNumber) + " place it at address "+ hex(new_instruction.address)
 
                 elif token.opcode == "CALLI":
 
@@ -240,8 +207,6 @@ class assembler():
                     self.pass1_buffer.append(new_instruction)
                     location_counter = location_counter + 1
 
-                    if self.debug == True: print "Found instruction '"+new_instruction.opcode+"' from " + token.fileName + "@" + str(token.lineNumber) + " place it at address "+ hex(new_instruction.address)
-
                 elif token.opcode == "PUSH":
 
                     arguments_count = 1
@@ -254,8 +219,6 @@ class assembler():
                     new_instruction = p1o.PUSH(token, location_counter, token.operands[0])
                     self.pass1_buffer.append(new_instruction)
                     location_counter = location_counter + 1
-
-                    if self.debug == True: print "Found instruction '"+new_instruction.opcode+"' from " + token.fileName + "@" + str(token.lineNumber) + " place it at address "+ hex(new_instruction.address)
 
                 elif token.opcode == "POP":
 
@@ -270,8 +233,6 @@ class assembler():
                     self.pass1_buffer.append(new_instruction)
                     location_counter = location_counter + 1
 
-                    if self.debug == True: print "Found instruction '"+new_instruction.opcode+"' from " + token.fileName + "@" + str(token.lineNumber) + " place it at address "+ hex(new_instruction.address)
-
                 elif token.opcode == "LDI":
 
                     arguments_count = 2
@@ -284,8 +245,6 @@ class assembler():
                     new_instruction = p1o.LDI(token, location_counter, token.operands[0], token.operands[1])
                     self.pass1_buffer.append(new_instruction)
                     location_counter = location_counter + 1
-
-                    if self.debug == True: print "Found instruction '"+new_instruction.opcode+"' from " + token.fileName + "@" + str(token.lineNumber) + " place it at address "+ hex(new_instruction.address)
 
                 elif token.opcode == "STI":
 
@@ -300,8 +259,6 @@ class assembler():
                     self.pass1_buffer.append(new_instruction)
                     location_counter = location_counter + 1
 
-                    if self.debug == True: print "Found instruction '"+new_instruction.opcode+"' from " + token.fileName + "@" + str(token.lineNumber) + " place it at address "+ hex(new_instruction.address)
-
                 elif token.opcode == "BZI":
 
                     arguments_count = 2
@@ -314,8 +271,6 @@ class assembler():
                     new_instruction = p1o.BZI(token, location_counter, token.operands[0], token.operands[1])
                     self.pass1_buffer.append(new_instruction)
                     location_counter = location_counter + 1
-
-                    if self.debug == True: print "Found instruction '"+new_instruction.opcode+"' from " + token.fileName + "@" + str(token.lineNumber) + " place it at address "+ hex(new_instruction.address)
 
                 elif token.opcode == "BNZI":
 
@@ -330,8 +285,6 @@ class assembler():
                     self.pass1_buffer.append(new_instruction)
                     location_counter = location_counter + 1
 
-                    if self.debug == True: print "Found instruction '"+new_instruction.opcode+"' from " + token.fileName + "@" + str(token.lineNumber) + " place it at address "+ hex(new_instruction.address)
-
                 elif token.opcode == "MOV":
 
                     arguments_count = 2
@@ -344,8 +297,6 @@ class assembler():
                     new_instruction = p1o.MOV(token, location_counter, token.operands[0], token.operands[1])
                     self.pass1_buffer.append(new_instruction)
                     location_counter = location_counter + 1
-
-                    if self.debug == True: print "Found instruction '"+new_instruction.opcode+"' from " + token.fileName + "@" + str(token.lineNumber) + " place it at address "+ hex(new_instruction.address)
 
                 elif token.opcode == "CMP":
 
@@ -360,8 +311,6 @@ class assembler():
                     self.pass1_buffer.append(new_instruction)
                     location_counter = location_counter + 1
 
-                    if self.debug == True: print "Found instruction '"+new_instruction.opcode+"' from " + token.fileName + "@" + str(token.lineNumber) + " place it at address "+ hex(new_instruction.address)
-
                 elif token.opcode == "AND":
 
                     arguments_count = 3
@@ -374,8 +323,6 @@ class assembler():
                     new_instruction = p1o.AND(token, location_counter, token.operands[0], token.operands[1], token.operands[2])
                     self.pass1_buffer.append(new_instruction)
                     location_counter = location_counter + 1
-
-                    if self.debug == True: print "Found instruction '"+new_instruction.opcode+"' from " + token.fileName + "@" + str(token.lineNumber) + " place it at address "+ hex(new_instruction.address)
 
                 elif token.opcode == "OR":
 
@@ -390,8 +337,6 @@ class assembler():
                     self.pass1_buffer.append(new_instruction)
                     location_counter = location_counter + 1
 
-                    if self.debug == True: print "Found instruction '"+new_instruction.opcode+"' from " + token.fileName + "@" + str(token.lineNumber) + " place it at address "+ hex(new_instruction.address)
-
                 elif token.opcode == "XOR":
 
                     arguments_count = 3
@@ -404,8 +349,6 @@ class assembler():
                     new_instruction = p1o.XOR(token, location_counter, token.operands[0], token.operands[1], token.operands[2])
                     self.pass1_buffer.append(new_instruction)
                     location_counter = location_counter + 1
-
-                    if self.debug == True: print "Found instruction '"+new_instruction.opcode+"' from " + token.fileName + "@" + str(token.lineNumber) + " place it at address "+ hex(new_instruction.address)
 
                 elif token.opcode == "ADD":
 
@@ -420,8 +363,6 @@ class assembler():
                     self.pass1_buffer.append(new_instruction)
                     location_counter = location_counter + 1
 
-                    if self.debug == True: print "Found instruction '"+new_instruction.opcode+"' from " + token.fileName + "@" + str(token.lineNumber) + " place it at address "+ hex(new_instruction.address)
-
                 elif token.opcode == "SUB":
 
                     arguments_count = 3
@@ -434,8 +375,6 @@ class assembler():
                     new_instruction = p1o.SUB(token, location_counter, token.operands[0], token.operands[1], token.operands[2])
                     self.pass1_buffer.append(new_instruction)
                     location_counter = location_counter + 1
-
-                    if self.debug == True: print "Found instruction '"+new_instruction.opcode+"' from " + token.fileName + "@" + str(token.lineNumber) + " place it at address "+ hex(new_instruction.address)
 
                 elif token.opcode == "INC":
 
@@ -450,8 +389,6 @@ class assembler():
                     self.pass1_buffer.append(new_instruction)
                     location_counter = location_counter + 1
 
-                    if self.debug == True: print "Found instruction '"+new_instruction.opcode+"' from " + token.fileName + "@" + str(token.lineNumber) + " place it at address "+ hex(new_instruction.address)
-
                 elif token.opcode == "DEC":
 
                     arguments_count = 2
@@ -464,8 +401,6 @@ class assembler():
                     new_instruction = p1o.DEC(token, location_counter, token.operands[0], token.operands[1])
                     self.pass1_buffer.append(new_instruction)
                     location_counter = location_counter + 1
-
-                    if self.debug == True: print "Found instruction '"+new_instruction.opcode+"' from " + token.fileName + "@" + str(token.lineNumber) + " place it at address "+ hex(new_instruction.address)
 
                 elif token.opcode == "LSL":
 
@@ -480,8 +415,6 @@ class assembler():
                     self.pass1_buffer.append(new_instruction)
                     location_counter = location_counter + 1
 
-                    if self.debug == True: print "Found instruction '"+new_instruction.opcode+"' from " + token.fileName + "@" + str(token.lineNumber) + " place it at address "+ hex(new_instruction.address)
-
                 elif token.opcode == "LSR":
 
                     arguments_count = 3
@@ -494,8 +427,6 @@ class assembler():
                     new_instruction = p1o.LSR(token, location_counter, token.operands[0], token.operands[1], token.operands[2])
                     self.pass1_buffer.append(new_instruction)
                     location_counter = location_counter + 1
-
-                    if self.debug == True: print "Found instruction '"+new_instruction.opcode+"' from " + token.fileName + "@" + str(token.lineNumber) + " place it at address "+ hex(new_instruction.address)
 
                 elif token.opcode == "ROL":
 
@@ -510,8 +441,6 @@ class assembler():
                     self.pass1_buffer.append(new_instruction)
                     location_counter = location_counter + 1
 
-                    if self.debug == True: print "Found instruction '"+new_instruction.opcode+"' from " + token.fileName + "@" + str(token.lineNumber) + " place it at address "+ hex(new_instruction.address)
-
                 elif token.opcode == "ROR":
 
                     arguments_count = 3
@@ -524,8 +453,6 @@ class assembler():
                     new_instruction = p1o.ROR(token, location_counter, token.operands[0], token.operands[1], token.operands[2])
                     self.pass1_buffer.append(new_instruction)
                     location_counter = location_counter + 1
-
-                    if self.debug == True: print "Found instruction '"+new_instruction.opcode+"' from " + token.fileName + "@" + str(token.lineNumber) + " place it at address "+ hex(new_instruction.address)
 
                 elif token.opcode == "MVIL":
 
@@ -540,8 +467,6 @@ class assembler():
                     self.pass1_buffer.append(new_instruction)
                     location_counter = location_counter + 1
 
-                    if self.debug == True: print "Found instruction '"+new_instruction.opcode+"' from " + token.fileName + "@" + str(token.lineNumber) + " place it at address "+ hex(new_instruction.address)
-
                 elif token.opcode == "MVIH":
 
                     arguments_count = 2
@@ -554,8 +479,6 @@ class assembler():
                     new_instruction = p1o.MVIH(token, location_counter, token.operands[0], token.operands[1])
                     self.pass1_buffer.append(new_instruction)
                     location_counter = location_counter + 1
-
-                    if self.debug == True: print "Found instruction '"+new_instruction.opcode+"' from " + token.fileName + "@" + str(token.lineNumber) + " place it at address "+ hex(new_instruction.address)
 
                 elif token.opcode == "CALL":
 
@@ -570,8 +493,6 @@ class assembler():
                     self.pass1_buffer.append(new_instruction)
                     location_counter = location_counter + 1
 
-                    if self.debug == True: print "Found instruction '"+new_instruction.opcode+"' from " + token.fileName + "@" + str(token.lineNumber) + " place it at address "+ hex(new_instruction.address)
-
                 elif token.opcode == "LD":
 
                     arguments_count = 2
@@ -584,8 +505,6 @@ class assembler():
                     new_instruction = p1o.LD(token, location_counter, token.operands[0], token.operands[1])
                     self.pass1_buffer.append(new_instruction)
                     location_counter = location_counter + 1
-
-                    if self.debug == True: print "Found instruction '"+new_instruction.opcode+"' from " + token.fileName + "@" + str(token.lineNumber) + " place it at address "+ hex(new_instruction.address)
 
                 elif token.opcode == "ST":
 
@@ -600,8 +519,6 @@ class assembler():
                     self.pass1_buffer.append(new_instruction)
                     location_counter = location_counter + 1
 
-                    if self.debug == True: print "Found instruction '"+new_instruction.opcode+"' from " + token.fileName + "@" + str(token.lineNumber) + " place it at address "+ hex(new_instruction.address)
-
                 elif token.opcode == "BZ":
 
                     arguments_count = 2
@@ -614,8 +531,6 @@ class assembler():
                     new_instruction = p1o.BZ(token, location_counter, token.operands[0], token.operands[1])
                     self.pass1_buffer.append(new_instruction)
                     location_counter = location_counter + 1
-
-                    if self.debug == True: print "Found instruction '"+new_instruction.opcode+"' from " + token.fileName + "@" + str(token.lineNumber) + " place it at address "+ hex(new_instruction.address)
 
                 elif token.opcode == "BNZ":
 
@@ -630,8 +545,6 @@ class assembler():
                     self.pass1_buffer.append(new_instruction)
                     location_counter = location_counter + 1
 
-                    if self.debug == True: print "Found instruction '"+new_instruction.opcode+"' from " + token.fileName + "@" + str(token.lineNumber) + " place it at address "+ hex(new_instruction.address)
-
                 else:
                     print "Error! Found unknown instruction '" + token.opcode + "' at: '" + token.fileName + "@" + str(token.lineNumber)
                     sys.exit(1);
@@ -640,22 +553,7 @@ class assembler():
                 print "Error! Found unexpected object in tokenized buffer. Maybe broken tokenizer?"
                 sys.exit(1)
 
-        if self.debug == True:
-            print "Printing out pass1 buffer."
-            for item in self.pass1_buffer:
-                item.echo()
-            print "Printing out symbol table"
-            for item in self.symbol_table:
-                item.echo()
-            print "Printing out special symbol table"
-            for item in self.special_symbol_table:
-                item.echo()
-            print "Pass 1 finished."
-
-    def pass2(self, debug=False):
-        self.debug = debug
-
-        if self.debug == True: print "Pass 2 started."
+    def pass2(self):
 
         import_label_counter = 0
 
@@ -677,30 +575,17 @@ class assembler():
             if address > self.top_address:
                 self.top_address = address
 
-            if self.debug == True: print "I have new item from pass1 buffer with address: " + hex(address) + ", I will try found an place in pass2 buffer for it."
-
             for mem_item in self.pass2_buffer:
                 if mem_item.address == address:
                     print "Instruction '" + mem_item.parrent.opcode + "' from " + mem_item.parrent.parrent.fileName + "@" + str(mem_item.parrent.parrent.lineNumber) + " conflicts with instruction '" + item.opcode + "' from " + item.parrent.fileName + "@" + str(item.parrent.lineNumber)
                     sys.exit(1)
 
-            if self.debug == True: print "A have an empty place for item, I will try assemble it."
-
             value = item.translate(self.symbol_table, self.special_symbol_table)
             relocation = item.relocation
             special = item.special
 
-            if self.debug == True: print "Assembled into: " + hex(value) + ", I will place this into pass2 buffer at address: "+ hex(address)
-
             new_item = p2buffer_item(address, value, item, relocation, special)
             self.pass2_buffer.append(new_item)
-
-        if self.debug == True:
-            print "I will print out pass2 buffer."
-            for p2b_item in self.pass2_buffer:
-                print hex(p2b_item.address) + ":" + hex(p2b_item.value) + ":" + str(p2b_item.relocation) + ":" + str(p2b_item.special)
-
-            print "Pass 2 finished."
 
 class file_gen():
 
@@ -769,8 +654,6 @@ Example usage: assembler.py main.asm
 Arguments:
     -h --help           Print this help.
     -o --output         Output object file name.
-    -d                  Run in debug mode, tokenizer run in normal mode.
-    -D                  Run all, including tokenizer, in debug mode.
        --skip-linker    Generate relocatable loader module instead object file.
                         Can be used for skipping linker if linking is not
                         needed.
@@ -780,7 +663,7 @@ Arguments:
 def get_args():
 
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "hdDo:", ["help", "output=", "skip-linker", "version"])
+        opts, args = getopt.getopt(sys.argv[1:], "ho:", ["help", "output=", "skip-linker", "version"])
     except getopt.GetoptError as err:
         print str(err)
         usage()
@@ -788,8 +671,6 @@ def get_args():
 
     input_file = None
     output_file = None
-    debug = False
-    debug_pass0 = False
     skip_linker = False
 
     for option, value in opts:
@@ -798,11 +679,6 @@ def get_args():
             sys.exit()
         elif option in ("-o", "--output"):
             output_file = value
-        elif option in ("-d"):
-            debug = True
-        elif option in ("-D"):
-            debug_pass0 = True
-            debug = True
         elif option == "--skip-linker":
             skip_linker = True
         elif option == "--version":
@@ -828,17 +704,17 @@ def get_args():
         else:
             output_file = (input_file.split('.')[0]).split('/')[-1] + ".ldm"
 
-    return input_file, output_file, debug, debug_pass0, skip_linker
+    return input_file, output_file, skip_linker
 
 def main():
 
-    input_file, output_file, debug, debug_pass0, skip_linker = get_args()
+    input_file, output_file, skip_linker = get_args()
 
     a = assembler(input_file)
 
-    a.pass0(debug_pass0)
-    a.pass1(debug)
-    a.pass2(debug)
+    a.pass0()
+    a.pass1()
+    a.pass2()
 
     fg = file_gen()
 

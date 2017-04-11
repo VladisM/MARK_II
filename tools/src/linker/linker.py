@@ -9,24 +9,18 @@ import sys, getopt
 
 class symbol():
     #symbol - not so much usefull at all
-
     def __init__(self, name, value, mode):
         self.name = name
         self.value = value
         self.mode = mode
 
-    def echo(self):
-        print "Symbol '" + self.name + "' of type: '" + self.mode + "' with value: " + str(self.value)
-
 class symbol_export(symbol):
     #one special symbol of type export
-
     def __init__(self, name, value):
         symbol.__init__(self, name, value, "export")
 
 class symbol_import(symbol):
     #one special symbol of type import
-
     def __init__(self, name, id):
         symbol.__init__(self, name, None, "import")
         self.id = id
@@ -37,14 +31,6 @@ class symbol_table():
     def __init__(self):
         self.exports = []
         self.imports = []
-
-    def echo(self):
-        print "Export symbols: "
-        for item in self.exports:
-            item.echo()
-        print "Import symbols: "
-        for item in self.imports:
-            item.echo()
 
     def append(self, line):
         line = line.split(':')
@@ -124,9 +110,6 @@ class instruction():
 
         self.value = (instruction_type << 28) + instruction_register + value
 
-    def echo(self):
-        print "Instruction at " + hex(self.address) + " instruction word: " + hex(self.value) + " relocation: " + str(self.relocation) + " special: " + str(self.special)
-
 class instruction_table():
     #table of all instruction in object file
 
@@ -137,11 +120,6 @@ class instruction_table():
         line = line.split(':')
         new_instruction = instruction(line[0], line[1], line[2], line[3])
         self.instructions.append(new_instruction)
-
-    def echo(self):
-        print "Instruction table: "
-        for item in self.instructions:
-            item.echo()
 
     def relocate(self, offset):
         for item in self.instructions:
@@ -197,11 +175,6 @@ class object_file():
                     state = "size"
                     continue
 
-    def echo(self):
-        print "Object file '" + self.filename + "' size: " + str(self.size)
-        self.symbols.echo()
-        self.instructions.echo()
-
 class object_buffer():
     #here are all object files stored
 
@@ -211,11 +184,6 @@ class object_buffer():
             new_object_file = object_file(name)
             new_object_file.fill()
             self.files.append(new_object_file)
-
-    def echo(self):
-        for object_file in self.files:
-            object_file.echo()
-            print "End of file " + object_file.filename
 
     def __relocate_instructions(self):
         offset = 0
@@ -337,7 +305,6 @@ def get_args():
             usage()
             sys.exit()
         elif option == "-o":
-            print value
             output_file = value
         elif option == "--version":
             print "Linker for MARK-II CPU " + version.version

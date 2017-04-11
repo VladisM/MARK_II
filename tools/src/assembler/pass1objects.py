@@ -19,9 +19,6 @@ class blob(item):
         self.relocation = False
         self.special = False
 
-    def echo(self):
-        print "Binary blob at address " + hex(self.address) + " cantains data: " + hex(self.data)
-
     def translate(self, symbol_table, special_symbol_table):
         result = trySolveImmediateOperand(self, symbol_table, special_symbol_table, self.data)
         return checkSizeOfImmediate(self, 32, result[0])
@@ -34,8 +31,34 @@ class instruction(item):
         self.relocation = False
         self.special = False
 
-    def echo(self):
-        print "Instruction '" + self.opcode + "' at address: "+ hex(self.address) + " from : " + self.parrent.fileName + "@" + str(self.parrent.lineNumber) + " with relocation: " + str(self.relocation) + " special: " + str(self.special)
+    def decodeRegName(self, reg_name):
+        reg = -1
+
+        if   reg_name == "R0": reg = 0
+        elif reg_name == "R1": reg = 1
+        elif reg_name == "R2": reg = 2
+        elif reg_name == "R3": reg = 3
+        elif reg_name == "R4": reg = 4
+        elif reg_name == "R5": reg = 5
+        elif reg_name == "R6": reg = 6
+        elif reg_name == "R7": reg = 7
+        elif reg_name == "R8": reg = 8
+        elif reg_name == "R9": reg = 9
+        elif reg_name == "R10": reg = 10
+        elif reg_name == "R11": reg = 11
+        elif reg_name == "R12": reg = 12
+        elif reg_name == "R13": reg = 13
+        elif reg_name == "R14": reg = 14
+        elif reg_name == "R15": reg = 15
+        elif reg_name == "SP": reg = 14
+        elif reg_name == "PC": reg = 15
+        else: reg = -1
+
+        if reg == -1:
+            print "Error! Instruction '" + selfopcode + "' at " + self.parrent.fileName + "@" + str(self.parrent.lineNumber) + ". Invalid name of register."
+            sys.exit(1)
+        else:
+            return reg
 
 class RET(instruction):
 
@@ -61,7 +84,7 @@ class CALLI(instruction):
         self.register_a = register
 
     def translate(self, symbol_table, special_symbol_table):
-        reg_a = decodeRegName(self, self.register_a)
+        reg_a = self.decodeRegName(self.register_a)
         return 0x00001000 + reg_a
 
 
@@ -72,7 +95,7 @@ class PUSH(instruction):
         self.register_a = register
 
     def translate(self, symbol_table, special_symbol_table):
-        reg_a = decodeRegName(self, self.register_a)
+        reg_a = self.decodeRegName(self.register_a)
         return 0x00001010 + reg_a
 
 class POP(instruction):
@@ -82,7 +105,7 @@ class POP(instruction):
         self.register_a = register
 
     def translate(self, symbol_table, special_symbol_table):
-        reg_a = decodeRegName(self, self.register_a)
+        reg_a = self.decodeRegName(self.register_a)
         return 0x00001020 + reg_a
 
 
@@ -94,8 +117,8 @@ class LDI(instruction):
         self.register_b = register_1
 
     def translate(self, symbol_table, special_symbol_table):
-        reg_a = decodeRegName(self, self.register_a)
-        reg_b = decodeRegName(self, self.register_b)
+        reg_a = self.decodeRegName(self.register_a)
+        reg_b = self.decodeRegName(self.register_b)
         return 0x00010000 + (reg_a << 4) + reg_b
 
 class STI(instruction):
@@ -106,8 +129,8 @@ class STI(instruction):
         self.register_b = register_2
 
     def translate(self, symbol_table, special_symbol_table):
-        reg_a = decodeRegName(self, self.register_a)
-        reg_b = decodeRegName(self, self.register_b)
+        reg_a = self.decodeRegName(self.register_a)
+        reg_b = self.decodeRegName(self.register_b)
         return 0x00010100 + (reg_a << 4) + reg_b
 
 
@@ -119,8 +142,8 @@ class BZI(instruction):
         self.register_b = register_2
 
     def translate(self, symbol_table, special_symbol_table):
-        reg_a = decodeRegName(self, self.register_a)
-        reg_b = decodeRegName(self, self.register_b)
+        reg_a = self.decodeRegName(self.register_a)
+        reg_b = self.decodeRegName(self.register_b)
         return 0x00010200 + (reg_a << 4) + reg_b
 
 class BNZI(instruction):
@@ -131,8 +154,8 @@ class BNZI(instruction):
         self.register_b = register_2
 
     def translate(self, symbol_table, special_symbol_table):
-        reg_a = decodeRegName(self, self.register_a)
-        reg_b = decodeRegName(self, self.register_b)
+        reg_a = self.decodeRegName(self.register_a)
+        reg_b = self.decodeRegName(self.register_b)
         return 0x00010300 + (reg_a << 4) + reg_b
 
 class MOV(instruction):
@@ -143,8 +166,8 @@ class MOV(instruction):
         self.register_b = register_1
 
     def translate(self, symbol_table, special_symbol_table):
-        reg_a = decodeRegName(self, self.register_a)
-        reg_b = decodeRegName(self, self.register_b)
+        reg_a = self.decodeRegName(self.register_a)
+        reg_b = self.decodeRegName(self.register_b)
         return 0x00010400 + (reg_a << 4) + reg_b
 
 class CMP(instruction):
@@ -156,11 +179,28 @@ class CMP(instruction):
         self.register_c = register_2
         self.comparison = comparison
 
+    def __decodeComparison(self):
+        code = -1
+
+        if   self.comparison == "EQ"  : code = 0;
+        elif self.comparison == "NEQ" : code = 1;
+        elif self.comparison == "L"   : code = 2;
+        elif self.comparison == "LU"  : code = 3;
+        elif self.comparison == "GE"  : code = 4;
+        elif self.comparison == "GEU" : code = 5;
+        else: code = -1
+
+        if code == -1:
+            print "Error! Instruction '" + self.opcode + "' at " + self.parrent.fileName + "@" + str(self.parrent.lineNumber) + ". Invalid comparison name."
+            sys.exit(1)
+        else:
+            return code
+
     def translate(self, symbol_table, special_symbol_table):
-        reg_a = decodeRegName(self, self.register_a)
-        reg_b = decodeRegName(self, self.register_b)
-        reg_c = decodeRegName(self, self.register_c)
-        comp = decodeComparison(self, self.comparison)
+        reg_a = self.decodeRegName(self.register_a)
+        reg_b = self.decodeRegName(self.register_b)
+        reg_c = self.decodeRegName(self.register_c)
+        comp = self.__decodeComparison()
         return 0x01000000 + (comp << 12) + (reg_a << 8) + (reg_b << 4) + reg_c
 
 class AND(instruction):
@@ -172,9 +212,9 @@ class AND(instruction):
         self.register_c = register_2
 
     def translate(self, symbol_table, special_symbol_table):
-        reg_a = decodeRegName(self, self.register_a)
-        reg_b = decodeRegName(self, self.register_b)
-        reg_c = decodeRegName(self, self.register_c)
+        reg_a = self.decodeRegName(self.register_a)
+        reg_b = self.decodeRegName(self.register_b)
+        reg_c = self.decodeRegName(self.register_c)
         return 0x01010000 + (reg_a << 8) + (reg_b << 4) + reg_c
 
 class OR(instruction):
@@ -186,9 +226,9 @@ class OR(instruction):
         self.register_c = register_2
 
     def translate(self, symbol_table, special_symbol_table):
-        reg_a = decodeRegName(self, self.register_a)
-        reg_b = decodeRegName(self, self.register_b)
-        reg_c = decodeRegName(self, self.register_c)
+        reg_a = self.decodeRegName(self.register_a)
+        reg_b = self.decodeRegName(self.register_b)
+        reg_c = self.decodeRegName(self.register_c)
         return 0x01020000 + (reg_a << 8) + (reg_b << 4) + reg_c
 
 class XOR(instruction):
@@ -200,9 +240,9 @@ class XOR(instruction):
         self.register_c = register_2
 
     def translate(self, symbol_table, special_symbol_table):
-        reg_a = decodeRegName(self, self.register_a)
-        reg_b = decodeRegName(self, self.register_b)
-        reg_c = decodeRegName(self, self.register_c)
+        reg_a = self.decodeRegName(self.register_a)
+        reg_b = self.decodeRegName(self.register_b)
+        reg_c = self.decodeRegName(self.register_c)
         return 0x01030000 + (reg_a << 8) + (reg_b << 4) + reg_c
 
 class ADD(instruction):
@@ -214,9 +254,9 @@ class ADD(instruction):
         self.register_c = register_2
 
     def translate(self, symbol_table, special_symbol_table):
-        reg_a = decodeRegName(self, self.register_a)
-        reg_b = decodeRegName(self, self.register_b)
-        reg_c = decodeRegName(self, self.register_c)
+        reg_a = self.decodeRegName(self.register_a)
+        reg_b = self.decodeRegName(self.register_b)
+        reg_c = self.decodeRegName(self.register_c)
         return 0x01040000 + (reg_a << 8) + (reg_b << 4) + reg_c
 
 class SUB(instruction):
@@ -228,9 +268,9 @@ class SUB(instruction):
         self.register_c = register_2
 
     def translate(self, symbol_table, special_symbol_table):
-        reg_a = decodeRegName(self, self.register_a)
-        reg_b = decodeRegName(self, self.register_b)
-        reg_c = decodeRegName(self, self.register_c)
+        reg_a = self.decodeRegName(self.register_a)
+        reg_b = self.decodeRegName(self.register_b)
+        reg_c = self.decodeRegName(self.register_c)
         return 0x01050000 + (reg_a << 8) + (reg_b << 4) + reg_c
 
 class INC(instruction):
@@ -241,8 +281,8 @@ class INC(instruction):
         self.register_b = register_1
 
     def translate(self, symbol_table, special_symbol_table):
-        reg_a = decodeRegName(self, self.register_a)
-        reg_b = decodeRegName(self, self.register_b)
+        reg_a = self.decodeRegName(self.register_a)
+        reg_b = self.decodeRegName(self.register_b)
         return 0x01060000 + (reg_a << 8) + (reg_b << 4)
 
 class DEC(instruction):
@@ -253,8 +293,8 @@ class DEC(instruction):
         self.register_b = register_1
 
     def translate(self, symbol_table, special_symbol_table):
-        reg_a = decodeRegName(self, self.register_a)
-        reg_b = decodeRegName(self, self.register_b)
+        reg_a = self.decodeRegName(self.register_a)
+        reg_b = self.decodeRegName(self.register_b)
         return 0x01070000 + (reg_a << 8) + (reg_b << 4)
 
 class LSL(instruction):
@@ -266,8 +306,8 @@ class LSL(instruction):
         self.register_b = register_1
 
     def translate(self, symbol_table, special_symbol_table):
-        reg_a = decodeRegName(self, self.register_a)
-        reg_b = decodeRegName(self, self.register_b)
+        reg_a = self.decodeRegName(self.register_a)
+        reg_b = self.decodeRegName(self.register_b)
         result = trySolveImmediateOperand(self, symbol_table, special_symbol_table, self.distance)
         dist = checkSizeOfImmediate(self, 4, result[0])
         return 0x01080000 + (dist << 12) + (reg_a << 8) + (reg_b << 4)
@@ -281,8 +321,8 @@ class LSR(instruction):
         self.register_b = register_1
 
     def translate(self, symbol_table, special_symbol_table):
-        reg_a = decodeRegName(self, self.register_a)
-        reg_b = decodeRegName(self, self.register_b)
+        reg_a = self.decodeRegName(self.register_a)
+        reg_b = self.decodeRegName(self.register_b)
         result = trySolveImmediateOperand(self, symbol_table, special_symbol_table, self.distance)
         dist = checkSizeOfImmediate(self, 4, result[0])
         return 0x01090000 + (dist << 12) + (reg_a << 8) + (reg_b << 4)
@@ -296,8 +336,8 @@ class ROL(instruction):
         self.register_b = register_1
 
     def translate(self, symbol_table, special_symbol_table):
-        reg_a = decodeRegName(self, self.register_a)
-        reg_b = decodeRegName(self, self.register_b)
+        reg_a = self.decodeRegName(self.register_a)
+        reg_b = self.decodeRegName(self.register_b)
         result = trySolveImmediateOperand(self, symbol_table, special_symbol_table, self.distance)
         dist = checkSizeOfImmediate(self, 4, result[0])
         return 0x010A0000 + (dist << 12) + (reg_a << 8) + (reg_b << 4)
@@ -312,8 +352,8 @@ class ROR(instruction):
         self.register_b = register_1
 
     def translate(self, symbol_table, special_symbol_table):
-        reg_a = decodeRegName(self, self.register_a)
-        reg_b = decodeRegName(self, self.register_b)
+        reg_a = self.decodeRegName(self.register_a)
+        reg_b = self.decodeRegName(self.register_b)
         result = trySolveImmediateOperand(self, symbol_table, special_symbol_table, self.distance)
         dist = checkSizeOfImmediate(self, 4, result[0])
         return 0x010B0000 + (dist << 12) + (reg_a << 8) + (reg_b << 4)
@@ -327,7 +367,7 @@ class MVIL(instruction):
         self.value = value
 
     def translate(self, symbol_table, special_symbol_table):
-        reg_a = decodeRegName(self, self.register_a)
+        reg_a = self.decodeRegName(self.register_a)
         value = checkSizeOfImmediate(self, 16, trySolveImmediateOperand(self, symbol_table, special_symbol_table, self.value)[0])
         return 0x10000000 + (reg_a << 16) + value
 
@@ -339,7 +379,7 @@ class MVIH(instruction):
         self.value = value
 
     def translate(self, symbol_table, special_symbol_table):
-        reg_a = decodeRegName(self, self.register_a)
+        reg_a = self.decodeRegName(self.register_a)
         value = checkSizeOfImmediate(self, 16, trySolveImmediateOperand(self, symbol_table, special_symbol_table, self.value)[0])
         return 0x10100000 + (reg_a << 16) + value
 
@@ -365,7 +405,7 @@ class LD(instruction):
         self.ld_address = ld_address
 
     def translate(self, symbol_table, special_symbol_table):
-        reg_a = decodeRegName(self, self.register_a)
+        reg_a = self.decodeRegName(self.register_a)
         result = trySolveImmediateOperand(self, symbol_table, special_symbol_table, self.ld_address)
         self.relocation = result[1]
         ld_address = checkSizeOfImmediate(self, 24, result[0])
@@ -380,7 +420,7 @@ class ST(instruction):
         self.st_address = st_address
 
     def translate(self, symbol_table, special_symbol_table):
-        reg_a = decodeRegName(self, self.register_a)
+        reg_a = self.decodeRegName(self.register_a)
         result = trySolveImmediateOperand(self, symbol_table, special_symbol_table, self.st_address)
         self.relocation = result[1]
         st_address = checkSizeOfImmediate(self, 24, result[0])
@@ -395,7 +435,7 @@ class BZ(instruction):
         self.br_address = br_address
 
     def translate(self, symbol_table, special_symbol_table):
-        reg_a = decodeRegName(self, self.register_a)
+        reg_a = self.decodeRegName(self.register_a)
         result = trySolveImmediateOperand(self, symbol_table, special_symbol_table, self.br_address)
         self.relocation = result[1]
         br_address = checkSizeOfImmediate(self, 24, result[0])
@@ -410,7 +450,7 @@ class BNZ(instruction):
         self.br_address = br_address
 
     def translate(self, symbol_table, special_symbol_table):
-        reg_a = decodeRegName(self, self.register_a)
+        reg_a = self.decodeRegName(self.register_a)
         result = trySolveImmediateOperand(self, symbol_table, special_symbol_table, self.br_address)
         self.relocation = result[1]
         br_address = checkSizeOfImmediate(self, 24, result[0])

@@ -42,12 +42,15 @@ class instruction(item):
         self.operands = operands
 
 class macro():
+
+    instance = 0
+
     def __init__(self, name, arguments):
         self.name = name
         self.buff = []
         self.arguments = arguments
 
-    def __find_arg_value(self, given_args, key):
+    def find_arg_value(self, given_args, key):
         counter = 0
         found = False
         for item in self.arguments:
@@ -62,19 +65,49 @@ class macro():
 
         return found, given_args[counter]
 
+    def create_local_symbol_table(self):
+        self.temp_symbol_table = []
 
-    def invoke(self, parser_buffer, given_args):
-        if len(given_args) != self.arguments:
-            print "Error! Invalid arguments count when invoking macro " + self.name
+        #try to find all labels in macro
+        for line in self.buff:
+            if line.tokens[0].find(":") == len(line.tokens[0]) - 1:
+                original_value = (line.tokens[0].split(":"))[0]
+                new_value = original_value + "_" + str(self.instance)
+                self.temp_symbol_table.append([original_value, new_value])
+
+    def invoke(self, parser_buffer, given_args, invoke_line, invoke_file):
+
+        self.instance = self.instance + 1
+
+        if len(given_args) != len(self.arguments):
+            print "Error! Invalid arguments count when invoking macro " + self.name + " at " + invoke_file + "@" + str(invoke_line)
             sys.exit(1)
 
         for line in self.buff:
-            new_line = []
-            for line_token in line.tokens:
-                found, value = self.__find_arg_value(given_args, line_token)
 
-                if found == True:
-                    new_line.append(value)
+            new_line = []
+
+            if line.tokens[0].find(":") == len(line.tokens[0]) - 1:
+                for temp_symbol in self.temp_symbol_table:
+                    if (line.tokens[0].split(":"))[0] == temp_symbol[0]:
+                        new_line.append(temp_symbol[1] + ":")
+
+            for line_token in line.tokens:
+                found_arg, value_arg = self.find_arg_value(given_args, line_token)
+
+                found_label = False
+                value_label = None
+
+                for temp_symbol in self.temp_symbol_table:
+                    if line_token == temp_symbol[0]:
+                        found_label = True
+                        value_label = temp_symbol[1]
+                        break
+
+                if found_arg == True:
+                    new_line.append(value_arg)
+                elif found_label == True:
+                    new_line.append(value_label)
                 else:
                     new_line.append(line_token)
 
@@ -84,8 +117,7 @@ class macro():
 
 class tokenizer():
 
-    def __init__(self, debug):
-        self.debug = debug
+    def __init__(self):
         self.parser_buffer = []
         self.preprocesor_symbols = []
         self.macro_table = []
@@ -101,7 +133,7 @@ class tokenizer():
         try:
             f = file(p, "r")
         except:
-            print("Can't open input file " + p + " for reading.")
+            print("Error! Can't open input file " + p + " for reading.")
             sys.exit(1)
 
         #get some info lines number are stored in buffer, also file name
@@ -146,16 +178,14 @@ class tokenizer():
 
                 if pre_if_false != 0: continue #this "if" is for conditional assembly, it can be found later too
 
-                if self.macro_solving == True:
-                    print "Labels in macros are not supported!"
-                    sys.exit(1)
-
                 #create new item object and store it into buffer
+
                 new_item = item(line_counter, file_name, lineString, [line_for_save[0]])
 
-                #accept labels only outside of macros
                 if self.macro_solving == False:
                     self.parser_buffer.append(new_item)
+                else:
+                    self.new_macro.buff.append(new_item)
 
                 #rest of line store back to line_for_save for additional processing
                 new_line = []
@@ -170,41 +200,35 @@ class tokenizer():
             if line_for_save[0] == "#define":
                 if pre_if_false == 0:
                     self.preprocesor_symbols.append(line_for_save[1])
-                    continue
 
             #conditional assembly if symbol is defined, following code will be assembled
             elif line_for_save[0] == "#ifdef":
-                if pre_if_false == 0:
-                    condition = line_for_save[1]
 
-                    found = False
-                    for symbol in self.preprocesor_symbols:
-                        if symbol == condition:
-                            found = True
-                            continue
-                    if found == False:
-                        pre_if_false = 1
+                condition = line_for_save[1]
 
-                    continue
+                found = False
+                for symbol in self.preprocesor_symbols:
+                    if symbol == condition:
+                        found = True
+                        continue
+                if found == False:
+                    pre_if_false = pre_if_false + 1
 
             elif line_for_save[0] == "#ifndef":
-                if pre_if_false == 0:
-                    condition = line_for_save[1]
 
-                    found = False
-                    for symbol in self.preprocesor_symbols:
-                        if symbol == condition:
-                            found = True
-                            continue
-                    if found == True:
-                        pre_if_false = 1
+                condition = line_for_save[1]
 
-                    continue
+                found = False
+                for symbol in self.preprocesor_symbols:
+                    if symbol == condition:
+                        found = True
+                        continue
+                if found == True:
+                    pre_if_false = pre_if_false + 1
 
             #this take care about end of conditional assembly region
             elif line_for_save[0] == "#endif":
-                pre_if_false = 0
-                continue
+                pre_if_false = pre_if_false - 1
 
             #magic for include!
             elif line_for_save[0] == "#include":
@@ -218,11 +242,11 @@ class tokenizer():
                 if pre_if_false != 0: continue
 
                 if self.macro_solving == True:
-                    print "Error! Nested macros are not supported!"
+                    print "Error in " + file_name + "@" + str(line_counter) + ". Nested macro definitions are not supported!"
                     sys.exit(1)
 
                 elif len(line_for_save) == 1:
-                    print "Error! Missing name for new macro!"
+                    print "Error in " + file_name + "@" + str(line_counter) + ". Missing name for new macro!"
                     sys.exit(1)
 
                 macro_name = line_for_save[1]
@@ -243,7 +267,7 @@ class tokenizer():
                         sys.exit(1)
 
                 if self.macro_solving == False:
-                    print "Error! Found #endmacro without opening an macro."
+                    print "Error in " + file_name + "@" + str(line_counter) + ". Found #endmacro without opening an macro."
                     sys.exit(1)
 
                 self.macro_table.append(self.new_macro)
@@ -258,10 +282,11 @@ class tokenizer():
                     if macro_item.name != line_for_save[0].split("$")[1]: continue
                     found = True
                     given_args = line_for_save[1:]
-                    macro_item.invoke(self.parser_buffer, given_args)
+                    macro_item.create_local_symbol_table()
+                    macro_item.invoke(self.parser_buffer, given_args, line_counter, file_name)
 
                 if found == False:
-                    print "Macro is not found in macro table!"
+                    print "Error in " + file_name + "@" + str(line_counter) + ". Trying to invoke macro " + line_for_save[0].split("$")[1] + " but definition is not found!"
                     sys.exit(1)
 
 

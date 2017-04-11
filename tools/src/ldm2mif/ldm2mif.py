@@ -38,9 +38,6 @@ class buffer_item():
 
         self.value = (instruction_type <<  28) + (self.value & 0x0F000000) + instruction_argument
 
-    def echo(self):
-        print "Instruction at " + hex(self.address) + " instruction word: " + hex(self.value)
-
 def createOutput(output_file, buff, size):
 
     outbuff = [0] * (2**size)
@@ -95,7 +92,6 @@ Arguments:
                         instructions that use relative addresing using labels.
                         You have to specify <address> in hex where the code
                         will be stored. Default value is 0x000000.
-    -d                  Run in debug mode.
     -s <size>           Size of memory, default value is 8. Memory range is
                         from 0 to 2^<size>.
        --version        Print version number and exit.
@@ -103,7 +99,7 @@ Arguments:
 
 def get_args():
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "ho:r:ds:", ["help","version"])
+        opts, args = getopt.getopt(sys.argv[1:], "ho:r:s:", ["help","version"])
     except getopt.GetoptError as err:
         print str(err)
         usage()
@@ -112,7 +108,6 @@ def get_args():
     input_file = None
     output_file = None
     start_address = 0
-    debug = False
     size = 8
 
     for option, value in opts:
@@ -123,8 +118,6 @@ def get_args():
             output_file = value
         elif option == "-r":
             start_address = int(value, 16)
-        elif option == "-d":
-            debug = True
         elif option == "-s":
             size = int(value)
         elif option == "--version":
@@ -147,19 +140,11 @@ def get_args():
     if output_file == None:
         output_file = (input_file.split('.')[0]).split('/')[-1] + ".mif"
 
-    return [input_file, output_file, start_address, debug, size]
+    return [input_file, output_file, start_address, size]
 
 def main():
 
-    input_file, output_file, start_address, debug, size = get_args()
-
-    if debug == True:
-        print "Conversion into mif started with following argumenst:"
-        print "\tInput file: " + input_file
-        print "\tOutput file: " + output_file
-        print "\tStart address: " + hex(start_address)
-        print "\tDebug: " + str(debug)
-        print "Loading file for parsing."
+    input_file, output_file, start_address, size = get_args()
 
     try:
         f = file(input_file, "r")
@@ -176,18 +161,8 @@ def main():
 
     f.close()
 
-    if debug == True:
-        print "Input file parsing is done.\nPrinting out buffer."
-        for item in buff: item.echo()
-        print "Starting relocation."
-
     for item in buff:
         item.relocate(start_address)
-
-    if debug == True:
-        print "Printing out buffer after relocation."
-        for item in buff: item.echo()
-        print "Generating output file."
 
     createOutput(output_file, buff, size)
 

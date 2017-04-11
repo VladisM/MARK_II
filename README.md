@@ -11,7 +11,6 @@ TODO List:
 - [ ] Write better documentation.
 - [ ] SDRAM controller.
 - [ ] Interface board (VGA, PS2, RS232...).
-- [ ] Improve support for macros in assembler.
-- [ ] Check status messages of all tools. Improve them.
+- [X] Improve support for macros in assembler.
 - [ ] Write an emulator.
-- [ ] Improve CPU architecture. Do not use tri-state bus.
+- [ ] Improve CPU architecture.
