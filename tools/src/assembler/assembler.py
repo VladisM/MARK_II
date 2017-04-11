@@ -169,6 +169,26 @@ class assembler():
 
                         new_spec_symbol = special_symbol(label, token, "import")
                         self.special_symbol_table.append(new_spec_symbol)
+
+                elif token.opcode == "MVI":
+                    if len(token.operands) != 2:
+                        print "Invalid operands count at: " + token.fileName + "@" + str(token.lineNumber) + ". PseudoOp .MVI expected 2 argument, " + str(len(token.operands)) + " given."
+                        sys.exit(1)
+
+                    reg = token.operands[0]
+                    value = token.operands[1]
+
+                    value_low = value & 0x0000FFFF
+                    value_high = (value & 0xFFFF0000) >> 16
+
+                    new_instruction = p1o.MVIL(token, location_counter, reg, value_low)
+                    self.pass1_buffer.append(new_instruction)
+                    location_counter = location_counter + 1
+
+                    new_instruction = p1o.MVIH(token, location_counter, reg, value_high)
+                    self.pass1_buffer.append(new_instruction)
+                    location_counter = location_counter + 1
+
                 else:
                     print "Error! I found unknown pseudoInstruction at " + token.fileName + "@" + token.lineNumber + ". File contain: '" + token.lineString + "'."
                     sys.exit(1)
