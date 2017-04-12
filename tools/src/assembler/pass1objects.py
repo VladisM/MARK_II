@@ -68,7 +68,6 @@ class RET(instruction):
     def translate(self, symbol_table, special_symbol_table):
         return 0x00000100
 
-
 class RETI(instruction):
 
     def __init__(self, parrent, address):
@@ -86,7 +85,6 @@ class CALLI(instruction):
     def translate(self, symbol_table, special_symbol_table):
         reg_a = self.decodeRegName(self.register_a)
         return 0x00001000 + reg_a
-
 
 class PUSH(instruction):
 
@@ -107,7 +105,6 @@ class POP(instruction):
     def translate(self, symbol_table, special_symbol_table):
         reg_a = self.decodeRegName(self.register_a)
         return 0x00001020 + reg_a
-
 
 class LDI(instruction):
 
@@ -132,7 +129,6 @@ class STI(instruction):
         reg_a = self.decodeRegName(self.register_a)
         reg_b = self.decodeRegName(self.register_b)
         return 0x00010100 + (reg_a << 4) + reg_b
-
 
 class BZI(instruction):
 
@@ -342,7 +338,6 @@ class ROL(instruction):
         dist = checkSizeOfImmediate(self, 4, result[0])
         return 0x010A0000 + (dist << 12) + (reg_a << 8) + (reg_b << 4)
 
-
 class ROR(instruction):
 
     def __init__(self, parrent, address, distance, register_1, register_2):
@@ -357,7 +352,6 @@ class ROR(instruction):
         result = trySolveImmediateOperand(self, symbol_table, special_symbol_table, self.distance)
         dist = checkSizeOfImmediate(self, 4, result[0])
         return 0x010B0000 + (dist << 12) + (reg_a << 8) + (reg_b << 4)
-
 
 class MVIL(instruction):
 
@@ -395,7 +389,6 @@ class CALL(instruction):
         call_address = checkSizeOfImmediate(self, 24, result[0])
         self.special = result[2]
         return 0x80000000 + call_address
-
 
 class LD(instruction):
 
@@ -456,3 +449,18 @@ class BNZ(instruction):
         br_address = checkSizeOfImmediate(self, 24, result[0])
         self.special = result[2]
         return 0xC0000000 + (reg_a << 24) + br_address
+
+class MVIA(instruction):
+
+    def __init__(self, parrent, address, register, operand):
+        instruction.__init__(self, parrent, address, 'MVIA')
+        self.register_a = register
+        self.operand = operand
+
+    def translate(self, symbol_table, special_symbol_table):
+        reg_a = self.decodeRegName(self.register_a)
+        result = trySolveImmediateOperand(self, symbol_table, special_symbol_table, self.operand)
+        self.relocation = result[1]
+        operand = checkSizeOfImmediate(self, 24, result[0])
+        self.special = result[2]
+        return 0xC0000000 + (reg_a << 24) + operand
