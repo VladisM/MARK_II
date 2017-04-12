@@ -571,6 +571,18 @@ class assembler():
                     self.pass1_buffer.append(new_instruction)
                     location_counter = location_counter + 1
 
+                elif token.opcode == "MVIA":
+                    arguments_count = 2
+                    arguments_given = len(token.operands)
+
+                    if arguments_count != arguments_given:
+                        print "Error in instruction '" + token.opcode + "' at " + token.fileName + "@" + str(token.lineNumber) + ", unexpected arugments. Instruction take " + str(arguments_count) + " arguments but " + str(arguments_given) + " are given."
+                        sys.exit(1)
+
+                    new_instruction = p1o.MVIA(token, location_counter, token.operands[0], token.operands[1])
+                    self.pass1_buffer.append(new_instruction)
+                    location_counter = location_counter + 1
+
                 else:
                     print "Error! Found unknown instruction '" + token.opcode + "' at: '" + token.fileName + "@" + str(token.lineNumber)
                     sys.exit(1);

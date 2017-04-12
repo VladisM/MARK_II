@@ -15,31 +15,31 @@ entity id is
         aluOE: out std_logic;
         aluOpAWE: out std_logic;
         aluOpBWE: out std_logic;
-        
+
         compOpCode: out std_logic_vector(2 downto 0);
         compOE: out std_logic;
         compOpAWE: out std_logic;
         compOpBWE: out std_logic;
-        
+
         barDistance: out std_logic_vector(3 downto 0);
         barDir: out std_logic;
         barMode: out std_logic;
         barOE: out std_logic;
         barOpAWE: out std_logic;
-        
+
         regOE: out std_logic_vector(15 downto 0);
         regWE: out std_logic_vector(15 downto 0);
         incSP: out std_logic;
         decSP: out std_logic;
         incPC: out std_logic;
         decPC: out std_logic;
-        
+
         instructionWord: in unsigned(31 downto 0);
         instRegWE: out std_logic;
-        
+
         instructionArgument: out unsigned(31 downto 0);
         instrArgOE: out std_logic;
-        
+
         addrRegWE: out std_logic;
         mosiRegWE: out std_logic;
         misoOE: out std_logic;
@@ -49,7 +49,7 @@ entity id is
         ack: in std_logic;
 
         addressSel: out std_logic;
-        
+
         zeroFlag: in std_logic;
         flagRegSel: out std_logic_vector(3 downto 0)
     );
@@ -87,6 +87,7 @@ architecture id_arch of id is
         bnz0, bnz1,
         bzi0, bzi1,
         bnzi0, bnzi1,
+        mvia0,
         interrupt0, interrupt1, interrupt2, interrupt3
     );
 
@@ -98,11 +99,11 @@ architecture id_arch of id is
     signal regs_oe, regs_we: std_logic;
     signal regs_we_dest, regs_oe_dest: unsigned(3 downto 0);
 
-    
+
 begin
-    
+
     --logic to set up next state
-    process(res, clk, ack, zeroFlag, interrupt_pending, interrupt_vector, instructionWord) is        
+    process(res, clk, ack, zeroFlag, interrupt_pending, interrupt_vector, instructionWord) is
     begin
         if(rising_edge(clk)) then
             if(res = '1') then
@@ -111,7 +112,7 @@ begin
                 case state is
                     when load_instruction_0 => state <= load_instruction_1;
                     when load_instruction_1 =>
-                        case ack is 
+                        case ack is
                             when '1' => state <= load_instruction_2;
                             when others => state <= load_instruction_1;
                         end case;
@@ -123,7 +124,8 @@ begin
                                 when "001" => state <= ld0;
                                 when "010" => state <= st0;
                                 when "011" => state <= bz0;
-                                when others => state <= bnz0;
+                                when "100" => state <= bnz0;
+                                when others => state <= mvia0;
                             end case;
                         elsif instructionWord(28) = '1' then
                             case instructionWord(20) is
@@ -152,13 +154,13 @@ begin
                                 when "010" => state <= bzi0;
                                 when "011" => state <= bnzi0;
                                 when others => state <= mov0;
-                            end case;   
+                            end case;
                         elsif instructionWord(12) = '1' then
                             case instructionWord(5 downto 4) is
                                 when "00" => state <= calli0;
                                 when "01" => state <= push0;
                                 when others => state <= pop0;
-                            end case;                 
+                            end case;
                         elsif instructionWord(8) = '1' then
                             case instructionWord(0) is
                                 when '1' => state <= reti0;
@@ -169,7 +171,7 @@ begin
                         end if;
                     when and0 => state <= and1;
                     when and1 => state <= and2;
-                    when and2 => 
+                    when and2 =>
                         case interrupt_pending is
                             when '1' => state <= interrupt0;
                             when others => state <= load_instruction_0;
@@ -252,20 +254,20 @@ begin
                         end case;
                     when call0 => state <= call1;
                     when call1 => state <= call2;
-                    when call2 => 
-                        case ack is 
+                    when call2 =>
+                        case ack is
                             when '1' => state <= call3;
                             when others => state <= call2;
                         end case;
-                    when call3 => 
+                    when call3 =>
                         case interrupt_pending is
                             when '1' => state <= interrupt0;
                             when others => state <= load_instruction_0;
                         end case;
                     when calli0 => state <= calli1;
                     when calli1 => state <= calli2;
-                    when calli2 => 
-                        case ack is 
+                    when calli2 =>
+                        case ack is
                             when '1' => state <= calli3;
                             when others => state <= calli2;
                         end case;
@@ -277,8 +279,8 @@ begin
                     when ret0 => state <= ret1;
                     when ret1 => state <= ret2;
                     when ret2 => state <= ret3;
-                    when ret3 => 
-                        case ack is 
+                    when ret3 =>
+                        case ack is
                             when '1' => state <= ret4;
                             when others => state <= ret3;
                         end case;
@@ -290,19 +292,19 @@ begin
                     when reti0 => state <= reti1;
                     when reti1 => state <= reti2;
                     when reti2 => state <= reti3;
-                    when reti3 => 
-                        case ack is 
+                    when reti3 =>
+                        case ack is
                             when '1' => state <= reti4;
                             when others => state <= reti3;
                         end case;
-                    when reti4 => 
+                    when reti4 =>
                         case interrupt_pending is
                             when '1' => state <= interrupt0;
                             when others => state <= load_instruction_0;
                         end case;
                     when push0 => state <= push1;
                     when push1 => state <= push2;
-                    when push2 => 
+                    when push2 =>
                         case ack is
                             when '1' => state <= push3;
                             when others => state <= push2;
@@ -314,44 +316,44 @@ begin
                         end case;
                     when pop0 => state <= pop1;
                     when pop1 => state <= pop2;
-                    when pop2 => 
-                        case ack is 
+                    when pop2 =>
+                        case ack is
                             when '1' => state <= pop3;
                             when others => state <= pop2;
                         end case;
                     when pop3 => state <= pop4;
-                    when pop4 => 
+                    when pop4 =>
                         case interrupt_pending is
                             when '1' => state <= interrupt0;
                             when others => state <= load_instruction_0;
                         end case;
                     when ld0 => state <= ld1;
-                    when ld1 => 
-                        case ack is 
+                    when ld1 =>
+                        case ack is
                             when '1' => state <= ld2;
                             when others => state <= ld1;
                         end case;
                     when ld2 => state <= ld3;
-                    when ld3 =>               
+                    when ld3 =>
                         case interrupt_pending is
                             when '1' => state <= interrupt0;
                             when others => state <= load_instruction_0;
                         end case;
                     when ldi0 => state <= ldi1;
-                    when ldi1 => 
-                        case ack is 
+                    when ldi1 =>
+                        case ack is
                             when '1' => state <= ldi2;
                             when others => state <= ldi1;
                         end case;
                     when ldi2 => state <= ldi3;
-                    when ldi3 =>                     
+                    when ldi3 =>
                         case interrupt_pending is
                             when '1' => state <= interrupt0;
                             when others => state <= load_instruction_0;
                         end case;
                     when st0 => state <= st1;
                     when st1 => state <= st2;
-                    when st2 => 
+                    when st2 =>
                         case ack is
                             when '1' => state <= sti3;
                             when others => state <= sti2;
@@ -363,7 +365,7 @@ begin
                         end case;
                     when sti0 => state <= sti1;
                     when sti1 => state <= sti2;
-                    when sti2 => 
+                    when sti2 =>
                         case ack is
                             when '1' => state <= sti3;
                             when others => state <= sti2;
@@ -443,10 +445,15 @@ begin
                             when '1' => state <= interrupt0;
                             when others => state <= load_instruction_0;
                         end case;
+                    when mvia0 =>
+                        case interrupt_pending is
+                            when '1' => state <= interrupt0;
+                            when others => state <= load_instruction_0;
+                        end case;
                     when interrupt0 => state <= interrupt1;
                     when interrupt1 => state <= interrupt2;
-                    when interrupt2 => 
-                        case ack is 
+                    when interrupt2 =>
+                        case ack is
                             when '1' => state <= interrupt3;
                             when others => state <= interrupt2;
                         end case;
@@ -495,7 +502,7 @@ begin
                 instructionArgument <= x"00000000"; instrArgoe <= '0';
                 addrRegwe <= '0'; mosiRegwe <= '0'; misooe <= '1';
                 wr <= '0'; rd <= '1';
-                addressSel <= '1'; flagRegSel <= x"0";                
+                addressSel <= '1'; flagRegSel <= x"0";
             when load_instruction_3 =>
                 int_accept <= '0'; int_completed <= '0';
                 aluOpCode <= x"0"; aluoe <= '0'; aluOpAwe <= '0'; aluOpBwe <= '0';
@@ -545,7 +552,7 @@ begin
                 instructionArgument <= x"00000000"; instrArgoe <= '0';
                 addrRegwe <= '0'; mosiRegwe <= '0'; misooe <= '0';
                 wr <= '0'; rd <= '0';
-                addressSel <= '0'; flagRegSel <= x"0";                
+                addressSel <= '0'; flagRegSel <= x"0";
 
             --OR instruction
             when or0 =>
@@ -583,7 +590,7 @@ begin
                 instructionArgument <= x"00000000"; instrArgoe <= '0';
                 addrRegwe <= '0'; mosiRegwe <= '0'; misooe <= '0';
                 wr <= '0'; rd <= '0';
-                addressSel <= '0'; flagRegSel <= x"0";    
+                addressSel <= '0'; flagRegSel <= x"0";
 
             --XOR instruction
             when xor0 =>
@@ -621,7 +628,7 @@ begin
                 instructionArgument <= x"00000000"; instrArgoe <= '0';
                 addrRegwe <= '0'; mosiRegwe <= '0'; misooe <= '0';
                 wr <= '0'; rd <= '0';
-                addressSel <= '0'; flagRegSel <= x"0";   
+                addressSel <= '0'; flagRegSel <= x"0";
         --ADD instruction
             when add0 =>
                 int_accept <= '0'; int_completed <= '0';
@@ -696,7 +703,7 @@ begin
                 instructionArgument <= x"00000000"; instrArgoe <= '0';
                 addrRegwe <= '0'; mosiRegwe <= '0'; misooe <= '0';
                 wr <= '0'; rd <= '0';
-                addressSel <= '0'; flagRegSel <= x"0";   
+                addressSel <= '0'; flagRegSel <= x"0";
             --CMP instruction
             when cmp0 =>
                 int_accept <= '0'; int_completed <= '0';
@@ -811,7 +818,7 @@ begin
                 instructionArgument <= x"00000000"; instrArgoe <= '0';
                 addrRegwe <= '0'; mosiRegwe <= '0'; misooe <= '0';
                 wr <= '0'; rd <= '0';
-                addressSel <= '0'; flagRegSel <= x"0";   
+                addressSel <= '0'; flagRegSel <= x"0";
             --LSR instruction
             when lsr0 =>
                 int_accept <= '0'; int_completed <= '0';
@@ -836,7 +843,7 @@ begin
                 instructionArgument <= x"00000000"; instrArgoe <= '0';
                 addrRegwe <= '0'; mosiRegwe <= '0'; misooe <= '0';
                 wr <= '0'; rd <= '0';
-                addressSel <= '0'; flagRegSel <= x"0";   
+                addressSel <= '0'; flagRegSel <= x"0";
 
             --rol instruction
             when rol0 =>
@@ -862,7 +869,7 @@ begin
                 instructionArgument <= x"00000000"; instrArgoe <= '0';
                 addrRegwe <= '0'; mosiRegwe <= '0'; misooe <= '0';
                 wr <= '0'; rd <= '0';
-                addressSel <= '0'; flagRegSel <= x"0";   
+                addressSel <= '0'; flagRegSel <= x"0";
 
             --ror instruction
             when ror0 =>
@@ -964,8 +971,8 @@ begin
                 instructionArgument <= x"00000000"; instrArgoe <= '0';
                 addrRegwe <= '0'; mosiRegwe <= '0'; misooe <= '0';
                 wr <= '0'; rd <= '0';
-                addressSel <= '0'; flagRegSel <= x"0"; 
-            
+                addressSel <= '0'; flagRegSel <= x"0";
+
             --RETI instruction
             when reti0 =>
                 int_accept <= '0'; int_completed <= '0';
@@ -1026,7 +1033,7 @@ begin
                 instructionArgument <= x"00000000"; instrArgoe <= '0';
                 addrRegwe <= '0'; mosiRegwe <= '0'; misooe <= '0';
                 wr <= '0'; rd <= '0';
-                addressSel <= '0'; flagRegSel <= x"0"; 
+                addressSel <= '0'; flagRegSel <= x"0";
 
             --POP instruction
             when pop0 =>
@@ -1088,7 +1095,7 @@ begin
                 instructionArgument <= x"00000000"; instrArgoe <= '0';
                 addrRegwe <= '0'; mosiRegwe <= '0'; misooe <= '0';
                 wr <= '0'; rd <= '0';
-                addressSel <= '0'; flagRegSel <= x"0"; 
+                addressSel <= '0'; flagRegSel <= x"0";
 
 
             --push instruction
@@ -1139,8 +1146,8 @@ begin
                 instructionArgument <= x"00000000"; instrArgoe <= '0';
                 addrRegwe <= '0'; mosiRegwe <= '0'; misooe <= '0';
                 wr <= '0'; rd <= '0';
-                addressSel <= '0'; flagRegSel <= x"0"; 
-            
+                addressSel <= '0'; flagRegSel <= x"0";
+
             -- call instruction
             when call0 =>
                 int_accept <= '0'; int_completed <= '0';
@@ -1291,8 +1298,8 @@ begin
                 instructionArgument <= x"00000000"; instrArgoe <= '0';
                 addrRegwe <= '0'; mosiRegwe <= '0'; misooe <= '0';
                 wr <= '0'; rd <= '0';
-                addressSel <= '0'; flagRegSel <= x"0";             
-            
+                addressSel <= '0'; flagRegSel <= x"0";
+
             --st instruction
             when st0 =>
                 int_accept <= '0'; int_completed <= '0';
@@ -1341,7 +1348,7 @@ begin
                 instructionArgument <= x"00000000"; instrArgoe <= '0';
                 addrRegwe <= '0'; mosiRegwe <= '0'; misooe <= '0';
                 wr <= '0'; rd <= '0';
-                addressSel <= '0'; flagRegSel <= x"0"; 
+                addressSel <= '0'; flagRegSel <= x"0";
 
 
 
@@ -1432,7 +1439,7 @@ begin
                 instructionArgument <= x"00000000"; instrArgoe <= '0';
                 addrRegwe <= '0'; mosiRegwe <= '0'; misooe <= '0';
                 wr <= '0'; rd <= '0';
-                addressSel <= '0'; flagRegSel <= x"0";   
+                addressSel <= '0'; flagRegSel <= x"0";
 
 
             --MVIH instruction
@@ -1471,7 +1478,7 @@ begin
                 instructionArgument <= x"00000000"; instrArgoe <= '0';
                 addrRegwe <= '0'; mosiRegwe <= '0'; misooe <= '0';
                 wr <= '0'; rd <= '0';
-                addressSel <= '0'; flagRegSel <= x"0";   
+                addressSel <= '0'; flagRegSel <= x"0";
 
 
 
@@ -1523,7 +1530,7 @@ begin
                 instructionArgument <= x"00000000"; instrArgoe <= '0';
                 addrRegwe <= '0'; mosiRegwe <= '0'; misooe <= '0';
                 wr <= '0'; rd <= '0';
-                addressSel <= '0'; flagRegSel <= x"0"; 
+                addressSel <= '0'; flagRegSel <= x"0";
 
             --LDI instruction
             when ldi0 =>
@@ -1561,7 +1568,7 @@ begin
                 instructionArgument <= x"00000000"; instrArgoe <= '0';
                 addrRegwe <= '0'; mosiRegwe <= '0'; misooe <= '1';
                 wr <= '0'; rd <= '1';
-                addressSel <= '0'; flagRegSel <= x"0";        
+                addressSel <= '0'; flagRegSel <= x"0";
             when ldi3 =>
                 int_accept <= '0'; int_completed <= '0';
                 aluOpCode <= x"0"; aluoe <= '0'; aluOpAwe <= '0'; aluOpBwe <= '0';
@@ -1573,8 +1580,8 @@ begin
                 instructionArgument <= x"00000000"; instrArgoe <= '0';
                 addrRegwe <= '0'; mosiRegwe <= '0'; misooe <= '0';
                 wr <= '0'; rd <= '0';
-                addressSel <= '0'; flagRegSel <= x"0"; 
-            
+                addressSel <= '0'; flagRegSel <= x"0";
+
             --BZ instruction
             when bz0 =>
                 int_accept <= '0'; int_completed <= '0';
@@ -1678,7 +1685,21 @@ begin
                 addrRegwe <= '0'; mosiRegwe <= '0'; misooe <= '0';
                 wr <= '0'; rd <= '0';
                 addressSel <= '0'; flagRegSel <= x"0";
-            
+
+            --MVIA instruction
+            when mvil1 =>
+                int_accept <= '0'; int_completed <= '0';
+                aluOpCode <= x"0"; aluoe <= '0'; aluOpAwe <= '0'; aluOpBwe <= '0';
+                compOpCode <= "000"; compoe <= '0'; compOpAwe <= '0'; compOpBwe <= '0';
+                barDistance <= x"0"; barDir <= '0'; barMode <= '0'; baroe <= '0'; barOpAwe <= '0';
+                regs_oe <= '0'; regs_oe_dest <= x"0"; regs_we <= '1'; regs_we_dest <= instructionWord(27 downto 24);
+                incSP <= '0'; decSP <= '0'; incPC <= '0'; decPC <= '0';
+                instRegwe <= '0';
+                instructionArgument <= x"00" & instructionWord(23 downto 0); instrArgoe <= '1';
+                addrRegwe <= '0'; mosiRegwe <= '0'; misooe <= '0';
+                wr <= '0'; rd <= '0';
+                addressSel <= '0'; flagRegSel <= x"0";
+
         end case;
     end process;
 
@@ -1729,7 +1750,7 @@ begin
             when others => interrupt_vector <= x"00000000";
         end case;
     end process;
-    
+
     --decoders for registers control signals
     process(regs_oe_dest, regs_oe) is begin
         if    (regs_oe_dest = x"0" and regs_oe = '1') then regOE <= x"0001";
@@ -1751,7 +1772,7 @@ begin
         else regOE <= x"0000";
         end if;
     end process;
-    
+
     process(regs_we_dest, regs_we) is begin
         if    (regs_we_dest = x"0" and regs_we = '1') then regWE <= x"0001";
         elsif (regs_we_dest = x"1" and regs_we = '1') then regWE <= x"0002";
