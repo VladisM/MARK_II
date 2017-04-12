@@ -1687,7 +1687,7 @@ begin
                 addressSel <= '0'; flagRegSel <= x"0";
 
             --MVIA instruction
-            when mvil1 =>
+            when mvia0 =>
                 int_accept <= '0'; int_completed <= '0';
                 aluOpCode <= x"0"; aluoe <= '0'; aluOpAwe <= '0'; aluOpBwe <= '0';
                 compOpCode <= "000"; compoe <= '0'; compOpAwe <= '0'; compOpBwe <= '0';
