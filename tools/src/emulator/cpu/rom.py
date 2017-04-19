@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 #
-#  emul.py
+#  rom.py
 #
 #  Copyright 2017 Vladislav <vladislav.mlejnecky@student.upce.cz>
 
@@ -9,8 +9,10 @@ from memitem import memitem
 import sys
 
 class rom(memitem):
-    def __init__(self, baseAddress, size):
-        memitem.__init__(self, baseAddress, size)
+    def __init__(self, baseAddress, size, globDef, name):
+        memitem.__init__(self, baseAddress, size, name)
+
+        self.loadeif(globDef.rom0filename)
 
     def loadeif(self, fileName):
         try:

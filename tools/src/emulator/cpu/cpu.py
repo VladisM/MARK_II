@@ -8,10 +8,12 @@
 import sys, numpy
 
 class cpu():
-    def __init__(self, readFunction, writeFunction):
+    def __init__(self, readFunction, writeFunction, hRetiFunction):
         self.regs = [0]*16;
         self.writeFunction = writeFunction
         self.readFunction = readFunction
+        self.hRetiFunction = hRetiFunction
+        self.intVector = 0
 
     def reset(self):
         self.regs = [0]*16;
@@ -225,9 +227,8 @@ class cpu():
             newPC = self.readFromMem(self.getRegByName("SP"))
             #store data into PC
             self.setRegByName("PC", newPC)
-
-            #TODO: complete interrupt system!
-            print("Warning! Executed instruction RETI but interrupt system is not implemented yet!")
+            #tell RETI to intControl
+            self.hRetiFunction()
         elif opcode == "CALLI":
             #write PC to stack
             self.writeToMem(self.getRegByName("SP"), self.getRegByName("PC"))
@@ -377,3 +378,13 @@ class cpu():
         instruction = numpy.uint32(self.readFromMem(self.getRegByName("PC")))
         self.setRegByName("PC", self.getRegByName("PC") + 1)
         self.executeInstruction(instruction)
+
+        if self.intVector != 0:
+
+            address = ((self.intVector - 1) * 2) + 0x10
+            self.intVector = 0
+
+            self.writeToMem(self.getRegByName("SP"), self.getRegByName("PC"))
+            self.setRegByName("SP", self.getRegByName("SP") - 1)
+            self.setRegByName("PC", address)
+
