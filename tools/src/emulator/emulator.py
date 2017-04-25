@@ -13,12 +13,13 @@ class globalDefs():
     """Some usefull definitions are stored in this class"""
 
     F_CPU = 14400000
-    rom0filename = "rom.eif"
+    rom0filename = "uart.eif"
+    uart0_map = '/dev/pts/2'
 
 def main(args):
     soc = MARK(globalDefs)
     soc.start()
-    time.sleep(1)
+    x = raw_input()
     soc.halt()
     return 0
 

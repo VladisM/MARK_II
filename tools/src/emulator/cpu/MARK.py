@@ -11,7 +11,7 @@ from ram import ram
 from gpio import gpio
 from systim import systim
 from intControler import intControler
-
+from uart import uart
 import threading
 
 class MARK():
@@ -24,6 +24,7 @@ class MARK():
         self.myram1 = ram(0x100000, 13, "ram1")
         self.mysystim0 = systim(0x000104, self.interrupt, globDef, "systim0")
         self.myintControler0 = intControler(0x000108, self.mycpu, "intControler0")
+        self.uart0 = uart(0x00010A, self.interrupt, globDef.uart0_map, "uart0")
         self.F_CPU = globDef.F_CPU
         self.timObject = threading.Timer(self.F_CPU**(-1), self.tick)
 
@@ -54,6 +55,10 @@ class MARK():
         if value != None:
             return value
 
+        value = self.uart0.read(address)
+        if value != None:
+            return value
+
         print "Address <" + hex(address) + "> is undefined. Aborting emulation!"
         sys.exit(1)
 
@@ -66,6 +71,7 @@ class MARK():
         self.myram1.write(address, value)
         self.mysystim0.write(address, value)
         self.myintControler0.write(address, value)
+        self.uart0.write(address, value)
 
     def hardReset(self):
         """Reset whole SoC, even peripherals that doesn't have reset input (like ROM, RAM...)"""
@@ -76,6 +82,7 @@ class MARK():
         self.mycpu.reset()
         self.mysystim0.reset()
         self.myintControler0.reset()
+        self.uart0.reset()
 
     def softReset(self):
         """Reset SoC, same as reset input on real hardware"""
@@ -83,6 +90,7 @@ class MARK():
         self.mygpio0.reset()
         self.mysystim0.reset()
         self.myintControler0.reset()
+        self.uart0.reset()
 
     def retiFunction(self):
         self.myintControler0.completed()
