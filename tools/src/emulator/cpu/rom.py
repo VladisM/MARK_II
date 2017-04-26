@@ -17,7 +17,7 @@ class rom(memitem):
         try:
             f = file(fileName, "r")
         except:
-            print "Can't open input file for reading!"
+            print "Error in " + self.__name__ + "! Can't open input file <" + fileName + "> for reading!"
             sys.exit(1)
 
         i = 0

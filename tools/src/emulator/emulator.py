@@ -11,8 +11,8 @@ import sys, version, getopt
 class globalDefs():
     """Some usefull definitions are stored in this class"""
 
-    rom0eif = "rom.eif"
-    uart0map = '/dev/pts/2'
+    rom0eif = None
+    uart0map = None
 
 def usage():
     print """
@@ -55,6 +55,14 @@ def get_args():
             print "Unrecognized option " + option
             print "Type 'emulator.py -h' for more informations."
             sys.exit(1)
+
+    if globalDefs.rom0eif == None:
+        print "Missing file for rom0. Aborting emulation."
+        sys.exit(1)
+
+    if globalDefs.uart0map == None:
+        print "Missing port for uart0. Aborting emulation."
+        sys.exit(1)
 
 def main(args):
 
