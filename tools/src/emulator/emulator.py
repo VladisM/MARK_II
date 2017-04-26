@@ -13,7 +13,7 @@ class globalDefs():
     """Some usefull definitions are stored in this class"""
 
     F_CPU = 14400000
-    rom0filename = "uart.eif"
+    rom0filename = "loop.eif"
     uart0_map = '/dev/pts/2'
 
 def main(args):

@@ -16,7 +16,22 @@ class uart(memitem):
 
     def write(self, address, value):
         if address >= self.startAddress and address <= self.endAddress and address - self.startAddress == 0:
-            print "have to send ", value
             self.ser.write(chr(value))
+            self.hInterrupt(self.__name__ + "_tx")
         else:
             super(uart, self).write(address, value)
+
+    def tick(self):
+        if self.ser.inWaiting() > 0:
+            self.hInterrupt(self.__name__ + "_rx")
+
+
+    def read(self, address):
+        if address >= self.startAddress and address <= self.endAddress and address - self.startAddress == 0:
+            if self.ser.inWaiting() > 0:
+                self.mem[0] = ord(self.ser.read(1))
+                return self.mem[0]
+            else:
+                return self.mem[0]
+        else:
+            super(uart, self).read(address)

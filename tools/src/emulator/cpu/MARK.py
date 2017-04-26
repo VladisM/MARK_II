@@ -104,6 +104,7 @@ class MARK():
 
     def tick(self):
         self.mycpu.tick()
+        self.uart0.tick()
         self.timObject = threading.Timer(self.F_CPU**(-1), self.tick)
         self.timObject.start()
 
