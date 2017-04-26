@@ -8,25 +8,20 @@
 from cpu import cpu
 from rom import rom
 from ram import ram
-from gpio import gpio
 from systim import systim
 from intControler import intControler
 from uart import uart
 
 class MARK():
 
-    def __init__(self, globDef):
+    def __init__(self, rom0eif, uart0_map):
         self.cpu0 = cpu(self.readFunction, self.writeFunction, self.retiFunction)
-        self.rom0 = rom(0x000000, 8, globDef, "rom0")
+        self.rom0 = rom(0x000000, 8, rom0eif, "rom0")
         self.ram0 = ram(0x000400, 10, "ram0")
         self.ram1 = ram(0x100000, 13, "ram1")
         self.systim0 = systim(0x000104, self.interrupt, "systim0")
         self.intControler0 = intControler(0x000108, self.cpu0, "intControler0")
-        self.uart0 = uart(0x00010A, self.interrupt, globDef.uart0_map, "uart0")
-
-    def __del__(self):
-        #becouse uart open serial port, we have to close it, this is done in destructor of uart
-        del self.uart0
+        self.uart0 = uart(0x00010A, self.interrupt, uart0_map, "uart0")
 
     def readFunction(self, address):
         """CPU (master on bus) call this function to read data from specified address"""
@@ -64,7 +59,7 @@ class MARK():
 
     def reset(self):
         """Reset SoC, same as reset input on real hardware"""
-        self.cpu.reset()
+        self.cpu0.reset()
         self.systim0.reset()
         self.intControler0.reset()
         self.uart0.reset()

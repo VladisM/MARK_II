@@ -9,10 +9,9 @@ from memitem import memitem
 import sys
 
 class rom(memitem):
-    def __init__(self, baseAddress, size, globDef, name):
+    def __init__(self, baseAddress, size, rom0eif, name):
         memitem.__init__(self, baseAddress, size, name)
-
-        self.loadeif(globDef.rom0filename)
+        self.loadeif(rom0eif)
 
     def loadeif(self, fileName):
         try:

@@ -12,15 +12,29 @@ import time;
 class globalDefs():
     """Some usefull definitions are stored in this class"""
 
-    F_CPU = 14400000
-    rom0filename = "loop.eif"
-    uart0_map = '/dev/pts/2'
+    rom0eif = "loop.eif"
+    uart0map = '/dev/pts/2'
 
 def main(args):
-    soc = MARK(globalDefs)
+
+    print "MARK-II emulator is running.\nUART0 mapped into \"" + globalDefs.uart0map + "\".\nTo stop execution use CTRL+C."
+
+    soc = MARK(globalDefs.rom0eif, globalDefs.uart0map)
 
     while True:
-        soc.tick()
+        try:
+            soc.tick()
+        except KeyboardInterrupt:
+            soc.reset()
+            del soc
+            print "\nEmulator halted by CTRL+C, exiting now.."
+            break
+        except SystemExit:
+            soc.reset()
+            del soc
+            print "Emulator halted by internall call sys.exit(), exiting now..."
+            break
+
 
     return 0
 
