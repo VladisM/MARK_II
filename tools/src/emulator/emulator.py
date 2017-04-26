@@ -18,9 +18,10 @@ class globalDefs():
 
 def main(args):
     soc = MARK(globalDefs)
-    soc.start()
-    x = raw_input()
-    soc.halt()
+
+    while True:
+        soc.tick()
+
     return 0
 
 if __name__ == '__main__':

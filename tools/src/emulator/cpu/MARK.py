@@ -12,7 +12,6 @@ from gpio import gpio
 from systim import systim
 from intControler import intControler
 from uart import uart
-import threading
 
 class MARK():
 
@@ -25,37 +24,32 @@ class MARK():
         self.intControler0 = intControler(0x000108, self.cpu0, "intControler0")
         self.uart0 = uart(0x00010A, self.interrupt, globDef.uart0_map, "uart0")
 
-        self.F_CPU = globDef.F_CPU
-        self.timObject = threading.Timer(self.F_CPU**(-1), self.tick)
+    def __del__(self):
+        #becouse uart open serial port, we have to close it, this is done in destructor of uart
+        del self.uart0
 
     def readFunction(self, address):
         """CPU (master on bus) call this function to read data from specified address"""
 
         value = self.rom0.read(address)
-        if value != None:
-            return value
+        if value != None: return value
 
         value = self.ram0.read(address)
-        if value != None:
-            return value
+        if value != None: return value
 
         value = self.ram1.read(address)
-        if value != None:
-            return value
+        if value != None: return value
 
         value = self.systim0.read(address)
-        if value != None:
-            return value
+        if value != None: return value
 
         value = self.intControler0.read(address)
-        if value != None:
-            return value
+        if value != None: return value
 
         value = self.uart0.read(address)
-        if value != None:
-            return value
+        if value != None: return value
 
-        print "Address <" + hex(address) + "> is undefined. Aborting emulation!"
+        print "Read mem error. Address <" + hex(address) + "> is undefined. Aborting emulation!"
         sys.exit(1)
 
     def writeFunction(self, address, value):
@@ -68,17 +62,7 @@ class MARK():
         self.intControler0.write(address, value)
         self.uart0.write(address, value)
 
-    def hardReset(self):
-        """Reset whole SoC, even peripherals that doesn't have reset input (like ROM, RAM...)"""
-        self.rom0.reset()
-        self.ram0.reset()
-        self.ram1.reset()
-        self.cpu.reset()
-        self.systim0.reset()
-        self.intControler0.reset()
-        self.uart0.reset()
-
-    def softReset(self):
+    def reset(self):
         """Reset SoC, same as reset input on real hardware"""
         self.cpu.reset()
         self.systim0.reset()
@@ -91,15 +75,7 @@ class MARK():
     def interrupt(self, sourceName):
         self.intControler0.interrupt(sourceName)
 
-    def start(self):
-        self.timObject.start()
-
     def tick(self):
         self.cpu0.tick()
         self.uart0.tick()
         self.systim0.tick()
-        self.timObject = threading.Timer(self.F_CPU**(-1), self.tick)
-        self.timObject.start()
-
-    def halt(self):
-        self.timObject.cancel()

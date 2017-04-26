@@ -45,3 +45,8 @@ class intControler(memitem):
         self.intActive = False
         if len(self.stack) > 0:
             self.interrupt(self.stack.pop())
+
+    def reset(self):
+        self.intActive = False
+        self.stack = []
+        super(intControler, self).reset()

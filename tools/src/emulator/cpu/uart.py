@@ -13,6 +13,10 @@ class uart(memitem):
         memitem.__init__(self, baseAddress, 1, name)
         self.hInterrupt = hInterrupt
         self.ser = serial.Serial(port, 9600, rtscts=True, dsrdtr=True)
+        self.mapped_port = port
+
+    def __del__(self):
+        self.ser.close()
 
     def write(self, address, value):
         if address >= self.startAddress and address <= self.endAddress and address - self.startAddress == 0:
@@ -35,3 +39,8 @@ class uart(memitem):
                 return self.mem[0]
         else:
             super(uart, self).read(address)
+
+    def reset(self):
+        del self.ser
+        self.ser = serial.Serial(self.mapped_port, 9600, rtscts=True, dsrdtr=True)
+        super(uart, self).reset()
