@@ -684,7 +684,7 @@ class file_gen():
 
 def usage():
     print """
-Example usage: assembler.py main.asm
+Example usage: assembler main.asm
 
         This is two pass assembler for MARK II CPU. For informations about
     MARK II please see: https://github.com/VladisM/MARK_II-SoC/

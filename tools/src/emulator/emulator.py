@@ -16,7 +16,7 @@ class globalDefs():
 
 def usage():
     print """
-Example usage: emulatory.py -p /dev/pts/2 -r rom.eif
+Example usage: emulatory -p /dev/pts/2 -r rom.eif
 
         Simple emulator of MARK-II SoC. Emulating systim, uart0, rom0, ram0, ram1,
     intController and cpu. For more information please see:
@@ -77,7 +77,6 @@ def main(args):
             del soc
             print "Emulator halted by internall call sys.exit(), exiting now..."
             break
-
 
     return 0
 
