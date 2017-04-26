@@ -463,4 +463,4 @@ class MVIA(instruction):
         self.relocation = result[1]
         operand = checkSizeOfImmediate(self, 24, result[0])
         self.special = result[2]
-        return 0xC0000000 + (reg_a << 24) + operand
+        return 0xD0000000 + (reg_a << 24) + operand
