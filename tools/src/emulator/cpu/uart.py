@@ -21,21 +21,21 @@ class uart(memitem):
 
     def write(self, address, value):
         if address >= self.startAddress and address <= self.endAddress and address - self.startAddress == 0:
-            self.ser.write(chr(value))
+            self.ser.write(chr(value & 0xFF))
             self.hInterrupt(self.__name__ + "_tx")
         else:
             super(uart, self).write(address, value)
 
     def tick(self):
-        if self.ser.inWaiting() > 0:
-            if self.oldInWaiting != self.ser.inWaiting():
-                self.oldInWaiting = self.ser.inWaiting()
-                self.hInterrupt(self.__name__ + "_rx")
+        if self.oldInWaiting != self.ser.inWaiting() and self.ser.inWaiting() > 0:
+            self.oldInWaiting = self.ser.inWaiting()
+            self.hInterrupt(self.__name__ + "_rx")
 
     def read(self, address):
         if address >= self.startAddress and address <= self.endAddress and address - self.startAddress == 0:
             if self.ser.inWaiting() > 0:
                 self.mem[0] = ord(self.ser.read(1))
+                self.oldInWaiting = self.oldInWaiting - 1
                 return self.mem[0]
             else:
                 return self.mem[0]

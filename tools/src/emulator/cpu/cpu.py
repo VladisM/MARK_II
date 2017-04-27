@@ -253,7 +253,8 @@ class cpu():
             self.setRegByCode(regA, data)
         elif opcode == "STI":
             #why am i writing this comments?
-            self.writeToMem(regB, self.getRegByCode(regA))
+            # EDIT: BECAUSE I'M AN IDIOT!
+            self.writeToMem(self.getRegByCode(regB), self.getRegByCode(regA))
         elif opcode == "BZI":
             value = self.getRegByCode(regA)
             if value == 0:
