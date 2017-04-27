@@ -14,6 +14,7 @@ class uart(memitem):
         self.hInterrupt = hInterrupt
         self.ser = serial.Serial(port, 9600, rtscts=True, dsrdtr=True)
         self.mapped_port = port
+        self.oldInWaiting = 0
 
     def __del__(self):
         self.ser.close()
@@ -27,8 +28,9 @@ class uart(memitem):
 
     def tick(self):
         if self.ser.inWaiting() > 0:
-            self.hInterrupt(self.__name__ + "_rx")
-
+            if self.oldInWaiting != self.ser.inWaiting():
+                self.oldInWaiting = self.ser.inWaiting()
+                self.hInterrupt(self.__name__ + "_rx")
 
     def read(self, address):
         if address >= self.startAddress and address <= self.endAddress and address - self.startAddress == 0:
