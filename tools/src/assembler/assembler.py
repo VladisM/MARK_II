@@ -176,7 +176,13 @@ class assembler():
                         sys.exit(1)
 
                     reg = token.operands[0]
-                    value = token.operands[1]
+                    value = common.trySolveImmediateOperand(token, self.symbol_table, self.special_symbol_table, token.operands[1])
+
+                    if value[1] == True or value[2] == True:
+                        print "Error at: " + token.fileName + "@" + str(token.lineNumber)  + ". PseudoOp .MVI can not load label or special symbol."
+                        sys.exit(1)
+
+                    value = value[0]
 
                     value_low = value & 0x0000FFFF
                     value_high = (value & 0xFFFF0000) >> 16
