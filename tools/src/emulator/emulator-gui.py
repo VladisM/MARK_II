@@ -166,7 +166,7 @@ class mainWindow(tk.Frame):
         self.memFrame.rom0frame = tk.LabelFrame(self.memFrame, text="rom0")
         self.memFrame.rom0frame.grid(column=0, row=0, padx=5, pady=2)
 
-        self.memFrame.rom0frame.rom0 = tk.Text(self.memFrame.rom0frame, width=21, height=16, state=tk.DISABLED)
+        self.memFrame.rom0frame.rom0 = tk.Text(self.memFrame.rom0frame, undo=False, width=21, height=16, state=tk.DISABLED)
         self.memFrame.rom0frame.rom0.grid(column=0, row=0)
 
         self.memFrame.rom0frame.scrollY = tk.Scrollbar(self.memFrame.rom0frame, orient=tk.VERTICAL, command=self.memFrame.rom0frame.rom0.yview)
@@ -178,7 +178,7 @@ class mainWindow(tk.Frame):
         self.memFrame.ram0frame = tk.LabelFrame(self.memFrame, text="ram0")
         self.memFrame.ram0frame.grid(column=1, row=0, padx=5, pady=2)
 
-        self.memFrame.ram0frame.ram0 = tk.Text(self.memFrame.ram0frame, width=21, height=16, state=tk.DISABLED)
+        self.memFrame.ram0frame.ram0 = tk.Text(self.memFrame.ram0frame, undo=False, width=21, height=16, state=tk.DISABLED)
         self.memFrame.ram0frame.ram0.grid(column=0, row=0)
 
         self.memFrame.ram0frame.scrollY = tk.Scrollbar(self.memFrame.ram0frame, orient=tk.VERTICAL, command=self.memFrame.ram0frame.ram0.yview)
@@ -190,7 +190,7 @@ class mainWindow(tk.Frame):
         self.memFrame.ram1frame = tk.LabelFrame(self.memFrame, text="ram1")
         self.memFrame.ram1frame.grid(column=2, row=0, padx=5, pady=2)
 
-        self.memFrame.ram1frame.ram1 = tk.Text(self.memFrame.ram1frame, width=21, height=16, state=tk.DISABLED)
+        self.memFrame.ram1frame.ram1 = tk.Text(self.memFrame.ram1frame, undo=False, width=21, height=16, state=tk.DISABLED)
         self.memFrame.ram1frame.ram1.grid(column=0, row=0)
 
         self.memFrame.ram1frame.scrollY = tk.Scrollbar(self.memFrame.ram1frame, orient=tk.VERTICAL, command=self.memFrame.ram1frame.ram1.yview)
@@ -237,6 +237,7 @@ class mainWindow(tk.Frame):
 
     def updateRom0(self):
         self.memFrame.rom0frame.rom0['state'] = tk.NORMAL
+        first, last = self.memFrame.rom0frame.rom0.yview()
         self.memFrame.rom0frame.rom0.delete(1.0, tk.END)
 
         linecounter = 0
@@ -252,9 +253,11 @@ class mainWindow(tk.Frame):
             linecounter = linecounter + 1
 
         self.memFrame.rom0frame.rom0['state'] = tk.DISABLED
+        self.memFrame.rom0frame.rom0.yview_moveto(first)
 
     def updateRam0(self):
         self.memFrame.ram0frame.ram0['state'] = tk.NORMAL
+        first, last = self.memFrame.ram0frame.ram0.yview()
         self.memFrame.ram0frame.ram0.delete(1.0, tk.END)
 
         linecounter = 0
@@ -270,9 +273,11 @@ class mainWindow(tk.Frame):
             linecounter = linecounter + 1
 
         self.memFrame.ram0frame.ram0['state'] = tk.DISABLED
+        self.memFrame.ram0frame.ram0.yview_moveto(first)
 
     def updateRam1(self):
         self.memFrame.ram1frame.ram1['state'] = tk.NORMAL
+        first, last = self.memFrame.ram1frame.ram1.yview()
         self.memFrame.ram1frame.ram1.delete(1.0, tk.END)
 
         linecounter = 0
@@ -288,6 +293,7 @@ class mainWindow(tk.Frame):
             linecounter = linecounter + 1
 
         self.memFrame.ram1frame.ram1['state'] = tk.DISABLED
+        self.memFrame.ram1frame.ram1.yview_moveto(first)
 
 def main():
     get_args()
