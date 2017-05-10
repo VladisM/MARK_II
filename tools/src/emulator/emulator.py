@@ -1,39 +1,403 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-#
-#  emulator.py
-#
-#  Copyright 2017 Vladislav <vladislav.mlejnecky@student.upce.cz>
 
 from cpu.MARK import MARK
-import sys
+import getopt, sys, version
+import Tkinter as tk
 
-from args import *
+class globalDefs():
+    """Global definitions are stored here"""
 
-def main(args):
+    rom0eif = None
+    uart0map = None
+    gui = False
 
+class mainWindow(tk.Frame):
+    """Main window for emulator GUI"""
+
+    def __init__(self, master=None):
+        tk.Frame.__init__(self, master)
+        self.grid()
+
+        self.createVariables()
+        self.createWidgets()
+
+        self.soc = MARK(globalDefs.rom0eif, globalDefs.uart0map)
+
+        self.updateRegs()
+        self.updateMems()
+
+        self.master.title('MARK-II GUI Emulator')
+
+    #create variables for register entry widgets"
+    def createVariables(self):
+        self.r0v = tk.StringVar()
+        self.r1v = tk.StringVar()
+        self.r2v = tk.StringVar()
+        self.r3v = tk.StringVar()
+        self.r4v = tk.StringVar()
+        self.r5v = tk.StringVar()
+        self.r6v = tk.StringVar()
+        self.r7v = tk.StringVar()
+        self.r8v = tk.StringVar()
+        self.r9v = tk.StringVar()
+        self.r10v = tk.StringVar()
+        self.r11v = tk.StringVar()
+        self.r12v = tk.StringVar()
+        self.r13v = tk.StringVar()
+        self.r14v = tk.StringVar()
+        self.r15v = tk.StringVar()
+
+    #create all widgets in window
+    def createWidgets(self):
+
+        #frames
+        self.regframe = tk.LabelFrame(self, text="Registers")
+        self.regframe.grid(column=0, row=0, padx=5, pady=2)
+
+        self.controlframe = tk.LabelFrame(self, text="Control")
+        self.controlframe.grid(column=1, row=0, padx=5, pady=2, sticky=tk.N)
+
+        self.memFrame = tk.LabelFrame(self, text="Memory")
+        self.memFrame.grid(column=0, row=1, columnspan=2, padx=5, pady=2)
+
+        #control buttons (they are in control frame)
+        self.controlframe.tickbutton = tk.Button(self.controlframe, text="Tick", width=6, command=self.tickButton_callback)
+        self.controlframe.tickbutton.grid(column=0, row=0, padx=5, pady=2)
+
+        self.controlframe.tickbutton = tk.Button(self.controlframe, text="Reset", width=6,  command=self.resetButton_callback)
+        self.controlframe.tickbutton.grid(column=1, row=0, padx=5, pady=2)
+
+        self.controlframe.tickbutton = tk.Button(self.controlframe, text="Exit", width=6,  command=self.exitButton_callback)
+        self.controlframe.tickbutton.grid(column=2, row=0, padx=5, pady=2)
+
+        #registers (in register frame)
+        self.regframe.labelr0 = tk.Label(self.regframe, text="R0:")
+        self.regframe.labelr0.grid(column=0, row=0, padx=5, pady=2)
+
+        self.regframe.labelr1 = tk.Label(self.regframe, text="R1:")
+        self.regframe.labelr1.grid(column=0, row=1, padx=5, pady=2)
+
+        self.regframe.labelr2 = tk.Label(self.regframe, text="R2:")
+        self.regframe.labelr2.grid(column=0, row=2, padx=5, pady=2)
+
+        self.regframe.labelr3 = tk.Label(self.regframe, text="R3:")
+        self.regframe.labelr3.grid(column=0, row=3, padx=5, pady=2)
+
+        self.regframe.labelr4 = tk.Label(self.regframe, text="R4:")
+        self.regframe.labelr4.grid(column=0, row=4, padx=5, pady=2)
+
+        self.regframe.labelr5 = tk.Label(self.regframe, text="R5:")
+        self.regframe.labelr5.grid(column=0, row=5, padx=5, pady=2)
+
+        self.regframe.labelr6 = tk.Label(self.regframe, text="R6:")
+        self.regframe.labelr6.grid(column=0, row=6, padx=5, pady=2)
+
+        self.regframe.labelr7 = tk.Label(self.regframe, text="R7:")
+        self.regframe.labelr7.grid(column=0, row=7, padx=5, pady=2)
+
+        self.regframe.labelr8 = tk.Label(self.regframe, text="R8:")
+        self.regframe.labelr8.grid(column=2, row=0, padx=5, pady=2)
+
+        self.regframe.labelr9 = tk.Label(self.regframe, text="R9:")
+        self.regframe.labelr9.grid(column=2, row=1, padx=5, pady=2)
+
+        self.regframe.labelr10 = tk.Label(self.regframe, text="R10:")
+        self.regframe.labelr10.grid(column=2, row=2, padx=5, pady=2)
+
+        self.regframe.labelr11 = tk.Label(self.regframe, text="R11:")
+        self.regframe.labelr11.grid(column=2, row=3, padx=5, pady=2)
+
+        self.regframe.labelr12 = tk.Label(self.regframe, text="R12:")
+        self.regframe.labelr12.grid(column=2, row=4, padx=5, pady=2)
+
+        self.regframe.labelr13 = tk.Label(self.regframe, text="R13:")
+        self.regframe.labelr13.grid(column=2, row=5, padx=5, pady=2)
+
+        self.regframe.labelr14 = tk.Label(self.regframe, text="R14:")
+        self.regframe.labelr14.grid(column=2, row=6, padx=5, pady=2)
+
+        self.regframe.labelr15 = tk.Label(self.regframe, text="R15:")
+        self.regframe.labelr15.grid(column=2, row=7, padx=5, pady=2)
+
+        self.regframe.entryr0 = tk.Entry(self.regframe, width=10, disabledforeground="#000", disabledbackground="#fff", state=tk.DISABLED, textvariable=self.r0v)
+        self.regframe.entryr0.grid(column=1, row=0, padx=5, pady=2)
+
+        self.regframe.entryr1 = tk.Entry(self.regframe, width=10, disabledforeground="#000", disabledbackground="#fff", state=tk.DISABLED, textvariable=self.r1v)
+        self.regframe.entryr1.grid(column=1, row=1, padx=5, pady=2)
+
+        self.regframe.entryr2 = tk.Entry(self.regframe, width=10, disabledforeground="#000", disabledbackground="#fff", state=tk.DISABLED, textvariable=self.r2v)
+        self.regframe.entryr2.grid(column=1, row=2, padx=5, pady=2)
+
+        self.regframe.entryr3 = tk.Entry(self.regframe, width=10, disabledforeground="#000", disabledbackground="#fff", state=tk.DISABLED, textvariable=self.r3v)
+        self.regframe.entryr3.grid(column=1, row=3, padx=5, pady=2)
+
+        self.regframe.entryr4 = tk.Entry(self.regframe, width=10, disabledforeground="#000", disabledbackground="#fff", state=tk.DISABLED, textvariable=self.r4v)
+        self.regframe.entryr4.grid(column=1, row=4, padx=5, pady=2)
+
+        self.regframe.entryr5 = tk.Entry(self.regframe, width=10, disabledforeground="#000", disabledbackground="#fff", state=tk.DISABLED, textvariable=self.r5v)
+        self.regframe.entryr5.grid(column=1, row=5, padx=5, pady=2)
+
+        self.regframe.entryr6 = tk.Entry(self.regframe, width=10, disabledforeground="#000", disabledbackground="#fff", state=tk.DISABLED, textvariable=self.r6v)
+        self.regframe.entryr6.grid(column=1, row=6, padx=5, pady=2)
+
+        self.regframe.entryr7 = tk.Entry(self.regframe, width=10, disabledforeground="#000", disabledbackground="#fff", state=tk.DISABLED, textvariable=self.r7v)
+        self.regframe.entryr7.grid(column=1, row=7, padx=5, pady=2)
+
+        self.regframe.entryr8 = tk.Entry(self.regframe, width=10, disabledforeground="#000", disabledbackground="#fff", state=tk.DISABLED, textvariable=self.r8v)
+        self.regframe.entryr8.grid(column=3, row=0, padx=5, pady=2)
+
+        self.regframe.entryr9 = tk.Entry(self.regframe, width=10, disabledforeground="#000", disabledbackground="#fff", state=tk.DISABLED, textvariable=self.r9v)
+        self.regframe.entryr9.grid(column=3, row=1, padx=5, pady=2)
+
+        self.regframe.entryr10 = tk.Entry(self.regframe, width=10, disabledforeground="#000", disabledbackground="#fff", state=tk.DISABLED, textvariable=self.r10v)
+        self.regframe.entryr10.grid(column=3, row=2, padx=5, pady=2)
+
+        self.regframe.entryr11 = tk.Entry(self.regframe, width=10, disabledforeground="#000", disabledbackground="#fff", state=tk.DISABLED, textvariable=self.r11v)
+        self.regframe.entryr11.grid(column=3, row=3, padx=5, pady=2)
+
+        self.regframe.entryr12 = tk.Entry(self.regframe, width=10, disabledforeground="#000", disabledbackground="#fff", state=tk.DISABLED, textvariable=self.r12v)
+        self.regframe.entryr12.grid(column=3, row=4, padx=5, pady=2)
+
+        self.regframe.entryr13 = tk.Entry(self.regframe, width=10, disabledforeground="#000", disabledbackground="#fff", state=tk.DISABLED, textvariable=self.r13v)
+        self.regframe.entryr13.grid(column=3, row=5, padx=5, pady=2)
+
+        self.regframe.entryr14 = tk.Entry(self.regframe, width=10, disabledforeground="#000", disabledbackground="#fff", state=tk.DISABLED, textvariable=self.r14v)
+        self.regframe.entryr14.grid(column=3, row=6, padx=5, pady=2)
+
+        self.regframe.entryr15 = tk.Entry(self.regframe, width=10, disabledforeground="#000", disabledbackground="#fff", state=tk.DISABLED, textvariable=self.r15v)
+        self.regframe.entryr15.grid(column=3, row=7, padx=5, pady=2)
+
+        #memory view (text widgets with scroll bars)
+        self.memFrame.rom0frame = tk.LabelFrame(self.memFrame, text="rom0")
+        self.memFrame.rom0frame.grid(column=0, row=0, padx=5, pady=2)
+
+        self.memFrame.rom0frame.rom0 = tk.Text(self.memFrame.rom0frame, undo=False, width=21, height=16, state=tk.DISABLED)
+        self.memFrame.rom0frame.rom0.grid(column=0, row=0)
+
+        self.memFrame.rom0frame.scrollY = tk.Scrollbar(self.memFrame.rom0frame, orient=tk.VERTICAL, command=self.memFrame.rom0frame.rom0.yview)
+        self.memFrame.rom0frame.scrollY.grid(row=0, column=1, sticky=tk.N+tk.S)
+
+        self.memFrame.rom0frame.rom0['yscrollcommand'] = self.memFrame.rom0frame.scrollY.set
+
+
+        self.memFrame.ram0frame = tk.LabelFrame(self.memFrame, text="ram0")
+        self.memFrame.ram0frame.grid(column=1, row=0, padx=5, pady=2)
+
+        self.memFrame.ram0frame.ram0 = tk.Text(self.memFrame.ram0frame, undo=False, width=21, height=16, state=tk.DISABLED)
+        self.memFrame.ram0frame.ram0.grid(column=0, row=0)
+
+        self.memFrame.ram0frame.scrollY = tk.Scrollbar(self.memFrame.ram0frame, orient=tk.VERTICAL, command=self.memFrame.ram0frame.ram0.yview)
+        self.memFrame.ram0frame.scrollY.grid(row=0, column=1, sticky=tk.N+tk.S)
+
+        self.memFrame.ram0frame.ram0['yscrollcommand'] = self.memFrame.ram0frame.scrollY.set
+
+
+        self.memFrame.ram1frame = tk.LabelFrame(self.memFrame, text="ram1")
+        self.memFrame.ram1frame.grid(column=2, row=0, padx=5, pady=2)
+
+        self.memFrame.ram1frame.ram1 = tk.Text(self.memFrame.ram1frame, undo=False, width=21, height=16, state=tk.DISABLED)
+        self.memFrame.ram1frame.ram1.grid(column=0, row=0)
+
+        self.memFrame.ram1frame.scrollY = tk.Scrollbar(self.memFrame.ram1frame, orient=tk.VERTICAL, command=self.memFrame.ram1frame.ram1.yview)
+        self.memFrame.ram1frame.scrollY.grid(row=0, column=1, sticky=tk.N+tk.S)
+
+        self.memFrame.ram1frame.ram1['yscrollcommand'] = self.memFrame.ram1frame.scrollY.set
+
+    #callbacks functions
+    def tickButton_callback(self):
+        self.soc.tick()
+        self.updateRegs()
+        self.updateMems()
+
+    def resetButton_callback(self):
+        self.soc.reset()
+        self.updateRegs()
+        self.updateMems()
+
+    def exitButton_callback(self):
+        del self.soc
+        self.quit()
+
+    #update content of register fields
+    def updateRegs(self):
+        self.r0v.set( "0x" + (hex(int(self.soc.cpu0.regs[0])).split('x')[1]).zfill(8) )
+        self.r1v.set( "0x" + (hex(int(self.soc.cpu0.regs[1])).split('x')[1]).zfill(8) )
+        self.r2v.set( "0x" + (hex(int(self.soc.cpu0.regs[2])).split('x')[1]).zfill(8) )
+        self.r3v.set( "0x" + (hex(int(self.soc.cpu0.regs[3])).split('x')[1]).zfill(8) )
+        self.r4v.set( "0x" + (hex(int(self.soc.cpu0.regs[4])).split('x')[1]).zfill(8) )
+        self.r5v.set( "0x" + (hex(int(self.soc.cpu0.regs[5])).split('x')[1]).zfill(8) )
+        self.r6v.set( "0x" + (hex(int(self.soc.cpu0.regs[6])).split('x')[1]).zfill(8) )
+        self.r7v.set( "0x" + (hex(int(self.soc.cpu0.regs[7])).split('x')[1]).zfill(8) )
+        self.r8v.set( "0x" + (hex(int(self.soc.cpu0.regs[8])).split('x')[1]).zfill(8) )
+        self.r9v.set( "0x" + (hex(int(self.soc.cpu0.regs[9])).split('x')[1]).zfill(8) )
+        self.r10v.set( "0x" + (hex(int(self.soc.cpu0.regs[10])).split('x')[1]).zfill(8) )
+        self.r11v.set( "0x" + (hex(int(self.soc.cpu0.regs[11])).split('x')[1]).zfill(8) )
+        self.r12v.set( "0x" + (hex(int(self.soc.cpu0.regs[12])).split('x')[1]).zfill(8) )
+        self.r13v.set( "0x" + (hex(int(self.soc.cpu0.regs[13])).split('x')[1]).zfill(8) )
+        self.r14v.set( "0x" + (hex(int(self.soc.cpu0.regs[14])).split('x')[1]).zfill(8) )
+        self.r15v.set( "0x" + (hex(int(self.soc.cpu0.regs[15])).split('x')[1]).zfill(8) )
+
+    #update whole memory view
+    def updateMems(self):
+        self.updateRom0()
+        self.updateRam0()
+        self.updateRam1()
+
+    #update rom0 view
+    def updateRom0(self):
+        self.memFrame.rom0frame.rom0['state'] = tk.NORMAL   #enable editing
+        first, last = self.memFrame.rom0frame.rom0.yview()  #backup scroll bar position
+        self.memFrame.rom0frame.rom0.delete(1.0, tk.END)    #delete memory view
+
+        #print all mem item from rom0 into text widget
+        linecounter = 0
+        for item in self.soc.rom0.mem:
+
+            #convert everiting in hex
+            address = "0x" + (hex(linecounter).split('x')[1]).zfill(6)
+            value = "0x" + (hex(int(self.soc.rom0.mem[linecounter])).split('x')[1]).zfill(8)
+
+            if linecounter != 0:
+                self.memFrame.rom0frame.rom0.insert(tk.END, "\n")
+
+            #print line
+            self.memFrame.rom0frame.rom0.insert(tk.END, address + " : " + value)
+
+            linecounter = linecounter + 1
+
+        #disable eiditing again and restore scroll bar
+        self.memFrame.rom0frame.rom0['state'] = tk.DISABLED
+        self.memFrame.rom0frame.rom0.yview_moveto(first)
+
+    #update ram0 view
+    def updateRam0(self):
+        self.memFrame.ram0frame.ram0['state'] = tk.NORMAL
+        first, last = self.memFrame.ram0frame.ram0.yview()
+        self.memFrame.ram0frame.ram0.delete(1.0, tk.END)
+
+        linecounter = 0
+        for item in self.soc.ram0.mem:
+            address = "0x" + (hex(linecounter + 1024).split('x')[1]).zfill(6)   #add offset
+            value = "0x" + (hex(int(self.soc.ram0.mem[linecounter])).split('x')[1]).zfill(8)
+
+            if linecounter != 0:
+                self.memFrame.ram0frame.ram0.insert(tk.END, "\n")
+
+            self.memFrame.ram0frame.ram0.insert(tk.END, address + " : " + value)
+
+            linecounter = linecounter + 1
+
+        self.memFrame.ram0frame.ram0['state'] = tk.DISABLED
+        self.memFrame.ram0frame.ram0.yview_moveto(first)
+
+    #update ram1 view
+    def updateRam1(self):
+        self.memFrame.ram1frame.ram1['state'] = tk.NORMAL
+        first, last = self.memFrame.ram1frame.ram1.yview()
+        self.memFrame.ram1frame.ram1.delete(1.0, tk.END)
+
+        linecounter = 0
+        for item in self.soc.ram1.mem:
+            address = "0x" + (hex(linecounter +  1048576).split('x')[1]).zfill(6)
+            value = "0x" + (hex(int(self.soc.ram1.mem[linecounter])).split('x')[1]).zfill(8)
+
+            if linecounter != 0:
+                self.memFrame.ram1frame.ram1.insert(tk.END, "\n")
+
+            self.memFrame.ram1frame.ram1.insert(tk.END, address + " : " + value)
+
+            linecounter = linecounter + 1
+
+        self.memFrame.ram1frame.ram1['state'] = tk.DISABLED
+        self.memFrame.ram1frame.ram1.yview_moveto(first)
+
+#print help message into console
+def usage():
+    print """
+Example usage: emulator -g -p /dev/pts/2 -r rom.eif
+
+        Simple emulator of MARK-II SoC. Emulating systim, uart0, rom0, ram0, ram1,
+    intController and cpu. For more information please see:
+    https://github.com/VladisM/MARK_II/
+
+Arguments:
+    -h --help           Print this help and exit.
+    -p --port           Device where uart0 will be conected. Can be
+                        /dev/pts/2 for example.
+    -r --rom            Filename of file that will be loaded into rom0. Have to
+                        be .eif format.
+    -g --gui            Run with simple GUI.
+       --version        Print version number and exit.
+    """
+
+#get arguments from command line
+def get_args():
+
+    try:
+        opts, args = getopt.getopt(sys.argv[1:], "ghr:p:", ["gui", "help", "port", "rom", "version"])
+    except getopt.GetoptError as err:
+        print str(err)
+        usage()
+        sys.exit(1)
+
+    for option, value in opts:
+        if option in ("-h", "--help"):
+            usage()
+            sys.exit()
+        elif option == "--version":
+            print "Emulator for MARK-II " + version.version
+            sys.exit()
+        elif option in ("-r", "--rom"):
+            globalDefs.rom0eif = value
+        elif option in ("-p", "--port"):
+            globalDefs.uart0map = value
+        elif option in ("-g", "--gui"):
+            globalDefs.gui = True
+        else:
+            print "Unrecognized option " + option
+            print "Type 'emulator.py -h' for more informations."
+            sys.exit(1)
+
+    if globalDefs.rom0eif == None:
+        print "Missing file for rom0. Aborting emulation."
+        sys.exit(1)
+
+    if globalDefs.uart0map == None:
+        print "Missing port for uart0. Aborting emulation."
+        sys.exit(1)
+
+def main():
     get_args()
 
-    print "MARK-II emulator is running.\nUART0 mapped into \"" + globalDefs.uart0map + "\".\nTo stop execution use CTRL+C."
+    print "MARK-II GUI emulator " + version.version
+    print "UART0 mapped into \"" + globalDefs.uart0map + "\""
+    print "ROM0 loaded with \"" + globalDefs.rom0eif + "\""
 
-    soc = MARK(globalDefs.rom0eif, globalDefs.uart0map)
+    if globalDefs.gui == True:
+        #run in GUI mode
+        app = mainWindow()
+        app.mainloop()
 
-    while True:
-        try:
-            soc.tick()
-        except KeyboardInterrupt:
-            soc.reset()
-            del soc
-            print "\nEmulator halted by CTRL+C, exiting now.."
-            break
-        except SystemExit:
-            soc.reset()
-            del soc
-            print "Emulator halted by internall call sys.exit(), exiting now..."
-            break
+    else:
+        #run in CLI mode
+        print "For exit from emulator please use CTRL+C."
+
+        soc = MARK(globalDefs.rom0eif, globalDefs.uart0map)
+
+        while True:
+            try:
+                soc.tick()
+            except KeyboardInterrupt:
+                del soc
+                print "Emulator halted by CTRL+C, exiting now.."
+                break
+            except SystemExit:
+                del soc
+                print "Emulator halted by internall call sys.exit(), exiting now..."
+                break
 
     return 0
 
 if __name__ == '__main__':
-    import sys
-    sys.exit(main(sys.argv))
+    main()

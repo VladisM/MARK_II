@@ -693,7 +693,7 @@ def usage():
 Example usage: assembler main.asm
 
         This is two pass assembler for MARK II CPU. For informations about
-    MARK II please see: https://github.com/VladisM/MARK_II-SoC/
+    MARK II please see: https://github.com/VladisM/MARK_II/
 
 Arguments:
     -h --help           Print this help.
