@@ -3,12 +3,12 @@
 
 import sys, math, version, getopt
 
-class fileLoader:
-
+class disassembler:
     def __init__(self):
+        self.disassembled = []
         self.mem = []
 
-    def load(self, fileName):
+    def loadFile(self, fileName):
         self.loadeif(fileName)
 
     def loadeif(self, fileName):
@@ -25,11 +25,6 @@ class fileLoader:
             self.mem.append(int(line.upper(), 16))
 
         f.close()
-
-class disassembler:
-    def __init__(self):
-        self.fl = fileLoader()
-        self.disassembled = []
 
     def convertRegToName(self, reg):
         if reg == 14:
@@ -256,10 +251,10 @@ class disassembler:
 
     def disassemble(self, filename):
         #load file
-        self.fl.load(filename)
+        self.loadFile(filename)
 
         #translate all instruction from file
-        for instruction in self.fl.mem:
+        for instruction in self.mem:
 
             result = self.decodeInstruction(instruction)
 
@@ -277,16 +272,33 @@ class disassembler:
             print "Can't open output file for writing!"
             sys.exit(1)
 
+        #solve how much digits we need for address
         zerocount = int(math.ceil(math.log(len(self.disassembled), 2)/4.0))
 
         lineNumber = 0  #this count lines -> address so
+        nulls = 0
+
         for line in self.disassembled:
 
-            #write line into output file
-            of.write("0x" + ((hex(lineNumber).split('x'))[1]).zfill(zerocount) + "\t")
-            of.write(line)
-            of.write("\n")
+            #count empty lines (0 in memory)
+            if line == "0x0":
+                nulls = nulls + 1
+            else:
+                nulls = 0
 
+            #if we have 2 empty line, print \n, otherwise, if we have less than 2 lines, print data on line
+            #otherwise print nothing
+            if nulls == 2:
+                of.write("\n")
+            else:
+                if nulls < 2:
+                    of.write("0x" + ((hex(lineNumber).split('x'))[1]).zfill(zerocount) + "\t")
+                    of.write(line)
+                    of.write("\n")
+                else:
+                    pass
+
+            #line counter, hack for counting memory addreses
             lineNumber = lineNumber + 1
 
         of.close()
