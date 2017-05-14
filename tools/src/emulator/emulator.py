@@ -2,8 +2,12 @@
 # -*- coding: utf-8 -*-
 
 from cpu.MARK import MARK
+from disassembler import disassembler
+
 import getopt, sys, version
 import Tkinter as tk
+import ttk
+
 
 class globalDefs():
     """Global definitions are stored here"""
@@ -23,9 +27,11 @@ class mainWindow(tk.Frame):
         self.createWidgets()
 
         self.soc = MARK(globalDefs.rom0eif, globalDefs.uart0map)
+        self.disasm = disassembler()
 
         self.updateRegs()
         self.updateMems()
+        self.updateDisasmView()
 
         self.master.title('MARK-II GUI Emulator')
 
@@ -53,13 +59,16 @@ class mainWindow(tk.Frame):
 
         #frames
         self.regframe = tk.LabelFrame(self, text="Registers")
-        self.regframe.grid(column=0, row=0, padx=5, pady=2)
+        self.regframe.grid(column=0, row=0, padx=5, pady=2, sticky=tk.N)
 
         self.controlframe = tk.LabelFrame(self, text="Control")
         self.controlframe.grid(column=1, row=0, padx=5, pady=2, sticky=tk.N)
 
         self.memFrame = tk.LabelFrame(self, text="Memory")
-        self.memFrame.grid(column=0, row=1, columnspan=2, padx=5, pady=2)
+        self.memFrame.grid(column=0, row=1, columnspan=2, padx=5, pady=2, sticky=tk.N)
+
+        self.disasmFrame = tk.LabelFrame(self, text="Disassembler")
+        self.disasmFrame.grid(column=2, row=0, rowspan=2, padx=5, pady=2, sticky=tk.N)
 
         #control buttons (they are in control frame)
         self.controlframe.tickbutton = tk.Button(self.controlframe, text="Tick", width=6, command=self.tickButton_callback)
@@ -204,6 +213,26 @@ class mainWindow(tk.Frame):
 
         self.memFrame.ram1frame.ram1['yscrollcommand'] = self.memFrame.ram1frame.scrollY.set
 
+        #disassbled memory view
+
+        self.disasmFrame.helpFrame = tk.Frame(self.disasmFrame)
+        self.disasmFrame.helpFrame.grid(column=0,row=0, columnspan=2)
+
+        self.disasmFrame.helpFrame.disasmText = tk.Text(self.disasmFrame.helpFrame, undo=False, width=45, height=30, state=tk.DISABLED)
+        self.disasmFrame.helpFrame.disasmText.grid(column=0, row=0)
+
+        self.disasmFrame.helpFrame.scrollY = tk.Scrollbar(self.disasmFrame.helpFrame, orient=tk.VERTICAL, command=self.disasmFrame.helpFrame.disasmText.yview)
+        self.disasmFrame.helpFrame.scrollY.grid(row=0, column=1, sticky=tk.N+tk.S)
+
+        self.disasmFrame.helpFrame.disasmText['yscrollcommand'] = self.disasmFrame.helpFrame.scrollY.set
+
+        self.disasmFrame.disasmbutton = tk.Button(self.disasmFrame, text="Disasmble", width=6,  command=self.disasmButton_callback)
+        self.disasmFrame.disasmbutton.grid(column=1, row=1, padx=5, pady=2)
+
+        self.disasmFrame.disasmSelect = ttk.Combobox(self.disasmFrame, values=("rom0", "ram0", "ram1"), state='readonly')
+        self.disasmFrame.disasmSelect.grid(column=0, row=1, padx=5, pady=2)
+        self.disasmFrame.disasmSelect.current(0)
+
     #callbacks functions
     def tickButton_callback(self):
         self.soc.tick()
@@ -218,6 +247,9 @@ class mainWindow(tk.Frame):
     def exitButton_callback(self):
         del self.soc
         self.quit()
+
+    def disasmButton_callback(self):
+        self.updateDisasmView(self.disasmFrame.disasmSelect.current())
 
     #update content of register fields
     def updateRegs(self):
@@ -311,6 +343,47 @@ class mainWindow(tk.Frame):
 
         self.memFrame.ram1frame.ram1['state'] = tk.DISABLED
         self.memFrame.ram1frame.ram1.yview_moveto(first)
+
+    #update disassembled memory view
+    def updateDisasmView(self, mem=0):
+        #enable edit and delete all text
+        self.disasmFrame.helpFrame.disasmText['state'] = tk.NORMAL
+        self.disasmFrame.helpFrame.disasmText.delete(1.0, tk.END)
+
+        #decide what memory will be disassembled
+        if mem == 0:
+            mem_to_disasm = self.soc.rom0.mem
+            offset = 0
+        elif mem == 1:
+            mem_to_disasm = self.soc.ram0.mem
+            offset = 0x400
+        elif mem == 2:
+            mem_to_disasm = self.soc.ram1.mem
+            offset = 0x100000
+        else:
+            mem_to_disasm = self.soc.rom0.mem
+            offset = 0
+
+        #go thru all memitems in selected memory
+        linecounter = 0
+        for item in mem_to_disasm:
+            address = "0x" + (hex(linecounter + offset).split('x')[1]).zfill(6) #format address
+            value = "0x" + (hex(int(item)).split('x')[1]).zfill(8)              #format value at address
+            disasmInstruction = self.disasm.decodeInstruction(item)             #disassemble instruction
+
+            if disasmInstruction == None:   #if instruction is not valid print empty line
+                disasmInstruction = ""
+
+            if linecounter != 0:            #first line dosn't have \n before
+                self.disasmFrame.helpFrame.disasmText.insert(tk.END, "\n")
+
+            #print line
+            self.disasmFrame.helpFrame.disasmText.insert(tk.END, address + " : " + value + " : " + disasmInstruction)
+
+            linecounter = linecounter + 1
+
+        #disable editing again
+        self.disasmFrame.helpFrame.disasmText['state'] = tk.DISABLED
 
 #print help message into console
 def usage():
