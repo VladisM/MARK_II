@@ -23,7 +23,6 @@ TODO List:
 --------------------
 - [ ] Write better documentation.
 - [ ] SDRAM controller.
-- [X] Interface board (VGA, PS2, RS232...).
-- [X] Improve support for macros in assembler.
-- [x] Write an emulator.
 - [ ] Improve CPU architecture.
+- [ ] Simplify formats used by tools.
+- [ ] Add simple breakpoint support into emulator.
