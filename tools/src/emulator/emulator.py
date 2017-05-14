@@ -7,7 +7,7 @@ from disassembler import disassembler
 import getopt, sys, version
 import Tkinter as tk
 import ttk
-
+import tkMessageBox
 
 class globalDefs():
     """Global definitions are stored here"""
@@ -37,6 +37,7 @@ class mainWindow(tk.Frame):
 
     #create variables for register entry widgets"
     def createVariables(self):
+        #variables for registers
         self.r0v = tk.StringVar()
         self.r1v = tk.StringVar()
         self.r2v = tk.StringVar()
@@ -53,6 +54,8 @@ class mainWindow(tk.Frame):
         self.r13v = tk.StringVar()
         self.r14v = tk.StringVar()
         self.r15v = tk.StringVar()
+        #variable for run to command
+        self.runtov = tk.StringVar()
 
     #create all widgets in window
     def createWidgets(self):
@@ -79,6 +82,15 @@ class mainWindow(tk.Frame):
 
         self.controlframe.tickbutton = tk.Button(self.controlframe, text="Exit", width=6,  command=self.exitButton_callback)
         self.controlframe.tickbutton.grid(column=2, row=0, padx=5, pady=2)
+
+        self.controlframe.runtoframe = tk.LabelFrame(self.controlframe, text="Run to")
+        self.controlframe.runtoframe.grid(column=0, row=1, padx=5, pady=2, columnspan=3)
+
+        self.controlframe.runtoframe.runto = tk.Entry(self.controlframe.runtoframe, textvariable=self.runtov)
+        self.controlframe.runtoframe.runto.grid(column=0, row=0, padx=5, pady=2)
+
+        self.controlframe.runtoframe.runtobutton = tk.Button(self.controlframe.runtoframe, text="Run!", width=6, command=self.runtoButton_callback)
+        self.controlframe.runtoframe.runtobutton.grid(column=1, row=0, padx=5, pady=2)
 
         #registers (in register frame)
         self.regframe.labelr0 = tk.Label(self.regframe, text="R0:")
@@ -251,6 +263,40 @@ class mainWindow(tk.Frame):
     def disasmButton_callback(self):
         self.updateDisasmView(self.disasmFrame.disasmSelect.current())
 
+    def runtoButton_callback(self):
+
+        #convert string into number
+        number = self.runtov.get()
+        result = None
+
+        if type(number) == int:
+            result = number
+
+        else:
+            if len(number) >= 2:
+                try:
+                    if number[0:2] == '0x':
+                        result = int(number, 16)
+                    elif number[0:2] == '0b':
+                        result = int(number, 2)
+                    else:
+                        result = int(number, 10)
+                except:
+                    result = None
+            else:
+                try:
+                    result = int(number, 10)
+                except:
+                    result = None
+
+        if result != None:
+            while result != int(self.soc.cpu0.getRegByName("PC")):
+                self.soc.tick()
+            self.updateMems()
+            self.updateRegs()
+        else:
+            tkMessageBox.showwarning(title="'Run to' Warning", message="Given address in entry 'run to' box is not valid number. Plese use HEX, DEC or BIN number in C-like syntax.")
+
     #update content of register fields
     def updateRegs(self):
         self.r0v.set( "0x" + (hex(int(self.soc.cpu0.regs[0])).split('x')[1]).zfill(8) )
@@ -384,6 +430,7 @@ class mainWindow(tk.Frame):
 
         #disable editing again
         self.disasmFrame.helpFrame.disasmText['state'] = tk.DISABLED
+
 
 #print help message into console
 def usage():

@@ -25,4 +25,4 @@ TODO List:
 - [ ] SDRAM controller.
 - [ ] Improve CPU architecture.
 - [ ] Simplify formats used by tools.
-- [ ] Add simple breakpoint support into emulator.
+- [X] Add simple breakpoint support into emulator.
