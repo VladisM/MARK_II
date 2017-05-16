@@ -24,5 +24,3 @@ TODO List:
 - [ ] Write better documentation.
 - [ ] SDRAM controller.
 - [ ] Improve CPU architecture.
-- [ ] Simplify formats used by tools.
-- [X] Add simple breakpoint support into emulator.
