@@ -83,6 +83,8 @@ class mif:
 
         of.close()
 
+        return OK
+
     def read(self):
         if self.mode != READ:
             self.errmsg = "Read method called for file in write mode."

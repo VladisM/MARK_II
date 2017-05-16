@@ -4,13 +4,13 @@
 #  ldm2mif.py
 
 import version
-
+import mif
 import getopt, sys, math
 
-class buffer_item():
+class buffer_item(mif.buff_item):
     def __init__(self, address, value, relocation):
-        self.address = int(address, 16)
-        self.value = int(value, 16)
+        mif.buff_item.__init__(self, address, value)
+
         if relocation == "True":
             self.relocation = True
         else:
@@ -40,41 +40,12 @@ class buffer_item():
 
 def createOutput(output_file, buff, size):
 
-    outbuff = [0] * (2**size)
+    miffile = mif.mif(mif.WRITE, output_file, size)
 
-    zerocount = int(math.ceil(size/4.0))
-
-    for item in buff:
-        if item.address > ((2**size) - 1):
-            print "Instruction at " + hex(self.address) + " instruction word: " + hex(self.value) + " is out of memory range!"
-            sys.exit(1)
-
-        outbuff[item.address] = item.value
-
-    try:
-        of = file(output_file, "w")
-    except:
-        print "Can't open output file for writing!"
+    if miffile.write(buff) != mif.OK:
+        print "Can't create output mif file!"
+        print miffile.errmsg
         sys.exit(1)
-
-    of.write("DEPTH = " + str(2**size))
-    of.write(";\nWIDTH = 32;\nADDRESS_RADIX = HEX;\nDATA_RADIX = HEX;\n\nCONTENT BEGIN\n")
-
-    for n in range(0, 2**size):
-
-        address = hex(n).split('x')[1].zfill(zerocount)
-        value = hex(outbuff[n])
-        value = value.split('x')[1]
-        value = value.zfill(8)
-
-        of.write(address)
-        of.write(" : ")
-        of.write(value)
-        of.write(";\n")
-
-    of.write("END\n")
-
-    of.close()
 
 def usage():
     print """
@@ -157,7 +128,7 @@ def main():
     for line in f:
         line = line.replace("\n", "")
         address, value, relocation = line.split(':')
-        buff.append(buffer_item(address, value, relocation))
+        buff.append(buffer_item(int(address, 16), int(value,16), relocation))
 
     f.close()
 
