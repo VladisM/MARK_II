@@ -7,25 +7,20 @@
 
 from memitem import memitem
 import sys
+import mif
 
 class rom(memitem):
-    def __init__(self, baseAddress, size, rom0eif, name):
+    def __init__(self, baseAddress, size, rom0mif, name):
         memitem.__init__(self, baseAddress, size, name)
-        self.loadeif(rom0eif)
+        self.loadmif(rom0mif)
 
-    def loadeif(self, fileName):
-        try:
-            f = file(fileName, "r")
-        except:
-            print "Error in " + self.__name__ + "! Can't open input file <" + fileName + "> for reading!"
+    def loadmif(self, fileName):
+        miffile = mif.mif(mif.READ, fileName)
+
+        if miffile.read() == mif.OK:
+            for item in miffile.outBuff:
+                self.mem[item.address] = item.value
+        else:
+            print "Error in " + self.__name__ + "! Can't can't read input file <" + fileName + ">!"
+            print miffile.errmsg
             sys.exit(1)
-
-        i = 0
-        for line in f:
-            line.replace("\n", "")
-            line.replace("\r", "")
-            line.replace(" ", "")
-            self.mem[i] = int(line.upper(), 16)
-            i = i + 1
-
-        f.close()

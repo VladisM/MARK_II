@@ -14,9 +14,9 @@ from uart import uart
 
 class MARK():
 
-    def __init__(self, rom0eif, uart0_map):
+    def __init__(self, rom0mif, uart0_map):
         self.cpu0 = cpu(self.readFunction, self.writeFunction, self.retiFunction)
-        self.rom0 = rom(0x000000, 8, rom0eif, "rom0")
+        self.rom0 = rom(0x000000, 8, rom0mif, "rom0")
         self.ram0 = ram(0x000400, 10, "ram0")
         self.ram1 = ram(0x100000, 13, "ram1")
         self.systim0 = systim(0x000104, self.interrupt, "systim0")

@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import sys, math, version, getopt
+import sys, math, version, getopt, mif
 
 class disassembler:
     def __init__(self):
@@ -9,22 +9,17 @@ class disassembler:
         self.mem = []
 
     def loadFile(self, fileName):
-        self.loadeif(fileName)
 
-    def loadeif(self, fileName):
-        try:
-            f = file(fileName, "r")
-        except:
-            print "Error! Can't open input file <" + fileName + "> for reading!"
+        miffile = mif.mif(mif.READ, fileName)
+
+        if miffile.read() == mif.OK:
+            for item in miffile.outBuff:
+                self.mem.append(item.value)
+        else:
+            print "Error in disassebler! Can't can't read input file <" + fileName + ">!"
+            print miffile.errmsg
             sys.exit(1)
 
-        for line in f:
-            line.replace("\n", "")
-            line.replace("\r", "")
-            line.replace(" ", "")
-            self.mem.append(int(line.upper(), 16))
-
-        f.close()
 
     def convertRegToName(self, reg):
         if reg == 14:
