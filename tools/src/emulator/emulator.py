@@ -60,16 +60,16 @@ class mainWindow(tk.Frame):
 
         #frames
         self.regframe = tk.LabelFrame(self, text="Registers")
-        self.regframe.grid(column=0, row=0, padx=5, pady=2, sticky=tk.N)
+        self.regframe.grid(column=0, row=0, padx=5, pady=2, sticky=tk.N+tk.S)
 
         self.controlframe = tk.LabelFrame(self, text="Control")
-        self.controlframe.grid(column=1, row=0, padx=5, pady=2, sticky=tk.N)
+        self.controlframe.grid(column=1, row=0, padx=5, pady=2, sticky=tk.N+tk.S)
 
         self.memFrame = tk.LabelFrame(self, text="Memory")
-        self.memFrame.grid(column=0, row=1, columnspan=2, padx=5, pady=2, sticky=tk.N)
+        self.memFrame.grid(column=0, row=1, columnspan=2, padx=5, pady=2, sticky=tk.N+tk.S)
 
         self.disasmFrame = tk.LabelFrame(self, text="Disassembler")
-        self.disasmFrame.grid(column=2, row=0, rowspan=2, padx=5, pady=2, sticky=tk.N)
+        self.disasmFrame.grid(column=2, row=0, rowspan=2, padx=5, pady=2, sticky=tk.N+tk.S)
 
         #control buttons (they are in control frame)
         self.controlframe.tickbutton = tk.Button(self.controlframe, text="Tick", width=6, command=self.tickButton_callback)
@@ -226,7 +226,7 @@ class mainWindow(tk.Frame):
         #disassbled memory view
 
         self.disasmFrame.helpFrame = tk.Frame(self.disasmFrame)
-        self.disasmFrame.helpFrame.grid(column=0,row=0, columnspan=2)
+        self.disasmFrame.helpFrame.grid(column=0,row=0, columnspan=2, pady=2)
 
         self.disasmFrame.helpFrame.disasmText = tk.Text(self.disasmFrame.helpFrame, undo=False, width=45, height=30, state=tk.DISABLED)
         self.disasmFrame.helpFrame.disasmText.grid(column=0, row=0)
