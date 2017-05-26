@@ -146,7 +146,7 @@ def main():
     buff = tmpbuff
 
     #send everithing
-    ser = serial.Serial(port, baudrate, rtscts=True, dsrdtr=True)
+    ser = serial.Serial(port, baudrate)
 
     ser.write(chr((base_address >> 16) & 0xFF))
     ser.write(chr((base_address >> 8) & 0xFF))
