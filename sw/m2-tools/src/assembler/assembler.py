@@ -730,7 +730,7 @@ def get_args():
             sys.exit(1)
         else:
             print "Unrecognized option " + option
-            print "Type 'assembler.py -h' for more informations."
+            print "Type 'assembler -h' for more informations."
             sys.exit(1)
 
     if len(args) > 1:

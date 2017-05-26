@@ -80,7 +80,7 @@ def get_args():
         elif option == "-p":
             port = value
         elif option == "--version":
-            print "ldm2mif for MARK-II CPU " + version.version
+            print "loader for MARK-II CPU " + version.version
             sys.exit(1)
         elif option == "--baudrate":
             baudrate = int(value)

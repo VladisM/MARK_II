@@ -310,6 +310,8 @@ def get_args():
             print "Linker for MARK-II CPU " + version.version
             sys.exit(1)
         else:
+            print "Unrecognized option " + option
+            print "Type 'linker -h' for more informations."
             sys.exit(1)
 
     input_filenames = []

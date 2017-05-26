@@ -473,7 +473,7 @@ def get_args():
             globalDefs.gui = True
         else:
             print "Unrecognized option " + option
-            print "Type 'emulator.py -h' for more informations."
+            print "Type 'emulator -h' for more informations."
             sys.exit(1)
 
     if globalDefs.rom0mif == None:
