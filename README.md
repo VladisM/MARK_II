@@ -14,8 +14,8 @@ Project structure:
     * **src/** VHDL codes of whole MARK-II.
 * **hw/** All about Hardware. Addons for DE0 Nano board.
 * **sw/** MARK-II related software.
-    * **m2-tools** Tools for programming on MARK-II. Emulator, assembler...
-    * **loader** Serial bootloader firmware.
+    * **m2-tools/** Tools for programming on MARK-II. Emulator, assembler...
+    * **loader/** Serial bootloader firmware.
 
 TODO List:
 --------------------
