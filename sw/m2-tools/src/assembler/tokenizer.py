@@ -61,7 +61,7 @@ class macro():
                 counter = counter + 1
 
         if found == False:
-            counter = 0
+            return found, None
 
         return found, given_args[counter]
 
