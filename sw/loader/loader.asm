@@ -4,6 +4,7 @@
 ;
 ; R1 - universal register using in main program
 ; R2 - universal register using in interrupt
+; R3 - universal register using in interrupt
 ;
 ; R6 - temp variable
 ; R7 - bytenum variable
@@ -17,10 +18,12 @@
 .CONS UDR0  0x00010A
 .CONS UCR0  0x00010B
 
-.CONS MODE_BASE  0x01
-.CONS MODE_COUNT 0x02
-.CONS MODE_DATA  0x03
-.CONS MODE_DONE  0x04
+.CONS MODE_SYNC  0x01
+.CONS MODE_BASE  0x02
+.CONS MODE_COUNT 0x03
+.CONS MODE_DATA  0x04
+.CONS MODE_DONE  0x05
+.CONS MODE_ERROR 0x06
 
 ;---------------------------------------
 ; init system
@@ -35,7 +38,7 @@ start:
     MOV R0 R8
     MOV R0 R9
     MOV R0 R10
-    .MVI R11 MODE_BASE
+    .MVI R11 MODE_SYNC
 
     ;config uart0 to 1200 baud 8n1
     MVIL R1 0x02ED
@@ -49,15 +52,28 @@ start:
     BZ R0 main
 
 main:
-    ; if mode != MODE_DONE then goto main else goto base
+    ; if mode == MODE_DONE then goto base
     .MVI R1 MODE_DONE
     CMP EQ R1 R11 R1
-    BZ R1 main
-    BZI R0 R10 ;FIXME: delete following lines to "unhalt" after loading is done
+    BNZI R1 R10
+
+    ; if mode == MODE_ERROR make horrible things!
+    .MVI R1 MODE_ERROR
+    CMP EQ R1 R11 R1
+    BNZ R1 error_sig
+
+    BZ R0 main
+
+error_sig:
+    BZ R0 error_sig
 
 .ORG 0x00000022 ;UART0 RX ISR
 
     ;decide what code branch to execute - this is something like FSM
+    .MVI R2 MODE_SYNC
+    CMP EQ R2 R11 R2
+    BNZ R2 mode_sync_code
+
     .MVI R2 MODE_BASE
     CMP EQ R2 R11 R2
     BNZ R2 mode_base_code
@@ -72,6 +88,29 @@ main:
 
     ;something is wrong if we are there :(
     RETI
+
+;sync branch
+mode_sync_code:
+
+    ;if UDR0 != 0x55 then goto mode_sync_code_error
+    LD UDR0 R2
+    .MVI R3 0x55
+    CMP EQ R2 R3 R2
+    BZ R2 mode_sync_code_error
+
+    ;send 0xAA responde for loader
+    .MVI R3 0xAA
+    ST R3 UDR0
+
+    ;mode = mode_base
+    .MVI R11 MODE_BASE
+    RETI
+
+mode_sync_code_error:
+    ;mode = MODE_ERROR
+    .MVI R11 MODE_ERROR
+    RETI
+
 
 ;base branch
 mode_base_code:
@@ -163,6 +202,6 @@ mode_data_code_wordcomplete:
     RETI
 
 mode_data_code_complete:
-    ;mode == MODE_DONE
+    ;mode = MODE_DONE
     .MVI R11 MODE_DONE
     RETI
