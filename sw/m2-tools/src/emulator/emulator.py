@@ -290,6 +290,9 @@ class mainWindow(tk.Frame):
         if result != None:
             while result != int(self.soc.cpu0.getRegByName("PC")):
                 self.soc.tick()
+                self.updateRegs()
+                self.update()
+
             self.updateMems()
             self.updateRegs()
         else:
