@@ -3,7 +3,7 @@
 #
 #  loader.py
 
-import version, getopt, sys, serial
+import version, getopt, sys, serial, time
 
 class buffer_item():
     def __init__(self, address, value, relocation):
@@ -146,7 +146,25 @@ def main():
     buff = tmpbuff
 
     #send everithing
-    ser = serial.Serial(port, baudrate)
+    ser = serial.Serial(port, baudrate, rtscts=True, dsrdtr=True)
+
+    #try connect to loader in MARK
+
+    ser.write(chr(0x55))
+    time.sleep(2)
+
+    if ser.in_waiting > 0:
+        response = int((ser.read(1)).encode('hex'), 16)
+        if response != 0xAA:
+            print "Can't connect to MARK II Loader. Aborting.."
+            return 1
+        else:
+            print "Connected, start sending. Please wait..."
+    else:
+        print "Can't connect to MARK II Loader. Aborting.."
+        return 1
+
+    #send data
 
     ser.write(chr((base_address >> 16) & 0xFF))
     ser.write(chr((base_address >> 8) & 0xFF))
