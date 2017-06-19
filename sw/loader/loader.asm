@@ -116,7 +116,7 @@ mode_sync_code_error:
 mode_base_code:
 
     ;tmp << 8
-    ROL 8 R6 R6
+    LSL 8 R6 R6
 
     ;tmp |= udr0
     LD UDR0 R2
@@ -145,7 +145,7 @@ mode_base_code_wordcomplete:
 mode_count_code:
 
     ;tmp << 8
-    ROL 8 R6 R6
+    LSL 8 R6 R6
 
     ;tmp |= udr0
     LD UDR0 R2
@@ -174,7 +174,7 @@ mode_count_code_wordcomplete:
 mode_data_code:
 
     ;tmp << 8
-    ROL 8 R6 R6
+    LSL 8 R6 R6
 
     ;tmp |= udr0
     LD UDR0 R2
