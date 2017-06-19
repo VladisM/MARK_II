@@ -129,7 +129,8 @@ mode_base_code:
     .MVI R2 0x03
     CMP EQ R2 R7 R2
     BNZ R2 mode_base_code_wordcomplete
-    RETI
+
+    BZ R0 signalize_and_reti
 
 mode_base_code_wordcomplete:
 
@@ -137,7 +138,8 @@ mode_base_code_wordcomplete:
     MOV R0 R7 ;bytenum = 0
     MOV R0 R6 ;tmp = 0
     .MVI R11 MODE_COUNT ;mode = MODE_COUNT
-    RETI
+
+    BZ R0 signalize_and_reti
 
 ;count branch
 mode_count_code:
@@ -156,14 +158,16 @@ mode_count_code:
     .MVI R2 0x03
     CMP EQ R2 R7 R2
     BNZ R2 mode_count_code_wordcomplete
-    RETI
+
+    BZ R0 signalize_and_reti
 
 mode_count_code_wordcomplete:
     MOV R6 R9 ;count = tmp
     MOV R0 R7 ;bytenum = 0
     MOV R0 R6 ;tmp = 0
     .MVI R11 MODE_DATA ;mode = MODE_DATA
-    RETI
+
+    BZ R0 signalize_and_reti
 
 
 ;data branch
@@ -183,7 +187,8 @@ mode_data_code:
     .MVI R2 0x04
     CMP EQ R2 R7 R2
     BNZ R2 mode_data_code_wordcomplete
-    RETI
+
+    BZ R0 signalize_and_reti
 
 mode_data_code_wordcomplete:
     MOV R0 R7 ;bytenum = 0
@@ -199,9 +204,15 @@ mode_data_code_wordcomplete:
     ;if wordnum == count then goto mode_data_code_complete else RETI
     CMP EQ R8 R9 R2
     BNZ R2 mode_data_code_complete
-    RETI
+
+    BZ R0 signalize_and_reti
 
 mode_data_code_complete:
     ;mode = MODE_DONE
     .MVI R11 MODE_DONE
+    BZ R0 signalize_and_reti
+
+signalize_and_reti:
+    .MVI R2 0xBB
+    ST R2 UDR0
     RETI
