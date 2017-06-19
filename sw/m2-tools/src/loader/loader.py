@@ -109,6 +109,14 @@ def get_args():
 
     return [input_file, base_address, port, baudrate]
 
+def send_char(char_to_send, port):
+    port.write(char_to_send)
+
+    waiting = True
+    while waiting == True:
+        if port.in_waiting > 0 and int((port.read(1)).encode('hex'), 16) == 0xBB:
+            waiting = False
+
 def main():
 
     input_file, base_address, port, baudrate = get_args()
@@ -166,19 +174,19 @@ def main():
 
     #send data
 
-    ser.write(chr((base_address >> 16) & 0xFF))
-    ser.write(chr((base_address >> 8) & 0xFF))
-    ser.write(chr(base_address & 0xFF))
+    send_char(chr((base_address >> 16) & 0xFF), ser)
+    send_char(chr((base_address >> 8) & 0xFF), ser)
+    send_char(chr(base_address & 0xFF), ser)
 
-    ser.write(chr((size >> 16) & 0xFF))
-    ser.write(chr((size >> 8) & 0xFF))
-    ser.write(chr(size & 0xFF))
+    send_char(chr((size >> 16) & 0xFF), ser)
+    send_char(chr((size >> 8) & 0xFF), ser)
+    send_char(chr(size & 0xFF), ser)
 
     for value in buff:
-        ser.write(chr((value >> 24) & 0xFF))
-        ser.write(chr((value >> 16) & 0xFF))
-        ser.write(chr((value >> 8) & 0xFF))
-        ser.write(chr(value & 0xFF))
+        send_char(chr((value >> 24) & 0xFF), ser)
+        send_char(chr((value >> 16) & 0xFF), ser)
+        send_char(chr((value >> 8) & 0xFF), ser)
+        send_char(chr(value & 0xFF), ser)
 
     ser.close()
 
