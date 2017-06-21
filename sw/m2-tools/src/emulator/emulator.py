@@ -56,6 +56,7 @@ class mainWindow(tk.Frame):
         self.runtov = tk.StringVar()
         self.runtoUpdateRegv = tk.IntVar()
         self.runtoUpdateMemv = tk.IntVar()
+        self.forceExitRunTo = False
 
     #create all widgets in window
     def createWidgets(self):
@@ -93,13 +94,16 @@ class mainWindow(tk.Frame):
         self.controlframe.runtoframe.runtobutton.grid(column=1, row=0, padx=5, pady=2)
 
         self.controlframe.runtoframe.checkframe = tk.Frame(self.controlframe.runtoframe)
-        self.controlframe.runtoframe.checkframe.grid(column=0, row=1, padx=5, pady=2, columnspan=2)
+        self.controlframe.runtoframe.checkframe.grid(column=0, row=1, padx=5, pady=2)
 
-        self.controlframe.runtoframe.checkframe.runtocheckregs = tk.Checkbutton(self.controlframe.runtoframe.checkframe, text = "Update regs?", variable = self.runtoUpdateRegv)
+        self.controlframe.runtoframe.checkframe.runtocheckregs = tk.Checkbutton(self.controlframe.runtoframe.checkframe, text = "Regs?", variable = self.runtoUpdateRegv)
         self.controlframe.runtoframe.checkframe.runtocheckregs.grid(column=0, row=0, padx=5, pady=2)
 
-        self.controlframe.runtoframe.checkframe.runtocheckmems = tk.Checkbutton(self.controlframe.runtoframe.checkframe, text = "Update mems?", variable = self.runtoUpdateMemv)
+        self.controlframe.runtoframe.checkframe.runtocheckmems = tk.Checkbutton(self.controlframe.runtoframe.checkframe, text = "Mems?", variable = self.runtoUpdateMemv)
         self.controlframe.runtoframe.checkframe.runtocheckmems.grid(column=1, row=0, padx=5, pady=2)
+
+        self.controlframe.runtoframe.stopbutton = tk.Button(self.controlframe.runtoframe, text="Stop!", width=6, command=self.runtoStopButton_callback)
+        self.controlframe.runtoframe.stopbutton.grid(column=1, row=1, padx=5, pady=2)
 
         #registers (in register frame)
         self.regframe.labelr0 = tk.Label(self.regframe, text="R0:")
@@ -301,6 +305,10 @@ class mainWindow(tk.Frame):
         if result != None:
 
             while result != int(self.soc.cpu0.getRegByName("PC")):
+
+                if self.forceExitRunTo == True:
+                    break
+
                 self.soc.tick()
 
                 if self.runtoUpdateRegv.get() == 1:
@@ -313,8 +321,13 @@ class mainWindow(tk.Frame):
             self.updateMems()
             self.updateRegs()
 
+            self.forceExitRunTo = False
+
         else:
             tkMessageBox.showwarning(title="'Run to' Warning", message="Given address in entry 'run to' box is not valid number. Plese use HEX, DEC or BIN number in C-like syntax.")
+
+    def runtoStopButton_callback(self):
+        self.forceExitRunTo = True
 
     #update content of register fields
     def updateRegs(self):
