@@ -22,3 +22,4 @@ TODO List:
 - [ ] Write better documentation.
 - [ ] SDRAM controller.
 - [ ] Improve CPU architecture.
+- [ ] Get C compiler.
