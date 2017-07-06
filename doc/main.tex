@@ -1,0 +1,54 @@
+\documentclass[11pt, a4paper]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage{wrapfig}
+\usepackage{lmodern}
+\usepackage{hyperref}
+\usepackage[left=2cm,right=2cm,top=2cm,bottom=2cm]{geometry}
+\usepackage{listings}
+\lstset{breaklines=true}
+
+\author{Vladislav Mlejnecký}
+\title{\huge MARK-II Reference Manual}
+
+\begin{document}
+
+\pagenumbering{gobble}
+\maketitle
+\vfill
+\begin{figure}[h]
+\centering
+\begin{minipage}{.06\textwidth}
+  \centering
+  \includegraphics[width=.9\linewidth]{img/lic/cc.png}
+\end{minipage}
+\begin{minipage}{.06\textwidth}
+  \centering
+  \includegraphics[width=.9\linewidth]{img/lic/by.png}
+\end{minipage}
+\begin{minipage}{.06\textwidth}
+  \centering
+  \includegraphics[width=.9\linewidth]{img/lic/nc.png}
+\end{minipage}
+\end{figure}
+\begin{flushleft}
+    \copyright  2017 Vladislav Mlejnecký - v.mlejnecky@seznam.cz.
+    This work is licensed under the Creative Commons Attribution-NonCommercial 4.0 International License.
+    To view a copy of this license, visit \url{http://creativecommons.org/licenses/by-nc/4.0/}
+\end{flushleft}
+\newpage
+\pagenumbering{roman}
+\tableofcontents
+\newpage
+\listoffigures
+\newpage
+\pagenumbering{arabic}
+
+\include{tex/chapter_1}
+
+\end{document}
