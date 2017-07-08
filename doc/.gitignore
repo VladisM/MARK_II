@@ -5,3 +5,4 @@
 *.lof
 tex/*.aux
 *.pdf
+*.lot
