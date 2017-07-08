@@ -25,8 +25,8 @@ $(OUT_FILENAME).pdf: $(MAIN).tex
 #delete all unnecessary files including .pdf
 clean-all: clean_all
 clean_all:
-	rm -f *.aux *.log *.out *.toc *.lof tex/*.aux *.pdf
+	rm -f *.aux *.log *.out *.toc *.lof *.lot tex/*.aux *.pdf
 
 #delete unnecessary files
 clean:
-	rm -f *.aux *.log *.out *.toc *.lof tex/*.aux
+	rm -f *.aux *.log *.out *.toc *.lof *.lot tex/*.aux
