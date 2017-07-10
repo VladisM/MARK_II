@@ -466,7 +466,7 @@ class mainWindow(tk.Frame):
 #print help message into console
 def usage():
     print """
-Example usage: emulator -g -p /dev/pts/2 -r rom.eif
+Example usage: emulator -g -p /dev/pts/2 -r rom.mif
 
         Simple emulator of MARK-II SoC. Emulating systim, uart0, rom0, ram0, ram1,
     intController and cpu. For more information please see:
@@ -476,8 +476,7 @@ Arguments:
     -h --help           Print this help and exit.
     -p --port           Device where uart0 will be conected. Can be
                         /dev/pts/2 for example.
-    -r --rom            Filename of file that will be loaded into rom0. Have to
-                        be .eif format.
+    -r --rom            Filename of file that will be loaded into rom0.
     -g --gui            Run with simple GUI.
        --version        Print version number and exit.
     """
