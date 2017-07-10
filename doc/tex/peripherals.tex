@@ -1,0 +1,38 @@
+\section{Peripherals}
+
+\subsection{RAM}
+
+Simple and fast memory. You can store your data there, you can also run program
+from there.
+
+Internal RAM is organized as 32bit wide words and is implemented with internal
+SRAM block memory in FPGA. Thus is really fast. It is fastest memory what you
+can use (of course, except registers).
+
+\subsection{ROM}
+
+Simple memory for program store. CPU can read program from this but it is not
+able to write data there.
+
+Memory is implemented in same way as RAM, but write signals is not present
+there. Content of ROM is specified in ".mif" memory initialization files. These
+files are used during synthesis of SoC into FPGA.
+
+\subsection{GPIO}
+Simple peripheral, two 8bit input/outputs ports. Function is similar
+to AVR ports, there is two register, DDR and PORT, logical one in DDR
+set this pin as output, value written into right bit of PORT register
+will be on pin. When logical zero in in DDR register, CPU can read
+values what are connected to the pins through PORT register.
+
+\subsection{UART}
+
+\subsection{Interrupt driver}
+
+\subsection{Timer}
+
+\subsection{System timer}
+
+\subsection{VGA driver}
+
+\subsection{PS2 driver}

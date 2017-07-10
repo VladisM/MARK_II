@@ -1,0 +1,28 @@
+\section{Introduction}
+
+MARK II is simple SoC written in VHDL for synthetization into Altera Cyclone
+FPGA. SoC consist of simple RISC like CPU and a few peripherals. There is also
+small toolchain for writing programs that can run on MARK-II CPU.
+
+CPU is 32 bits wide and following Von Neumann architecture, can address up to
+$2^{24}$ words, has 32 interrupt sources, 16 registers including three special
+ones.
+
+To the CPU can be connected memory mapped peripherals, following peripherals
+are available: UART, PS/2, VGA driver, general purpose timers, system timer,
+GPIO, onchip RAM and ROM, interrupt controller.
+
+Thanks to toolchain, you can write programms in human way. Toolchain consist of
+Assembler, Linker, Emulator, Disassembler, Loader and ldm2mif converter.
+
+This document is reference guide for MARK-II CPU. Please, note that this
+document is not completed yet and some information can be outdated or even
+missing! Every Time please read source codes or contact code authors.
+
+MARK-II is home project, created just for fun. There isn't any main goals except
+one, have fun from coding. As home fun project, is licensed under MIT license to
+be free for everybody to try run it.
+
+Anyway, some goals exist, but it's more like "I want to try ..." rather than
+"I have to ...", these goals are changing in time and they are following topics
+that I want to explore.
