@@ -1,8 +1,21 @@
 \subsection{ROM}
 
+\subsubsection{Introduction}
+
 Simple memory for program store. CPU can read program from this but it is not
-able to write data there.
+able to write data there. By default, in rom0 is stored serial port loader and
+CPU start execution there.
 
 Memory is implemented in same way as RAM, but write signals is not present
 there. Content of ROM is specified in ".mif" memory initialization files. These
 files are used during synthesis of SoC into FPGA.
+
+\subsubsection{Hacking}
+
+At this moment, there is any simple way to change size of ROM. It is hard coded
+to 256 words. In order to change it you have to modify chip select generator,
+instance of lpm\_rom and mif.
+
+Anyway, you can change memory initialization file quit simply. Just replace
+"rom.mif" file in the /fpga/src/rom/ directory. New file should be organized
+as 256x32bit.

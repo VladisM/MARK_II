@@ -77,7 +77,7 @@ Well, now we have macro defined, we will use it somewhere in the code like this:
     $send 0xAA
 \end{lstlisting}
 
-Value "0xAA" will be automaticaly placed everywhere "byte" is written, when
+Value "0xAA" will be automatically placed everywhere "byte" is written, when
 macro is invoking.
 
 Assembler have build in support for labels inside macros. This mean, you can
@@ -102,7 +102,7 @@ See example bellow to get this clear.
         BZ R2 loop
     #endmacro
 
-    ; some usefull code is here
+    ; some useful code is here
     OR R0 R0 R0
 
     $delay 100      ; invoke macro "delay"
@@ -138,8 +138,8 @@ Numbers are parsed in C like form so:
 
 \subsubsection{Labels}
 
-When they are defined, they have to be followed with semicollon ':'. When used
-(eg. with CALL instruction), semicollon is not used anymore. Example code:
+When they are defined, they have to be followed with semicolon ':'. When used
+(eg. with CALL instruction), semicolon is not used anymore. Example code:
 
 \begin{lstlisting}[language={[x86masm]Assembler}, frame=single]
     halt:
@@ -163,7 +163,7 @@ PseudoInstructions are supported:
 
     \item \textbf{.DAT word*} -
     Reserve space in memory at current location with size for all words.
-    Memory is then filled with them. Every word have to be separed with
+    Memory is then filled with them. Every word have to be separated with
     space.
 
     \item \textbf{.DS size} -
@@ -180,6 +180,6 @@ PseudoInstructions are supported:
     for linker.
 
     \item \textbf{.MVI register value} -
-    Load register with 32b value. This is usefull when you want load constants
+    Load register with 32b value. This is useful when you want load constants
     into registers.
 \end{itemize}

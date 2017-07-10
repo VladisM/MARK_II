@@ -1,8 +1,41 @@
 \subsection{RAM}
 
+\subsubsection{Introduction}
+
 Simple and fast memory. You can store your data there, you can also run program
 from there.
 
 Internal RAM is organized as 32bit wide words and is implemented with internal
 SRAM block memory in FPGA. Thus is really fast. It is fastest memory what you
 can use (of course, except registers).
+
+\subsubsection{Hacking}
+
+SoC can have multiple instances of RAM, as much as you want and there is
+enough FPGA SRAM (M9K for Cyclone IV) block free. Formula for estimate usage
+of M9K is: $ blocks = \frac{2^{ADDRESS\_WIDE}}{256} $.
+
+You can change size of internal RAM by parameter ADDRESS\_WIDE, value for this
+parameter have following meaning: $ size [words] = 2^{ADDRESS\_WIDE}$.
+
+\begin{lstlisting}[language=VHDL, frame=single]
+entity ram is
+    generic(
+        BASE_ADDRESS: unsigned(23 downto 0) := x"000000";
+        ADDRESS_WIDE: natural := 8
+    );
+    port(
+        clk: in std_logic;
+        address: in unsigned(23 downto 0);
+        data_mosi: in unsigned(31 downto 0);
+        data_miso: out unsigned(31 downto 0);
+        WR: in std_logic;
+        RD: in std_logic;
+        ack: out std_logic
+    );
+end entity ram;
+\end{lstlisting}
+
+As you can see, there is only these one parameter for changing features of RAM.
+Another ports are used for connection onto system BUS. When you want add more
+instances of RAM, you have to also specify base address.
