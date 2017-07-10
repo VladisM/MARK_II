@@ -1,0 +1,185 @@
+\subsection{Assembler}
+
+Simple two pass assembler for MARK-II is written in python 2.7 and is tested
+under Linux. Assembler have basic support for macros and conditional translation.
+In combination with linker, this simple assembler is able to do everything you
+need, for development.
+
+\subsubsection{Preprocessor}
+
+Assembler have build-in preprocessor. This preprocessor have one pass
+architecture, due this it isn't able to perform any forward declarations and any
+recursions in macros. Preprocessor have build-in following commands:
+
+\begin{itemize}
+    \item \textbf{\#define symbol} -
+    Define an symbol that is used ONLY with conditional assembly.
+
+    \item \textbf{\#ifdef symbol} -
+    If symbol is defined, assembler will parse following code, otherwise code
+    will be skipped to the nearest \#endif. Note: "\#if" block can be nested.
+
+    \item \textbf{\#ifndef symbol} -
+    Same as \#ifdef but assembly code when symbol does not exist.
+
+    \item \textbf{\#endif} -
+    Identify end of condition assembly block.
+
+    \item \textbf{\#include file} -
+    Include file into current buffer.
+
+    \item \textbf{\#macro name parms} -
+    Define an new macro, everithing up to \#endmacro will be body of new macro.
+
+    \item \textbf{\#endmacro} -
+    Close macro body and write it into macro table.
+\end{itemize}
+
+\subsubsection{Macros}
+
+Macro is small sequence of code that can be simple defined once and pasted into
+code many times. Lets say there is an macro called "setLed". You can invoke it
+with code like this:
+
+\begin{lstlisting}[language={[x86masm]Assembler}, frame=single]
+    $setLed
+\end{lstlisting}
+
+Prefix \$ is mandatory when invoking macro and tell the preprocesor "I wan't
+paste macro setLed here!". Preprocesor then take body of setLed macro and paste
+it into output buffer.
+
+Macro can be defined using \#macro and \#endmacro preprocesor commands. For
+example we will define macro setLed.
+
+\begin{lstlisting}[language={[x86masm]Assembler}, frame=single]
+    #macro setLed
+        MVIL R1 0x0001
+        ST R1 PORTA
+    #endmacro
+\end{lstlisting}
+
+Macros can have arguments in ther definition. This feature is used in same way
+as argument in C functions. For first you have to define macro with argument in
+name. Let's say we want an macro "send" for sending by urat. This macro will
+have one argument - byte to send. Code should look something like this:
+
+\begin{lstlisting}[language={[x86masm]Assembler}, frame=single]
+    #macro send byte
+        ;some code for prepare sending
+        ST byte UDR0
+    #endmacro
+\end{lstlisting}
+
+Well, now we have macro defined, we will use it somewhere in the code like this:
+
+\begin{lstlisting}[language={[x86masm]Assembler}, frame=single]
+    $send 0xAA
+\end{lstlisting}
+
+Value "0xAA" will be automaticaly placed everywhere "byte" is written, when
+macro is invoking.
+
+Assembler have build in support for labels inside macros. This mean, you can
+define label in macro and then call it. But this feature have exception that
+normal labels doesn't.
+
+You can call label only within macro definition itself. There is no way to call
+label defined inside macro from normal code. This is because when you invoke
+macro, labels get automatically renamed. There is unique name for each instance
+of macro.
+
+See example bellow to get this clear.
+
+\begin{lstlisting}[language={[x86masm]Assembler}, frame=single]
+    ;define new macro for delay
+
+    #macro delay time
+        .MVI R1 time
+        loop:
+        DEC R1 R1
+        CMP EQ R1 R0 R2
+        BZ R2 loop
+    #endmacro
+
+    ; some usefull code is here
+    OR R0 R0 R0
+
+    $delay 100      ; invoke macro "delay"
+
+    ; assembler take definition of delay macro - replace loop "label" with "loop1"
+    ; (1 because this is first instance of this macro) - and place macro body there
+
+    ; there is another tons of usefull code
+    OR R0 R0 R0
+
+    $delay 1000     ; next instance of delay - now "loop2" is created
+\end{lstlisting}
+
+But macros also have some limitations. Mainly:
+
+\begin{itemize}
+    \item Macros can't be nested.
+    \item Macro have to be complete defined before invoking.
+    \begin{itemize}
+        \item This also mean any recursion.
+    \end{itemize}
+\end{itemize}
+
+\subsubsection{Numbers}
+
+Numbers are parsed in C like form so:
+
+\begin{itemize}
+    \item \textbf{0x10} - hexadecimal number, 16 in decimal form
+    \item \textbf{0b1010} - binary number, 9 in decimal form
+    \item \textbf{74} - decimal number 74
+\end{itemize}
+
+\subsubsection{Labels}
+
+When they are defined, they have to be followed with semicollon ':'. When used
+(eg. with CALL instruction), semicollon is not used anymore. Example code:
+
+\begin{lstlisting}[language={[x86masm]Assembler}, frame=single]
+    halt:
+        OR R0 R0 R0
+        BZ R0 halt
+\end{lstlisting}
+
+\subsubsection{PseudoInstructions}
+
+They have to start with dot '.'. They are used for controlling assembler. Following
+PseudoInstructions are supported:
+
+\begin{itemize}
+    \item \textbf{.CONS name value} -
+    Set constant <name> with contain <value>. Assembler simply replace all
+    <name> in source code with <value>. This is not an macro and only numeric
+    values can be processed!
+
+    \item \textbf{.ORG value} -
+    Set location counter to specified location during pass1.
+
+    \item \textbf{.DAT word*} -
+    Reserve space in memory at current location with size for all words.
+    Memory is then filled with them. Every word have to be separed with
+    space.
+
+    \item \textbf{.DS size} -
+    Only reserve space in memory at current location with size <size> in words.
+
+    \item \textbf{.EXPORT name} -
+    Export label for use in another object file. This pseudoinstruction create
+    an special symbol. Special symbols are then printed into object file for
+    linker.
+
+    \item \textbf{.IMPORT name} -
+    Import exported label from another object file. This pseudoinstruction
+    create an special symbol. Special symbols are then printed into object file
+    for linker.
+
+    \item \textbf{.MVI register value} -
+    Load register with 32b value. This is usefull when you want load constants
+    into registers.
+\end{itemize}

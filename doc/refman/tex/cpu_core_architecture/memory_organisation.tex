@@ -1,0 +1,24 @@
+\subsection{Memory organization}
+
+CPU can address up to $2^{24}$ words, whole memory space is linear. Everything
+is in one memory space, there is nothing like IO space, program space, data
+space. MARK II CPU following Von Neumann scheme, so program and also data is in
+one space. Peripherals and IO devices should be mapped there too.
+
+There are two instruction for working with memory. One is LD for reading from
+memory, and second is ST for writing into memory. Both instruction can use
+absolute addressing mode (address is part of instruction) or indirect
+addressing with register (address is stored in register).
+
+\subsubsection{Stack}
+
+Stack is used for storing returning address when calling subroutines or
+interrupts. It grow from up to down. So, you should set SP at end of ram.
+
+You can also use stack for storing your variables/registers etc. There is two
+special functions for that.
+
+\begin{itemize}
+    \item \textbf{PUSH} - store data into stack and decrement SP
+    \item \textbf{POP} - take data from stack and increment SP
+\end{itemize}

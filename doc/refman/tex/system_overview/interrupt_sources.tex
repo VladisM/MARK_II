@@ -1,0 +1,52 @@
+\subsection{Interrupt sources}
+
+\begin{table}[]
+    \centering
+    \begin{tabular}{|l|l|l|l|}
+        \hline
+        \textbf{Int number} & \textbf{Peripheral} & \textbf{Vector} & \textbf{Purpose}               \\ \hline
+        0                   & System Timer        & 0x000010        & Timer compare match / overflow \\ \hline
+        1                   & -                   & 0x000012        & -                              \\ \hline
+        2                   & -                   & 0x000014        & -                              \\ \hline
+        3                   & -                   & 0x000016        & -                              \\ \hline
+        4                   & -                   & 0x000018        & -                              \\ \hline
+        5                   & -                   & 0x00001A        & -                              \\ \hline
+        6                   & -                   & 0x00001C        & -                              \\ \hline
+        7                   & -                   & 0x00001E        & -                              \\ \hline
+        8                   & UART0               & 0x000020        & Byte sended                    \\ \hline
+        9                   & UART0 Rx            & 0x000022        & Byte recieved                  \\ \hline
+        10                  & UART1 Tx            & 0x000024        & Byte sended                    \\ \hline
+        11                  & UART1 Rx            & 0x000026        & Byte recieved                  \\ \hline
+        12                  & UART2 Tx            & 0x000028        & Byte sended                    \\ \hline
+        13                  & UART2 Rx            & 0x00002A        & Byte recieved                  \\ \hline
+        14                  & Timer 0             & 0x00002C        & Timer compare match / overflow \\ \hline
+        15                  & Timer 1             & 0x00002E        & Timer compare match / overflow \\ \hline
+        16                  & Timer 2             & 0x000030        & Timer compare match / overflow \\ \hline
+        17                  & Timer 3             & 0x000032        & Timer compare match / overflow \\ \hline
+        18                  & PS2 Keyboard        & 0x000034        & Byte recieved                  \\ \hline
+        19                  & -                   & 0x000036        & -                              \\ \hline
+        20                  & -                   & 0x000038        & -                              \\ \hline
+        21                  & -                   & 0x00003A        & -                              \\ \hline
+        22                  & -                   & 0x00003C        & -                              \\ \hline
+        23                  & -                   & 0x00003E        & -                              \\ \hline
+        24                  & -                   & 0x000040        & -                              \\ \hline
+        25                  & -                   & 0x000042        & -                              \\ \hline
+        26                  & -                   & 0x000044        & -                              \\ \hline
+        27                  & -                   & 0x000046        & -                              \\ \hline
+        28                  & -                   & 0x000048        & -                              \\ \hline
+        29                  & -                   & 0x00004A        & -                              \\ \hline
+        30                  & -                   & 0x00004C        & -                              \\ \hline
+        31                  & -                   & 0x00004E        & -                              \\ \hline
+    \end{tabular}
+    \caption{List of all interrupt sources}
+    \label{tab:intsources}
+\end{table}
+
+In the table \ref{tab:intsources} are listed all interrupt vectors. Destinations
+adresses of interrupts are hardwired into CPU and cannot be changed. All
+interrupts are mascable using interrupt controller.
+
+Support for nested interrupts isn't implemented. When one interrupt come, CPU
+will jump into interrupt service routine and until RETI instruction is executed,
+another interrupt cannot be raised. Anyway, when an interrupt is active, another
+one is then put into queue.

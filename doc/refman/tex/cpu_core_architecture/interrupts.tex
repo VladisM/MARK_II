@@ -1,0 +1,22 @@
+\subsection{Interrupts}
+
+Interrupt vectors are address in memory where the CPU will jump when interrupt
+occur. All addresses can be found in the table \ref{tab:intsources}. When
+interrupt occur CPU will do following:
+
+1. complete actual instruction
+2. increment PC (PC always have to point to next instruction)
+3. store PC into stack and decrement SP
+4. jump into interrupt vector
+
+There is only two words for every vector. This is enough only for code like this:
+
+\begin{lstlisting}[language={[x86masm]Assembler}, frame=single]
+    .ORG UART1_RX_VECTOR
+        CALL UART1_RX_ISR
+        RETI
+\end{lstlisting}
+
+Instruction RETI is mandatory. It will inform interrupt driver that ISR is
+completed and CPU is ready to take another interrupt. There is no support for
+nested interrupts. When first interrupt come, another have to wait.

@@ -1,0 +1,125 @@
+\subsection{Usage}
+
+\subsubsection{Assembler}
+
+\begin{lstlisting}[language=bash, frame=single]
+    Example usage: assembler main.asm
+
+    Arguments:
+        -h --help           Print this help.
+        -o --output         Output object file name.
+           --skip-linker    Generate relocatable loader module
+                            instead object file. Can be used for
+                            skipping linker if linking is not needed.
+           --version        Print version number and exit.
+\end{lstlisting}
+
+Assembler take one file with ".asm" and translate it into object file ".o".
+Object files are then readed by linker and linked together into loadable module
+".ldm". You can skip linker step by specifying "--skip-linker" argument.
+
+Please note, if you use preprocessor directive "\#include file.asm", you don't
+need this file linked, because preprocessor take whole "file.asm" and paste it
+into current file. Linker is needed when you used pseudo-instruction ".IMPORT
+label".
+
+\subsubsection{Linker}
+
+\begin{lstlisting}[language=bash, frame=single]
+    Example usage: linker example1.o example2.o
+
+    Arguments:
+        -h --help           Print this help.
+        -o <file>           Output LDM file name. If not specified,
+                            name of first object file will be used.
+           --version        Print version number and exit.
+\end{lstlisting}
+
+Link multiple object files into one loadable module. Linker is necessary when
+you split your code into multiple files and use ".EXPORT label" and ".IMPORT
+label" pseudo-instructions.
+
+In that case just compile each file separated and then call:
+
+\begin{lstlisting}[language=bash, frame=single]
+    # linker file1.o file2.o
+\end{lstlisting}
+
+\subsubsection{ldm2mif}
+
+\begin{lstlisting}[language=bash, frame=single]
+    Example usage: ldm2mif example.ldm
+
+    Arguments:
+        -h --help           Print this help.
+        -o <file>           Output MIF name. If not specified name of
+                            input file will be used.
+        -r <address>        Relocate source. Add just immediate
+                            addresses of these instructions that use
+                            relative addressing using labels.
+                            You have to specify <address> in hex
+                            where the code will be stored. Default
+                            value is 0x000000.
+        -s <size>           Size of memory, default value is 8.
+                            Memory range is from 0 to 2^<size>.
+           --version        Print version number and exit.
+\end{lstlisting}
+
+This simple tool is used to convert loadable module into ".mif" files for
+Quartus. You can specify size of memory and also base address of memory. All
+relative symbols (like jump into labels) will be recalculated relative to the
+base address.
+
+\subsubsection{disassembler}
+
+\begin{lstlisting}[language=bash, frame=single]
+    Example usage: disassembler uart.ldm
+
+    Arguments:
+        -h --help           Print this help.
+        -o --output         Output file name.
+           --version        Print version number and exit.
+\end{lstlisting}
+
+Read compiled loadable module and translate it back to assembler source codes.
+
+\subsubsection{loader}
+
+\begin{lstlisting}[language=bash, frame=single]
+    Example usage: loader -b 0x400 -p /dev/ttyUSB0 example.ldm
+
+    Arguments:
+        -h --help           Print this help.
+        -b <address>        Base address, using hex C like syntax,
+                            to store source.
+                            Loader also perform relocation of the
+                            given source to this address.
+        -p <port>           Port where MARK-II is connected. For
+                            example /dev/ttyUSB0.
+           --baudrate       Set baudrate for port. Default value is
+                            1200.
+           --version        Print version number and exit.
+\end{lstlisting}
+
+Simple tool for loading programs into CPU using UART. Simply specify the base
+address where you want store your code, specify port where MARK-II is connected
+and wait. MARK-II must be connected before sending started.
+
+\subsubsection{emulator}
+
+\begin{lstlisting}[language=bash, frame=single]
+    Example usage: emulator -g -p /dev/pts/2 -r rom.mif
+
+    Arguments:
+        -h --help           Print this help and exit.
+        -p --port           Device where uart0 will be connected.
+                            Can be /dev/pts/2 for example.
+        -r --rom            Filename of file that will be loaded
+                            into rom0.
+        -g --gui            Run with simple GUI.
+           --version        Print version number and exit.
+\end{lstlisting}
+
+Great way to test your program and get in touch with MARK-II. Enable execution
+of programs in almost same way like real HW. Also emulate uart0 so you can
+connect serial port monitor.
