@@ -1,1 +1,61 @@
 \subsection{System timer}
+
+System timer is simple 24bit wide timer that can be used for generating
+periodical interrupt. This can be useful when you want to write some kind of
+OS.
+
+\subsubsection{Function}
+
+System timer are clocked at same frequency as CPU and this cannot be changed. It
+is counting from zero to up, until compare match with specified top occur. Then
+interrupt request is generated, counter is set to zero and counting are restarted.
+
+Timer have two registers, one for controlling and one with actual counter value. Reading
+from registers are possible, writing too but when write is performed at counter
+value register, counter is reseted and counting is restarted from zero.
+
+With control register you can set top value and enable or disable timer.
+
+\subsubsection{Registers}
+
+All registers are listed in table \ref{tab:systim_reg_map}. Register SYSTVR is 24
+bits wide and  contains  actual value of counter. Register SYSTCR is 25 bit wide
+and contains value of top constant and timer enable bit. Bit 23 down 0 are this
+top constant, bit 24 is timer enable bit.
+
+\begin{table}[h]
+    \centering
+    \begin{tabular}{|l|l|l|}
+        \hline
+        \textbf{Offset} & \textbf{Name} & \textbf{Purpose}            \\ \hline
+        $+0$            & SYSTCR        & SysTim control register.    \\ \hline
+        $+1$            & SYSTVR        & SysTim value register.      \\ \hline
+    \end{tabular}
+    \caption{System timer register map}
+    \label{tab:systim_reg_map}
+\end{table}
+
+\subsubsection{Hacking}
+
+Because system timer is simple peripheral there is also nothing much to modify. Interface
+consist from bus interface and one interrupt request signal. When you wand add another
+timer, just remember to connect intrq to the interrupt controller.
+
+\begin{lstlisting}[language=VHDL, frame=single]
+entity systim is
+    generic(
+        BASE_ADDRESS: unsigned(23 downto 0) := x"000000"
+    );
+    port(
+        clk: in std_logic;
+        res: in std_logic;
+        address: in unsigned(23 downto 0);
+        data_mosi: in unsigned(31 downto 0);
+        data_miso: out unsigned(31 downto 0);
+        WR: in std_logic;
+        RD: in std_logic;
+        ack: out std_logic;
+        intrq: out std_logic
+    );
+end entity systim;
+\end{lstlisting}
