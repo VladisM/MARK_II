@@ -1,1 +1,129 @@
 \subsection{Timer}
+
+This is relative complex peripheral of MARK-II. Timer is 16bit timer, witch can
+generate interrupt on compare match or overflow, and also can generate two PWM
+outputs with 16b resolution.
+
+\subsubsection{Function}
+
+Timer have prescaler with can divide system clock by 1, 2, 4 or 8. Core counter
+is then clocked at $F_{clk}/prescaler$, timer is start counting from zero to
+up, until reach end condition.
+
+End condition can be simply timer overflow or compare match with value in
+register OCRA. When clear on compare match is enabled, then when $Timer value
+== OCRA$ clear signal is generated and timer is reseted. If compare interrupt
+is enabled, Timer will generate interrupt too. Interrupt can be generated also
+when counter overflow.
+
+Timer can also generate PWM outputs, in that situation, you should disable
+clear on compare because OCRA value is used to control duty cycle. OCRB is
+used to control duty cycle of second channel of PWM output.
+
+PWM generation work in following way:
+
+\begin{itemize}
+    \item Timer is equal to 0, counting started, PWM output is in logical one.
+    \item Counting up.
+    \item Compare match occur, PWM output is set to logical zero, counting continues.
+    \item Still counting up.
+    \item Timer is equal to top, PWM output is set to logical zero, counter is overflow to zero and counting continues with next period.
+\end{itemize}
+
+Anytime when write access to timer value register called TCNR is performed,
+timer is reseted to zero in same way as with System timer.
+
+\subsubsection{Registers}
+
+All registers are listed in table \ref{tab:tim_reg_map}. Registers OCRA and OCRB
+are both 16 bits wide and are used for generating PWM, OCRA is also used as top
+if timer is configured to clear on compare match.
+
+Register TCNR is 16bit wide and hold actual value of counter. It can be read to
+obtain this value, or it can be written, but when write access occur, counter is
+reseted.
+
+Register TCCR is control register. It is only 7 bits wide. Meaning of individual
+bits are in table \ref{tab:tim_tccr_bits}.
+
+\begin{table}[h]
+    \centering
+    \begin{tabular}{|l|l|l|}
+        \hline
+        \textbf{Offset} & \textbf{Name} & \textbf{Purpose}           \\ \hline
+        $+0$            & TCCR          & Timer control register.    \\ \hline
+        $+1$            & OCRA          & Output compare register A. \\ \hline
+        $+2$            & OCRB          & Output compare register B. \\ \hline
+        $+3$            & TCNR          & Actual value of timer.     \\ \hline
+    \end{tabular}
+    \caption{Timer register map}
+    \label{tab:tim_reg_map}
+\end{table}
+
+\begin{table}[h]
+    \centering
+    \begin{tabular}{|l|l|}
+        \hline
+        \textbf{Bit} & \textbf{Purpose}                                                         \\ \hline
+        $0$          & Enable clear on compare match.                                           \\ \hline
+        $1$          & Enable timer.                                                            \\ \hline
+        $2$          & Enable interrupt on overflow.                                            \\ \hline
+        $3$          & Enable interrupt on compare match.                                       \\ \hline
+        $4$          & Enable both channels of PWM.                                             \\ \hline
+        $5$          & clksel0 - Select prescaler, see table \ref{tab:tim_prescaler_setting}.   \\ \hline
+        $6$          & clksel1 - Select prescaler, see table \ref{tab:tim_prescaler_setting}.   \\ \hline
+    \end{tabular}
+    \caption{TCCR bits.}
+    \label{tab:tim_tccr_bits}
+\end{table}
+
+\begin{table}[h]
+    \centering
+    \begin{tabular}{|l|l|l|}
+        \hline
+        \textbf{clkse1} & \textbf{clksel0} & \textbf{Prescaler} \\ \hline
+        $0$ & $0$ & $F_{clk}/1$ \\ \hline
+        $0$ & $1$ & $F_{clk}/2$ \\ \hline
+        $1$ & $0$ & $F_{clk}/4$ \\ \hline
+        $1$ & $1$ & $F_{clk}/8$ \\ \hline
+    \end{tabular}
+    \caption{Timer prescaler settings.}
+    \label{tab:tim_prescaler_setting}
+\end{table}
+
+\subsubsection{Hacking}
+
+There is nothing to change with arguments because timer is complex peripheral,
+but you may want add one or more instance of timer.
+
+\begin{lstlisting}[language=VHDL, frame=single]
+entity timer is
+    generic(
+        BASE_ADDRESS: unsigned(23 downto 0) := x"000000"
+    );
+    port(
+        clk: in std_logic;
+        res: in std_logic;
+        address: in unsigned(23 downto 0);
+        data_mosi: in unsigned(31 downto 0);
+        data_miso: out unsigned(31 downto 0);
+        WR: in std_logic;
+        RD: in std_logic;
+        ack: out std_logic;
+        enclk2: in std_logic;
+        enclk4: in std_logic;
+        enclk8: in std_logic;
+        pwma: out std_logic;
+        pwmb: out std_logic;
+        intrq: out std_logic
+    );
+end entity;
+\end{lstlisting}
+
+Except classic bus interface, timer have some peripheral specific signals.
+These are signals enclk2, enclk4, enclk8, pwma, pwmb and intrq. Signal intrq
+is used for connecting into interrupt driver. Signals pwma and pwmb are outputs
+from PWM generators A and B.
+
+Signals enclk2, enclk4 and enclk8 are inputs, and they should be connected to
+clock driver. They are control signals for prescaler.
