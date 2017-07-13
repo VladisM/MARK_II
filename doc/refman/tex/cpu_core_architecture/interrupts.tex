@@ -11,7 +11,7 @@ interrupt occur CPU will do following:
 
 There is only two words for every vector. This is enough only for code like this:
 
-\begin{lstlisting}[language={[x86masm]Assembler}, frame=single]
+\begin{lstlisting}[language={[markII]Assembler}, frame=single]
     .ORG UART1_RX_VECTOR
         CALL UART1_RX_ISR
         RETI

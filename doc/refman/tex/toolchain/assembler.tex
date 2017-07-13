@@ -41,7 +41,7 @@ Macro is small sequence of code that can be simple defined once and pasted into
 code many times. Lets say there is an macro called "setLed". You can invoke it
 with code like this:
 
-\begin{lstlisting}[language={[x86masm]Assembler}, frame=single]
+\begin{lstlisting}[language={[markII]Assembler}, frame=single]
     $setLed
 \end{lstlisting}
 
@@ -52,7 +52,7 @@ it into output buffer.
 Macro can be defined using \#macro and \#endmacro preprocesor commands. For
 example we will define macro setLed.
 
-\begin{lstlisting}[language={[x86masm]Assembler}, frame=single]
+\begin{lstlisting}[language={[markII]Assembler}, frame=single]
     #macro setLed
         MVIL R1 0x0001
         ST R1 PORTA
@@ -64,7 +64,7 @@ as argument in C functions. For first you have to define macro with argument in
 name. Let's say we want an macro "send" for sending by urat. This macro will
 have one argument - byte to send. Code should look something like this:
 
-\begin{lstlisting}[language={[x86masm]Assembler}, frame=single]
+\begin{lstlisting}[language={[markII]Assembler}, frame=single]
     #macro send byte
         ;some code for prepare sending
         ST byte UDR0
@@ -73,7 +73,7 @@ have one argument - byte to send. Code should look something like this:
 
 Well, now we have macro defined, we will use it somewhere in the code like this:
 
-\begin{lstlisting}[language={[x86masm]Assembler}, frame=single]
+\begin{lstlisting}[language={[markII]Assembler}, frame=single]
     $send 0xAA
 \end{lstlisting}
 
@@ -91,7 +91,7 @@ of macro.
 
 See example bellow to get this clear.
 
-\begin{lstlisting}[language={[x86masm]Assembler}, frame=single]
+\begin{lstlisting}[language={[markII]Assembler}, frame=single]
     ;define new macro for delay
 
     #macro delay time
@@ -141,7 +141,7 @@ Numbers are parsed in C like form so:
 When they are defined, they have to be followed with semicolon ':'. When used
 (eg. with CALL instruction), semicolon is not used anymore. Example code:
 
-\begin{lstlisting}[language={[x86masm]Assembler}, frame=single]
+\begin{lstlisting}[language={[markII]Assembler}, frame=single]
     halt:
         OR R0 R0 R0
         BZ R0 halt
