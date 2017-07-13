@@ -1,1 +1,73 @@
 \subsection{Interrupt driver}
+
+Interrupt driver is one of peripherals tightly connected to the CPU. It is
+responsible for taking care about interrupts. It can disable some interrupt
+vectors, it also have to decide what interrupt should be evaluated when more
+request come at once. Also, interrupt driver have to take care about interrupt
+queue where interrupt requests are waiting for CPU time.
+
+\subsubsection{Function}
+
+There is only one register in interrupt driver, from programmer look this
+peripheral is quiet simple. This one register is INTMR and is 32bit wide. There
+is also 32bit sources of interrupts. Interrupt driver is responsible for
+masking disabled interrupt requests. You can disable interrupt by writing
+logical one into register INTMR. Bit no. 0 is controlling interrupt source 0,
+bit 1 interrupt source 1 and so on.
+
+Priority of individuals interrupts are decreasing with interrupt number, for
+example interrupt 0 is smallest number, so it have highest priority, interrupt
+31 is largest interrupt number, so have lowest priority.
+
+\subsubsection{Register map}
+
+There is only one register called INTMR, his offset is $+0$ and thus it can be
+found at base address.
+
+\begin{table}[h]
+    \centering
+    \begin{tabular}{|l|l|l|}
+        \hline
+        \textbf{Offset} & \textbf{Name} & \textbf{Purpose}             \\ \hline
+        $+0$            & INTMR         & Mask for enabling interrupts \\ \hline
+    \end{tabular}
+    \caption{Interrupt driver registers map}
+    \label{tab:int_driver_reg_map}
+\end{table}
+
+\subsubsection{Hacking}
+
+Interrupt driver can't be modified because it is highly coupled with CPU. When
+you want to modify SoC, you have every time had interrupt controlled in your design.
+
+There is of course standard bus interface for this peripheral, and some device
+specific signals. These are int\_req, int\_accept, int\_completed and int\_cpu\_req.
+
+Signals int\_accept, int\_completed and int\_cpu\_req should be connected directly
+to the CPU and are used for communication between CPU and interrupt driver.
+
+Signal int\_req is 32 bits wide vector of interrupt request signals. These should be
+connected to the peripherals interrupt request outputs.
+
+\begin{lstlisting}[language=VHDL, frame=single]
+entity intController is
+    generic(
+        BASE_ADDRESS: unsigned(23 downto 0) := x"00000"
+    );
+    port(
+        clk: in std_logic;
+        res: in std_logic;
+        address: in unsigned(23 downto 0);
+        data_mosi: in unsigned(31 downto 0);
+        data_miso: out unsigned(31 downto 0);
+        WR: in std_logic;
+        RD: in std_logic;
+        ack: out std_logic;
+        int_req: in std_logic_vector(31 downto 0);
+        int_accept: in std_logic;
+        int_completed: in std_logic;
+        int_cpu_req: out std_logic_vector(31 downto 0)
+    );
+end entity intController;
+\end{lstlisting}
+
