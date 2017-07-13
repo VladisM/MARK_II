@@ -2,6 +2,13 @@
 # -*- coding: utf-8 -*-
 #
 #  tokenizer.py
+#
+# Part of MARK II project. For informations about license, please
+# see file /LICENSE .
+#
+# author: Vladislav Mlejnecký
+# email: v.mlejnecky@seznam.cz
+
 
 import getopt, os, sys, common
 

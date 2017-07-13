@@ -1,8 +1,16 @@
+-- Collection of registers for MARK-II.
+--
+-- Part of MARK II project. For informations about license, please
+-- see file /LICENSE .
+--
+-- author: Vladislav Mlejnecký
+-- email: v.mlejnecky@seznam.cz
+
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
-entity reg is 
+entity reg is
     generic(
         WIDE : natural := 32
     );
@@ -18,30 +26,30 @@ end entity reg;
 architecture reg_arch of reg is
 
 begin
-    
+
     process(clk, res) is
         variable reg_var: unsigned((WIDE-1) downto 0);
     begin
         if (rising_edge(clk)) then
             if (res = '1') then
-                reg_var := (others => '0');                
+                reg_var := (others => '0');
             elsif (WE = '1') then
                 reg_var := DataIn;
             end if;
         end if;
-        
+
         DataOut <= reg_var;
-        
+
     end process;
 
 end architecture reg_arch;
-  
-    
+
+
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
-entity reg_tristate is  
+entity reg_tristate is
     generic(
         WIDE : natural := 32
     );
@@ -58,33 +66,33 @@ end entity reg_tristate;
 architecture reg_tristate_arch of reg_tristate is
     signal storedData: unsigned((WIDE-1) downto 0);
 begin
-    
+
     process(clk, res) is
         variable reg_var: unsigned((WIDE-1) downto 0);
     begin
-        
+
         if (rising_edge(clk)) then
             if (res = '1') then
-                reg_var := (others => '0');                
+                reg_var := (others => '0');
             elsif (WE = '1') then
                 reg_var := DataIn;
             end if;
         end if;
-        
+
         storedData <= reg_var;
-        
+
     end process;
 
     DataOut <= storedData when (OE = '1') else (others => 'Z');
 
 end architecture reg_tristate_arch;
-    
-    
+
+
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
-entity reg_zero_tristate is 
+entity reg_zero_tristate is
     generic(
         WIDE : natural := 32
     );
@@ -103,21 +111,21 @@ architecture reg_zero_tristate_arch of reg_zero_tristate is
     signal storedData: unsigned((WIDE-1) downto 0);
     constant zero: unsigned((WIDE-1) downto 0) := (others => '0');
 begin
-    
+
     process(clk, res) is
         variable reg_var: unsigned((WIDE-1) downto 0);
     begin
-        
+
         if (rising_edge(clk)) then
             if (res = '1') then
-                reg_var := (others => '0');                
+                reg_var := (others => '0');
             elsif (WE = '1') then
                 reg_var := DataIn;
             end if;
         end if;
-        
+
         storedData <= reg_var;
-        
+
     end process;
 
     process(storedData) is
@@ -133,12 +141,12 @@ begin
 
 end architecture reg_zero_tristate_arch;
 
-    
+
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
-entity reg_zero_tristate_counter is 
+entity reg_zero_tristate_counter is
     generic(
         WIDE : natural := 32
     );
@@ -159,7 +167,7 @@ architecture reg_zero_tristate_counter_arch of reg_zero_tristate_counter is
     signal storedData: unsigned((WIDE-1) downto 0);
     constant zero : unsigned((WIDE-1) downto 0) := (others => '0');
 begin
-    
+
     process(clk, res) is
         variable reg_var: unsigned((WIDE-1) downto 0);
     begin
@@ -169,15 +177,15 @@ begin
                 reg_var := (others => '0');
             elsif (WE = '1') then
                 reg_var := DataIn;
-            elsif (inc = '1') then 
+            elsif (inc = '1') then
                 reg_var := reg_var + 1;
-            elsif (dec = '1') then 
+            elsif (dec = '1') then
                 reg_var := reg_var - 1;
             end if;
         end if;
-        
+
         storedData <= reg_var;
-        
+
     end process;
 
     process(storedData) is
@@ -191,13 +199,13 @@ begin
 
     DataOut <= storedData when (OE = '1') else (others => 'Z');
 
-end architecture reg_zero_tristate_counter_arch;    
-    
+end architecture reg_zero_tristate_counter_arch;
+
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
-entity reg_zero_tristate_counter_permaout is 
+entity reg_zero_tristate_counter_permaout is
     generic(
         WIDE : natural := 32
     );
@@ -219,23 +227,23 @@ architecture reg_zero_tristate_counter_permaout_arch of reg_zero_tristate_counte
     signal storedData: unsigned((WIDE-1) downto 0);
     constant zero : unsigned((WIDE-1) downto 0) := (others => '0');
 begin
-    
+
     process(clk, res) is
         variable reg_var: unsigned((WIDE-1) downto 0);
     begin
-        
+
         if (rising_edge(clk)) then
             if (res = '1') then
                 reg_var := (others => '0');
             elsif (WE = '1') then
                 reg_var := DataIn;
-            elsif (inc = '1') then 
+            elsif (inc = '1') then
                 reg_var := reg_var + 1;
-            elsif (dec = '1') then 
+            elsif (dec = '1') then
                 reg_var := reg_var - 1;
             end if;
         end if;
-        
+
         storedData <= reg_var;
     end process;
 
@@ -252,5 +260,5 @@ begin
 
     permaout <= storedData;
 
-end architecture reg_zero_tristate_counter_permaout_arch;    
-    
+end architecture reg_zero_tristate_counter_permaout_arch;
+

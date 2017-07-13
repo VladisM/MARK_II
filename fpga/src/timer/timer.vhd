@@ -1,3 +1,11 @@
+-- Timer peripheral for MARK-II
+--
+-- Part of MARK II project. For informations about license, please
+-- see file /LICENSE .
+--
+-- author: Vladislav Mlejnecký
+-- email: v.mlejnecky@seznam.cz
+
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
@@ -8,7 +16,7 @@ entity timer is
     );
     port(
         --bus
-		clk: in std_logic;
+        clk: in std_logic;
         res: in std_logic;
         address: in unsigned(23 downto 0);
         data_mosi: in unsigned(31 downto 0);
@@ -45,7 +53,7 @@ architecture timer_arch of timer is
             enclk8: in std_logic
         );
     end component core;
-    
+
     component timer_int_fsm is
         port(
             clk: in std_logic;
@@ -60,15 +68,15 @@ architecture timer_arch of timer is
     signal TCCR: std_logic_vector(6 downto 0);
     signal clear_from_write, int_raw: std_logic;
     signal timerValue: unsigned(15 downto 0);
-    
+
 begin
 
     core0: core
         port map(clk, res, clear_from_write, pwma, pwmb, int_raw, TCCR, OCRAreg, OCRBreg, timerValue, enclk2, enclk4, enclk8);
-        
+
     intfsm: timer_int_fsm
         port map(clk, res, int_raw, intrq);
-    
+
     --chip select
     process(address) is begin
         if (address = BASE_ADDRESS)then
@@ -83,7 +91,7 @@ begin
             reg_sel <= "0000";
         end if;
     end process;
-    
+
     --registers
     process(clk, res, WR, data_mosi, reg_sel) is begin
         if rising_edge(clk) then
@@ -100,16 +108,16 @@ begin
             end if;
         end if;
     end process;
-    
+
     --output from registers
     data_miso <= x"000000" & "0" & unsigned(TCCR) when (RD = '1' and reg_sel = "0001") else
-                 x"0000"         & OCRAreg        when (RD = '1' and reg_sel = "0010") else 
+                 x"0000"         & OCRAreg        when (RD = '1' and reg_sel = "0010") else
                  x"0000"         & OCRBreg        when (RD = '1' and reg_sel = "0100") else
                  x"0000"         & timerValue     when (RD = '1' and reg_sel = "1000") else (others => 'Z');
-    
+
     ack <= '1' when ((WR = '1' and reg_sel /= "0000") or (RD = '1' and reg_sel /= "0000")) else '0';
-    
-    
+
+
     --generate signal whenever there is write acces
     process(WR, reg_sel) is begin
         if(WR = '1' and reg_sel = "1000") then
@@ -118,8 +126,8 @@ begin
             clear_from_write <= '0';
         end if;
     end process;
-    
-end architecture timer_arch;      
+
+end architecture timer_arch;
 
 
 
@@ -142,7 +150,7 @@ begin
     process(clk, res, int_raw) is
     begin
         if(rising_edge(clk)) then
-            if(res = '1') then 
+            if(res = '1') then
                 state <= idle;
             else
                 case state is
@@ -154,7 +162,7 @@ begin
                         end if;
                     when intcome => state <= waittocompleted;
                     when waittocompleted =>
-                        if(int_raw = '1') then 
+                        if(int_raw = '1') then
                             state <= waittocompleted;
                         else
                             state <= idle;
@@ -163,7 +171,7 @@ begin
             end if;
         end if;
     end process;
-    
+
     process(state) is begin
         case state is
             when idle => intrq <= '0';
@@ -171,5 +179,5 @@ begin
             when waittocompleted => intrq <= '0';
         end case;
     end process;
-    
+
 end architecture timer_int_fsm_arch;

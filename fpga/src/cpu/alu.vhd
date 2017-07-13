@@ -1,3 +1,11 @@
+-- ALU, for MARK-II CPU
+--
+-- Part of MARK II project. For informations about license, please
+-- see file /LICENSE .
+--
+-- author: Vladislav Mlejnecký
+-- email: v.mlejnecky@seznam.cz
+
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
@@ -10,8 +18,8 @@ use ieee.numeric_std.all;
 --0x4       A - B
 --0x5       A + 1
 --0x6       A - 1
---0x7		MVIL support, set lower half of opA to lower half of opB
---0x8 		MVIH support, set higher half of opA to....
+--0x7       MVIL support, set lower half of opA to lower half of opB
+--0x8       MVIH support, set higher half of opA to....
 
 entity alu is
     generic(
@@ -25,11 +33,11 @@ entity alu is
     );
 end entity alu;
 
-architecture alu_arch of alu is 
+architecture alu_arch of alu is
 begin
 
     --alu core
-    with OpCode select Result <= 
+    with OpCode select Result <=
         OpA and OpB when "0000",
         OpA or  OpB when "0001",
         OpA xor OpB when "0010",
@@ -37,9 +45,9 @@ begin
         OpA - OpB   when "0100",
         OpA + 1     when "0101",
         OpA - 1     when "0110",
-        opA(31 downto 16) & opB(15 downto 0) when "0111",        
+        opA(31 downto 16) & opB(15 downto 0) when "0111",
         opB(15 downto 0) & opA(15 downto 0) when "1000",
         OpA when others;
-    
+
 end architecture;
-   
+

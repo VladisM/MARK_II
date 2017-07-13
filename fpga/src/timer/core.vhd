@@ -1,3 +1,11 @@
+-- Core of timer for mark-II
+--
+-- Part of MARK II project. For informations about license, please
+-- see file /LICENSE .
+--
+-- author: Vladislav Mlejnecký
+-- email: v.mlejnecky@seznam.cz
+
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
@@ -21,17 +29,17 @@ entity core is
 end entity core;
 
 architecture core_arch of core is
-    
+
     signal enClearOnCompareMatch, enTimer, enOwfInt, enCompareInt, enPwm: std_logic;
     signal clksel: std_logic_vector(1 downto 0);
-    
+
     signal selectedclken: std_logic;
-    
+
     signal compareMatchA, compareMatchB: std_logic;
     signal timerValue: unsigned(15 downto 0);
-    
+
     signal Zero, Top: std_logic;
-    
+
 begin
 
     enClearOnCompareMatch <= control(0);
@@ -40,13 +48,13 @@ begin
     enCompareInt <=  control(3);
     enPwm <=  control(4);
     clksel <= control(6 downto 5);
-    
+
     selectedclken <= '1'    when clksel = "00" else
                      enclk2 when clksel = "01" else
                      enclk4 when clksel = "10" else
                      enclk8 when clksel = "11" else '-';
-    
-    
+
+
     process(clk, res, aclear) is
         variable timerVar: unsigned(15 downto 0);
     begin
@@ -61,12 +69,12 @@ begin
                 timerVar := timerVar + 1;
             end if;
         end if;
-        
+
         timerValue <= timerVar;
     end process;
-    
+
     timerCount <= timerValue;
-    
+
     zeroComparator:
     process(timerValue)is begin
         if(timerValue = x"0000") then
@@ -75,7 +83,7 @@ begin
             Zero <= '0';
         end if;
     end process;
-                
+
     topComparator:
     process(timerValue)is begin
         if(timerValue = x"FFFF") then
@@ -83,8 +91,8 @@ begin
         else
             Top <= '0';
         end if;
-    end process;            
-    
+    end process;
+
     ocracomp:
     process(timerValue, ocra)is begin
         if(timerValue = ocra) then
@@ -92,8 +100,8 @@ begin
         else
             compareMatchA <= '0';
         end if;
-    end process;            
-                
+    end process;
+
     ocrbcomp:
     process(timerValue, ocrb)is begin
         if(timerValue = ocrb) then
@@ -101,8 +109,8 @@ begin
         else
             compareMatchB <= '0';
         end if;
-    end process;                       
-    
+    end process;
+
     pwma_gen:
     process(clk, compareMatchA, Zero) is
         variable pwmaVar: std_logic;
@@ -114,10 +122,10 @@ begin
                 pwmaVar := '1';
             end if;
         end if;
-        
+
         pwma <= pwmaVar;
     end process;
-                
+
     pwmb_gen:
     process(clk, compareMatchB, Zero) is
         variable pwmbVar: std_logic;
@@ -129,10 +137,10 @@ begin
                 pwmbVar := '1';
             end if;
         end if;
-        
+
         pwmb <= pwmbVar;
     end process;
-                
+
     intrq <= (Top and enOwfInt) or (CompareMatchA and enCompareInt);
 
 end architecture;

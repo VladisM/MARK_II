@@ -1,3 +1,11 @@
+# Some code taken from disassembler used in emulator.
+#
+# Part of MARK II project. For informations about license, please
+# see file /LICENSE .
+#
+# author: Vladislav Mlejnecký
+# email: v.mlejnecky@seznam.cz
+
 def convertRegToName(reg):
     if reg == 14:
         return "SP"

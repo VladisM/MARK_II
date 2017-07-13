@@ -1,8 +1,16 @@
+-- Tristate port (something like 74HC244)
+--
+-- Part of MARK II project. For informations about license, please
+-- see file /LICENSE .
+--
+-- author: Vladislav Mlejnecký
+-- email: v.mlejnecky@seznam.cz
+
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
-entity tristate is 
+entity tristate is
     generic(
         WIDE: natural := 32
     );
@@ -18,5 +26,5 @@ architecture tristate_arch of tristate is
 begin
 
     DataOut <= DataIn when (En = '1') else (others => 'Z');
-    
+
 end architecture tristate_arch;

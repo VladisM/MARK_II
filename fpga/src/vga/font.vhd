@@ -1,6 +1,10 @@
 -- Read only memory with font.
 --
--- Part of MARK_II SoC project.
+-- Part of MARK II project. For informations about license, please
+-- see file /LICENSE .
+--
+-- author: Vladislav Mlejnecký
+-- email: v.mlejnecky@seznam.cz
 
 library ieee;
 use ieee.std_logic_1164.all;

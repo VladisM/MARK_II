@@ -1,5 +1,13 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+#
+# disassembler.py
+#
+# Part of MARK II project. For informations about license, please
+# see file /LICENSE .
+#
+# author: Vladislav Mlejnecký
+# email: v.mlejnecky@seznam.cz
 
 import sys, math, version, getopt, mif
 

@@ -1,3 +1,11 @@
+; Example and test code for stdio library
+;
+; Part of MARK II project. For informations about license, please
+; see file /LICENSE .
+;
+; author: Vladislav Mlejnecký
+; email: v.mlejnecky@seznam.cz
+
 .IMPORT STDIO_UART0_RX_ISR STDIO_UART0_TX_ISR STDIO_PRINT STDIO_READ_BYTES STDIO_GET_COUNT
 
 .CONS INTMR 0x000108

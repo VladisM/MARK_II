@@ -1,3 +1,11 @@
+-- Part of CPU logic, comparator
+--
+-- Part of MARK II project. For informations about license, please
+-- see file /LICENSE .
+--
+-- author: Vladislav Mlejnecký
+-- email: v.mlejnecky@seznam.cz
+
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
@@ -9,7 +17,7 @@ use ieee.numeric_std.all;
 -- 2      | A <  B signed    | L
 -- 3      | A <  B unsigned  | LU
 -- 4      | A >= B signed    | GE
--- 5      | A >= B unsigned  | GEU                                     
+-- 5      | A >= B unsigned  | GEU
 
 entity comparator is
     generic(
@@ -23,63 +31,63 @@ entity comparator is
     );
 end entity comparator;
 
-architecture comparator_arch of comparator is 
+architecture comparator_arch of comparator is
 begin
 
     process(OpA, OpB, OpCode) is
     begin
         if   (OpCode = "000") then
-        
+
             if(OpA = OpB) then
                 Result <= '1';
             else
                 Result <= '0';
             end if;
-            
+
         elsif(OpCode = "001") then
-        
+
             if(OpA = OpB) then
                 Result <= '0';
             else
                 Result <= '1';
             end if;
-            
+
         elsif(OpCode = "010") then
-        
+
             if(signed(OpA) < signed(OpB)) then
                 Result <= '0';
             else
                 Result <= '1';
             end if;
-            
+
         elsif(OpCode = "011") then
-        
+
             if(OpA < OpB) then
                 Result <= '0';
             else
                 Result <= '1';
             end if;
-            
+
         elsif(OpCode = "100") then
-        
+
             if(signed(OpA) >= signed(OpB)) then
                 Result <= '0';
             else
                 Result <= '1';
             end if;
-            
+
         elsif(OpCode = "101") then
-        
+
             if(OpA >= OpB) then
                 Result <= '0';
             else
                 Result <= '1';
             end if;
-            
+
         else
             Result <= '0';
         end if;
     end process;
-    
+
 end architecture comparator_arch;
-   
+

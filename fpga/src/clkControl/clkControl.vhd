@@ -1,3 +1,11 @@
+-- Generator of clken pulses. Clock divider for FPGA
+--
+-- Part of MARK II project. For informations about license, please
+-- see file /LICENSE .
+--
+-- author: Vladislav Mlejnecký
+-- email: v.mlejnecky@seznam.cz
+
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
@@ -13,7 +21,7 @@ entity clkControl is
 end entity clkControl;
 
 architecture clk_arch of clkControl is
-    
+
 begin
 
     process(clk) is
@@ -30,5 +38,5 @@ begin
         enclk4 <= var(0) and var(1);
         enclk8 <= var(0) and var(1) and var(2);
     end process;
-    
+
 end architecture clk_arch;

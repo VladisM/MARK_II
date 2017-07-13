@@ -3,7 +3,11 @@
 #
 #  rom.py
 #
-#  Copyright 2017 Vladislav <vladislav.mlejnecky@student.upce.cz>
+# Part of MARK II project. For informations about license, please
+# see file /LICENSE .
+#
+# author: Vladislav Mlejnecký
+# email: v.mlejnecky@seznam.cz
 
 from memitem import memitem
 import sys

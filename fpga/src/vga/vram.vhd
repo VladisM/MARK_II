@@ -1,14 +1,10 @@
 -- Dual port Video RAM
 --
--- Part of MARK II SoC project.
+-- Part of MARK II project. For informations about license, please
+-- see file /LICENSE .
 --
---
--- Due to bug in Cyclone II, this file have to be synthetized with
--- following parameter:
---
---      CYCLONEII_SAFE_WRITE RESTRUCTURE
---
--- See M4K issue in Cyclone II errata sheet for more details.
+-- author: Vladislav Mlejnecký
+-- email: v.mlejnecky@seznam.cz
 
 
 library ieee;

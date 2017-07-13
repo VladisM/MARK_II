@@ -1,5 +1,14 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+#
+# emulator.py
+#
+# Part of MARK II project. For informations about license, please
+# see file /LICENSE .
+#
+# author: Vladislav Mlejnecký
+# email: v.mlejnecky@seznam.cz
+
 
 from cpu.MARK import MARK
 import disassembler

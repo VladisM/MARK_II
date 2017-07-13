@@ -1,3 +1,11 @@
+-- Interrupt FSM, can be used to generate interrupt by peripheral with slower clk
+--
+-- Part of MARK II project. For informations about license, please
+-- see file /LICENSE .
+--
+-- author: Vladislav Mlejnecký
+-- email: v.mlejnecky@seznam.cz
+
 library ieee;
 use ieee.std_logic_1164.all;
 
@@ -17,7 +25,7 @@ begin
     process(clk, res, int_raw) is
     begin
         if(rising_edge(clk)) then
-            if(res = '1') then 
+            if(res = '1') then
                 state <= idle;
             else
                 case state is
@@ -29,7 +37,7 @@ begin
                         end if;
                     when intcome => state <= waittocompleted;
                     when waittocompleted =>
-                        if(int_raw = '1') then 
+                        if(int_raw = '1') then
                             state <= waittocompleted;
                         else
                             state <= idle;
@@ -38,7 +46,7 @@ begin
             end if;
         end if;
     end process;
-    
+
     process(state) is begin
         case state is
             when idle => intrq <= '0';
@@ -46,5 +54,5 @@ begin
             when waittocompleted => intrq <= '0';
         end case;
     end process;
-    
+
 end architecture int_fsm_arch;

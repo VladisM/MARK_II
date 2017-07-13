@@ -1,3 +1,11 @@
+-- Baudrate generator.
+--
+-- Part of MARK II project. For informations about license, please
+-- see file /LICENSE .
+--
+-- author: Vladislav Mlejnecký
+-- email: v.mlejnecky@seznam.cz
+
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
@@ -20,7 +28,7 @@ begin
         variable count: unsigned(15 downto 0);
         variable clkenvar: std_logic;
     begin
-        
+
         if rising_edge(clk) then
             if res = '1' then
                 count := (others => '0');
@@ -33,9 +41,9 @@ begin
                 clkenvar := '0';
             end if;
         end if;
-        
+
         baud16_clk_en <= clkenvar;
-        
+
     end process;
-   
+
 end architecture baudgen_arch;

@@ -1,5 +1,12 @@
-;program loader from uart
-
+; program loader from uart
+;
+; Part of MARK II project. For informations about license, please
+; see file /LICENSE .
+;
+; author: Vladislav Mlejnecký
+; email: v.mlejnecky@seznam.cz
+;
+;
 ; Registers description
 ;
 ; R1 - universal register using in main program
@@ -12,7 +19,7 @@
 ; R9 - count variable
 ; R10 - base variable
 ; R11 - mode variable
-
+;
 
 .CONS INTMR 0x000108
 .CONS UDR0  0x00010A

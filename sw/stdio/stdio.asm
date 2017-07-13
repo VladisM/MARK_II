@@ -1,3 +1,12 @@
+; STDIO library
+;
+; Part of MARK II project. For informations about license, please
+; see file /LICENSE .
+;
+; author: Vladislav Mlejnecký
+; email: v.mlejnecky@seznam.cz
+
+
 .EXPORT STDIO_UART0_RX_ISR
 .EXPORT STDIO_UART0_TX_ISR
 .EXPORT STDIO_PRINT

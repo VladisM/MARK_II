@@ -2,6 +2,12 @@
 # -*- coding: utf-8 -*-
 #
 #  pass1objects.py
+#
+# Part of MARK II project. For informations about license, please
+# see file /LICENSE .
+#
+# author: Vladislav Mlejnecký
+# email: v.mlejnecky@seznam.cz
 
 from common import *
 

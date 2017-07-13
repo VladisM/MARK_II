@@ -1,8 +1,16 @@
+-- Part of CPU logic
+--
+-- Part of MARK II project. For informations about license, please
+-- see file /LICENSE .
+--
+-- author: Vladislav Mlejnecký
+-- email: v.mlejnecky@seznam.cz
+
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
-entity condition is 
+entity condition is
     port(
         zeroFlag: in std_logic_vector(15 downto 0);
         regSel: in std_logic_vector(3 downto 0);
@@ -13,7 +21,7 @@ end entity condition;
 architecture condition_arch of condition is
 begin
 
-    with regSel select flag <= 
+    with regSel select flag <=
         zeroFlag(0)  when "0000",
         zeroFlag(1)  when "0001",
         zeroFlag(2)  when "0010",
@@ -30,5 +38,5 @@ begin
         zeroFlag(13) when "1101",
         zeroFlag(14) when "1110",
         zeroFlag(15) when others;
-        
+
 end architecture condition_arch;

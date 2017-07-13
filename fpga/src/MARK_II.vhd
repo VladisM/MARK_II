@@ -1,3 +1,11 @@
+-- Top level entity, MARK_II SoC
+--
+-- Part of MARK II project. For informations about license, please
+-- see file /LICENSE .
+--
+-- author: Vladislav Mlejnecký
+-- email: v.mlejnecky@seznam.cz
+
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
@@ -7,11 +15,11 @@ entity MARK_II is
         --constrol signals
         clk: in std_logic;
         res: in std_logic;
-        
+
         --gpio
         porta: inout std_logic_vector(7 downto 0);
         portb: inout std_logic_vector(7 downto 0);
-        
+
         --timers
         tim0_pwma: out std_logic;
         tim0_pwmb: out std_logic;
@@ -21,7 +29,7 @@ entity MARK_II is
         tim2_pwmb: out std_logic;
         tim3_pwma: out std_logic;
         tim3_pwmb: out std_logic;
-        
+
         --uarts
         tx0: out std_logic;
         rx0: in std_logic;
@@ -29,14 +37,14 @@ entity MARK_II is
         rx1: in std_logic;
         tx2: out std_logic;
         rx2: in std_logic;
-        
+
         --vga
         h_sync: out std_logic;
         v_sync: out std_logic;
         red: out std_logic_vector(1 downto 0);
         green: out std_logic_vector(1 downto 0);
         blue: out std_logic_vector(1 downto 0);
-        
+
         --keyboard
         ps2clk: in std_logic;
         ps2dat: in std_logic
@@ -44,15 +52,15 @@ entity MARK_II is
 end entity MARK_II;
 
 architecture MARK_II_arch of MARK_II is
-    
+
     attribute chip_pin : string;
-    
+
     attribute chip_pin of clk           : signal is "R8";
-    attribute chip_pin of res           : signal is "J15";     
-    
+    attribute chip_pin of res           : signal is "J15";
+
     attribute chip_pin of porta         : signal is "L3, B1, F3, D1, A11, B13, A13, A15";
     attribute chip_pin of portb         : signal is "A2, A3, B3, B4, A4, B5, A5, D5";
-    
+
     attribute chip_pin of tim0_pwma     : signal is "B6";
     attribute chip_pin of tim0_pwmb     : signal is "A6";
     attribute chip_pin of tim1_pwma     : signal is "B7";
@@ -61,23 +69,23 @@ architecture MARK_II_arch of MARK_II is
     attribute chip_pin of tim2_pwmb     : signal is "C6";
     attribute chip_pin of tim3_pwma     : signal is "C8";
     attribute chip_pin of tim3_pwmb     : signal is "E6";
-    
+
     attribute chip_pin of tx0           : signal is "J16";
     attribute chip_pin of rx0           : signal is "J13";
     attribute chip_pin of tx1           : signal is "K15";
     attribute chip_pin of rx1           : signal is "N14";
     attribute chip_pin of tx2           : signal is "E11";
     attribute chip_pin of rx2           : signal is "E10";
-    
+
     attribute chip_pin of h_sync        : signal is "L14";
     attribute chip_pin of v_sync        : signal is "M10";
     attribute chip_pin of red           : signal is "N15,R14";
     attribute chip_pin of green         : signal is "N16,P15";
     attribute chip_pin of blue          : signal is "P16,R16";
-    
+
     attribute chip_pin of ps2clk        : signal is "L16";
     attribute chip_pin of ps2dat        : signal is "L15";
-    
+
     component clkControl is
         port(
             clk: in std_logic;
@@ -166,8 +174,8 @@ architecture MARK_II_arch of MARK_II is
 
     component ram is
         generic(
-            BASE_ADDRESS: unsigned(23 downto 0) := x"000000";    --base address of the RAM 
-            ADDRESS_WIDE: natural := 8  --default address range  
+            BASE_ADDRESS: unsigned(23 downto 0) := x"000000";    --base address of the RAM
+            ADDRESS_WIDE: natural := 8  --default address range
         );
         port(
             clk: in std_logic;
@@ -308,14 +316,14 @@ architecture MARK_II_arch of MARK_II is
     signal clki: std_logic;         -- 14,4 MHz clk for all others
 
     signal resi: std_logic;         --inverted reset
-    
+
     signal rom_ack, ram_ack, int_ack, gpio_ack, systim_ack, vga_ack, tim0_ack, ram1_ack,
            tim1_ack,tim2_ack,tim3_ack, uart0_ack, uart1_ack, uart2_ack, ps2_ack : std_logic;
 
 begin
-    
+
     resi <= not(res);
-    
+
     pll0: pll
         port map(clk, clki, clk_31M5);
 
@@ -384,9 +392,9 @@ begin
     ram1: ram
         generic map(x"100000", 13)
         port map(clki, bus_address, bus_data_mosi, bus_data_miso, bus_WR, bus_RD, ram1_ack);
-        
+
     bus_ack <=
-        rom_ack or ram_ack or int_ack or gpio_ack or systim_ack or vga_ack or tim0_ack or 
+        rom_ack or ram_ack or int_ack or gpio_ack or systim_ack or vga_ack or tim0_ack or
         tim1_ack or tim2_ack or tim3_ack or uart0_ack or uart1_ack or uart2_ack or ps2_ack or ram1_ack;
 
 end architecture MARK_II_arch;

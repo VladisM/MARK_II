@@ -1,6 +1,10 @@
 -- VGA driver
 --
--- Part of MARK II SoC project.
+-- Part of MARK II project. For informations about license, please
+-- see file /LICENSE .
+--
+-- author: Vladislav Mlejnecký
+-- email: v.mlejnecky@seznam.cz
 --
 -- Pixel clock:     31.5MHz
 -- Resolution:      640x480 @ 73Hz
@@ -243,27 +247,27 @@ begin
         fg_color <= fg_color_v;
         bg_color <= bg_color_v;
     end process;
-    
+
     process(pixel, fg_color, bg_color, blank) is
     begin
         case pixel is
             when '1' =>
                 red(0)   <= fg_color(0) and not(blank);
                 green(0) <= fg_color(0) and not(blank);
-                blue(0)  <= fg_color(0) and not(blank);                
+                blue(0)  <= fg_color(0) and not(blank);
                 red(1)   <= fg_color(1) and not(blank);
                 green(1) <= fg_color(2) and not(blank);
                 blue(1)  <= fg_color(3) and not(blank);
             when '0' =>
                 red(0)   <= bg_color(0) and not(blank);
                 green(0) <= bg_color(0) and not(blank);
-                blue(0)  <= bg_color(0) and not(blank);                
+                blue(0)  <= bg_color(0) and not(blank);
                 red(1)   <= bg_color(1) and not(blank);
                 green(1) <= bg_color(2) and not(blank);
                 blue(1)  <= bg_color(3) and not(blank);
         end case;
     end process;
-        
+
     --BUS interface
     process(address) is begin
         if (address >= BASE_ADDRESS and address <= (BASE_ADDRESS + 4095)) then

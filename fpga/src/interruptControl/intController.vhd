@@ -1,14 +1,22 @@
+-- Interrupt controller peripheral
+--
+-- Part of MARK II project. For informations about license, please
+-- see file /LICENSE .
+--
+-- author: Vladislav Mlejnecký
+-- email: v.mlejnecky@seznam.cz
+
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
-entity intController is 
+entity intController is
     generic(
         BASE_ADDRESS: unsigned(23 downto 0) := x"00000"    --base address
     );
     port(
         --bus
-		clk: in std_logic;
+        clk: in std_logic;
         res: in std_logic;
         address: in unsigned(23 downto 0);
         data_mosi: in unsigned(31 downto 0);
@@ -17,11 +25,11 @@ entity intController is
         RD: in std_logic;
         ack: out std_logic;
         --device
-		int_req: in std_logic_vector(31 downto 0);      --peripherals may request interrupt with this signal
+        int_req: in std_logic_vector(31 downto 0);      --peripherals may request interrupt with this signal
         int_accept: in std_logic;                       --from the CPU
         int_completed: in std_logic;                    --from the CPU
-		int_cpu_req: out std_logic_vector(31 downto 0)  --connect this to the CPU, this is cpu interrupt
-		
+        int_cpu_req: out std_logic_vector(31 downto 0)  --connect this to the CPU, this is cpu interrupt
+
     );
 end entity intController;
 
@@ -37,9 +45,9 @@ architecture intControllerArch of intController is
             intOut: out std_logic
         );
     end component intRSFF;
-    
+
     --FSM for interrupt control
-    component intFSM is 
+    component intFSM is
         port(
             res: in std_logic;
             clk: in std_logic;
@@ -53,13 +61,13 @@ architecture intControllerArch of intController is
 
     --chip select signal for mask register
     signal reg_sel: std_logic;
-    
+
     signal interrupt_mask_reg: std_logic_vector(31 downto 0); --interrupt mask
-    
+
     signal intTaken: std_logic_vector(31 downto 0); --signal from FSM to RSFF, this reset FF after interrupt is taken
     signal intRaw: std_logic_vector(31 downto 0); --unmasked signals
     signal intFiltred: std_logic_vector(31 downto 0); --masked int signals
-    
+
 begin
 
     --chip select
@@ -81,25 +89,25 @@ begin
             end if;
         end if;
     end process;
-    
+
     --output from register
     data_miso <= unsigned(interrupt_mask_reg) when (RD = '1' and reg_sel = '1') else (others => 'Z');
-    
+
     ack <= '1' when (WR = '1' and reg_sel = '1') or (RD = '1' and reg_sel = '1') else '0';
-    
+
     --this is 32 RS flip flops, for asynchronous inputs
     gen_intrsff:
     for I in 31 downto 0 generate
         intRSFF_gen: intRSFF port map(clk, res, int_req(I), intTaken(I), intRaw(I));
     end generate gen_intrsff;
-    
-    --interrupt mask 
+
+    --interrupt mask
     intFiltred <= intRaw and interrupt_mask_reg;
-	
+
     --FSM which control interrupts
     fsm: intFSM
         port map(res, clk, intFiltred, int_cpu_req, intTaken, int_accept, int_completed);
-    
+
 end architecture intControllerArch;
 
 
@@ -118,13 +126,13 @@ entity intRSFF is
     );
 end entity intRSFF;
 
-architecture intRSFFArch of intRSFF is     
+architecture intRSFFArch of intRSFF is
 begin
-    
-    process(clk, res, intSet, intTaken) is 
+
+    process(clk, res, intSet, intTaken) is
         variable var: std_logic;
     begin
-        
+
         if(rising_edge(clk))then
             if(intTaken = '1' or res = '1') then
                 var := '0';
@@ -132,16 +140,16 @@ begin
                 var := '1';
             end if;
         end if;
-        
-        intOut <= var;
-        
-    end process;
-    
-    
-end architecture intRSFFArch;
-    
 
-    
+        intOut <= var;
+
+    end process;
+
+
+end architecture intRSFFArch;
+
+
+
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
@@ -153,16 +161,16 @@ entity intFSM is
         intFiltred: in std_logic_vector(31 downto 0);
         int_cpu_req: out std_logic_vector(31 downto 0);
         int_taken: out std_logic_vector(31 downto 0);
-		int_accept: in std_logic;
+        int_accept: in std_logic;
         int_completed: in std_logic
     );
 end entity intFSM;
 
 architecture intFSMArch of intFSM is
-    
+
     --states for FSM
     type states is (
-        start, wait_for_int_come, wait_for_int_complete, 
+        start, wait_for_int_come, wait_for_int_complete,
         setint0, clearint0, setint1, clearint1, setint2, clearint2,
         setint3, clearint3, setint4, clearint4, setint5, clearint5,
         setint6, clearint6, setint7, clearint7, setint8, clearint8,
@@ -175,12 +183,12 @@ architecture intFSMArch of intFSM is
         setint27, clearint27, setint28, clearint28, setint29, clearint29,
         setint30, clearint30, setint31, clearint31
     );
-    
+
     --this is reg holding state
     signal state: states;
-    
+
 begin
-    
+
     --logic to set up next state
     process (clk, res, intFiltred, int_accept, int_completed) begin
         if (rising_edge(clk)) then
@@ -189,43 +197,43 @@ begin
             else
                 case state is
                     when start => state <= wait_for_int_come;
-                    
-                    when wait_for_int_come =>   --this is also priority decoder :) 
+
+                    when wait_for_int_come =>   --this is also priority decoder :)
                         if    intFiltred(0)  = '1' then state <= setint0;
                         elsif intFiltred(1)  = '1' then state <= setint1;
                         elsif intFiltred(2)  = '1' then state <= setint2;
-                        elsif intFiltred(3)  = '1' then state <= setint3;                   
+                        elsif intFiltred(3)  = '1' then state <= setint3;
                         elsif intFiltred(4)  = '1' then state <= setint4;
                         elsif intFiltred(5)  = '1' then state <= setint5;
                         elsif intFiltred(6)  = '1' then state <= setint6;
-                        elsif intFiltred(7)  = '1' then state <= setint7;                   
+                        elsif intFiltred(7)  = '1' then state <= setint7;
                         elsif intFiltred(8)  = '1' then state <= setint8;
                         elsif intFiltred(9)  = '1' then state <= setint9;
                         elsif intFiltred(10) = '1' then state <= setint10;
-                        elsif intFiltred(11) = '1' then state <= setint11;                  
+                        elsif intFiltred(11) = '1' then state <= setint11;
                         elsif intFiltred(12) = '1' then state <= setint12;
                         elsif intFiltred(13) = '1' then state <= setint13;
                         elsif intFiltred(14) = '1' then state <= setint14;
-                        elsif intFiltred(15) = '1' then state <= setint15;                   
+                        elsif intFiltred(15) = '1' then state <= setint15;
                         elsif intFiltred(16) = '1' then state <= setint16;
                         elsif intFiltred(17) = '1' then state <= setint17;
                         elsif intFiltred(18) = '1' then state <= setint18;
-                        elsif intFiltred(19) = '1' then state <= setint19;                   
+                        elsif intFiltred(19) = '1' then state <= setint19;
                         elsif intFiltred(20) = '1' then state <= setint20;
                         elsif intFiltred(21) = '1' then state <= setint21;
                         elsif intFiltred(22) = '1' then state <= setint22;
-                        elsif intFiltred(23) = '1' then state <= setint23;                   
+                        elsif intFiltred(23) = '1' then state <= setint23;
                         elsif intFiltred(24) = '1' then state <= setint24;
                         elsif intFiltred(25) = '1' then state <= setint25;
                         elsif intFiltred(26) = '1' then state <= setint26;
-                        elsif intFiltred(27) = '1' then state <= setint27;                                       
+                        elsif intFiltred(27) = '1' then state <= setint27;
                         elsif intFiltred(28) = '1' then state <= setint28;
                         elsif intFiltred(29) = '1' then state <= setint29;
                         elsif intFiltred(30) = '1' then state <= setint30;
                         elsif intFiltred(31) = '1' then state <= setint31;
-                        else state <= start;                    
+                        else state <= start;
                         end if;
-                        
+
                     --ugly things, waiting for CPU take interrupt routine
                     when setint0 => if(int_accept = '1') then state <= clearint0; else state <= setint0; end if;
                     when setint1 => if(int_accept = '1') then state <= clearint1; else state <= setint1; end if;
@@ -259,7 +267,7 @@ begin
                     when setint29 => if(int_accept = '1') then state <= clearint29; else state <= setint29; end if;
                     when setint30 => if(int_accept = '1') then state <= clearint30; else state <= setint30; end if;
                     when setint31 => if(int_accept = '1') then state <= clearint31; else state <= setint31; end if;
-                    
+
                     --clearint will reset RS flip flop so, next interrupt can be catch
                     when clearint0 => state <= wait_for_int_complete;
                     when clearint1 => state <= wait_for_int_complete;
@@ -293,9 +301,9 @@ begin
                     when clearint29 => state <= wait_for_int_complete;
                     when clearint30 => state <= wait_for_int_complete;
                     when clearint31 => state <= wait_for_int_complete;
-                    
+
                     --but we also waiting for interrupt routine is completed, there isn't nested interrupts
-                    when wait_for_int_complete => 
+                    when wait_for_int_complete =>
                         if(int_completed = '1') then state <= wait_for_int_come;
                         else state <= wait_for_int_complete;
                         end if;
@@ -309,7 +317,7 @@ begin
             when start =>                 int_taken <= x"00000000"; int_cpu_req <= x"00000000";
             when wait_for_int_come =>     int_taken <= x"00000000"; int_cpu_req <= x"00000000";
             when wait_for_int_complete => int_taken <= x"00000000"; int_cpu_req <= x"00000000";
-            
+
             when setint0 =>  int_taken <= x"00000000"; int_cpu_req <= x"00000001";
             when setint1 =>  int_taken <= x"00000000"; int_cpu_req <= x"00000002";
             when setint2 =>  int_taken <= x"00000000"; int_cpu_req <= x"00000004";
@@ -341,8 +349,8 @@ begin
             when setint28 => int_taken <= x"00000000"; int_cpu_req <= x"10000000";
             when setint29 => int_taken <= x"00000000"; int_cpu_req <= x"20000000";
             when setint30 => int_taken <= x"00000000"; int_cpu_req <= x"40000000";
-            when setint31 => int_taken <= x"00000000"; int_cpu_req <= x"80000000";      
-            
+            when setint31 => int_taken <= x"00000000"; int_cpu_req <= x"80000000";
+
             when clearint0 =>  int_taken <= x"00000001"; int_cpu_req <= x"00000000";
             when clearint1 =>  int_taken <= x"00000002"; int_cpu_req <= x"00000000";
             when clearint2 =>  int_taken <= x"00000004"; int_cpu_req <= x"00000000";
@@ -375,10 +383,10 @@ begin
             when clearint29 => int_taken <= x"20000000"; int_cpu_req <= x"00000000";
             when clearint30 => int_taken <= x"40000000"; int_cpu_req <= x"00000000";
             when clearint31 => int_taken <= x"80000000"; int_cpu_req <= x"00000000";
-            
+
         end case;
     end process;
-    
+
 end architecture intFSMArch;
 
 

@@ -1,8 +1,16 @@
+-- Core for UART
+--
+-- Part of MARK II project. For informations about license, please
+-- see file /LICENSE .
+--
+-- author: Vladislav Mlejnecký
+-- email: v.mlejnecky@seznam.cz
+
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
-entity uart_core is 
+entity uart_core is
     port(
         clk: in std_logic;
         res: in std_logic;
@@ -28,7 +36,7 @@ architecture uart_core_arch of uart_core is
         );
     end component baudgen;
 
-    component transmitter is 
+    component transmitter is
         port(
             clk: in std_logic;
             res: in std_logic;
@@ -54,12 +62,12 @@ architecture uart_core_arch of uart_core is
 begin
     baudgen0: baudgen
         port map(clk, res, n, baud16_clk_en);
-        
+
     transmitter0: transmitter
         port map(clk, res, baud16_clk_en, tx_data, tx, tx_intrq, send);
-        
+
     reciever0: reciever
         port  map(clk, res, rx, baud16_clk_en, rx_data, rx_intrq);
-        
+
 end architecture uart_core_arch;
-    
+
