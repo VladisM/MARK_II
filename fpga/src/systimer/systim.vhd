@@ -88,14 +88,14 @@ begin
             if res = '1' then
                 control_reg <= (others => '0');
             elsif (reg_sel = "01" and WR = '1') then
-                control_reg <= data_mosi(25 downto 0);
+                control_reg <= data_mosi(24 downto 0);
             end if;
         end if;
     end process;
 
     --output from registers
-    data_miso <= "000000" & control_reg when (RD = '1' and reg_sel = "01") else
-                 x"00"    & counter     when (RD = '1' and reg_sel = "10") else (others => 'Z');
+    data_miso <= "0000000" & control_reg when (RD = '1' and reg_sel = "01") else
+                 x"00"     & counter     when (RD = '1' and reg_sel = "10") else (others => 'Z');
 
     --generate signal when there is write acces to counter
     process(WR, reg_sel) is begin
