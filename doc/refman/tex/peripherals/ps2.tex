@@ -1,1 +1,52 @@
 \subsection{PS2 driver}
+
+PS2 driver is simple peripherals that allow connect keyboard or mouse. Driver
+in this revision is able only to receive.
+
+\subsubsection{Function}
+
+This peripheral doesn't need any configuration. Just enable interrupt in interrupt
+driver and is done. When key on connected keyboard are pressed, key code is
+sent to the PS2 driver. When sending is completed, interrupt is called.
+
+\subsubsection{Registers}
+
+There is only one register, called PSBR, and it have offset $+0$. After key code
+is received, it is stored in this register. Register is 8 bits wide.
+
+\begin{table}[h]
+    \centering
+    \begin{tabular}{|l|l|l|}
+        \hline
+        \textbf{Offset} & \textbf{Name} & \textbf{Purpose}                 \\ \hline
+        $+0$            & PSBR          & Last received byte from PS2 bus. \\ \hline
+    \end{tabular}
+    \caption{PS2 driver register map}
+    \label{tab:ps2_reg_map}
+\end{table}
+
+\subsubsection{Hacking}
+
+There is nothing to change on this peripheral. Interface is also standard.
+There is only three device specific signals, ps2clk, ps2dat and intrq. Signal
+intrq should be connected to the interrupt driver and signal ps2clk and ps2dat
+should be connected to the top level pins.
+
+\begin{lstlisting}[language=VHDL, frame=single]
+entity ps2 is
+    generic(
+        BASE_ADDRESS: unsigned(23 downto 0) := x"000000"
+    );
+    port(
+        clk: in std_logic;
+        res: in std_logic;
+        address: in unsigned(23 downto 0);
+        data_miso: out unsigned(31 downto 0);
+        RD: in std_logic;
+        ack: out std_logic;
+        ps2clk: in std_logic;
+        ps2dat: in std_logic;
+        intrq: out std_logic
+    );
+end entity ps2;
+\end{lstlisting}

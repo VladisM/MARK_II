@@ -8,16 +8,6 @@ pin as output, value written into right bit of PORT register will be on pin.
 When logical zero in in DDR register, CPU can read values what are connected to
 the pins through PORT register.
 
-Whole architecture of GPIO is on picture \ref{fig:gpio_arch}. You can see four
-registers, two pins I/O controllers and bus logic.
-
-\begin{figure}[]
-    \centering
-    \includegraphics[width=.7\textwidth]{img/GPIO.png}
-    \caption{GPIO architecture}
-    \label{fig:gpio_arch}
-\end{figure}
-
 \subsubsection{Registers}
 
 All registers are listed in table \ref{tab:gpio_reg_map}. Width of register are
@@ -25,7 +15,7 @@ equal to pins count (port width can be configured), by default it is 8
 input/outputs. Meaning of seting in DDRx and PORTx registers are in table
 \ref{tab:gpio_fuction}.
 
-\begin{table}[]
+\begin{table}[h]
     \centering
     \begin{tabular}{|l|l|l|}
         \hline
@@ -39,7 +29,7 @@ input/outputs. Meaning of seting in DDRx and PORTx registers are in table
     \label{tab:gpio_reg_map}
 \end{table}
 
-\begin{table}[]
+\begin{table}[h]
     \centering
     \begin{tabular}{|l|l|l|}
         \hline
