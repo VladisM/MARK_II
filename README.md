@@ -16,10 +16,7 @@ Project structure:
 * **sw/** MARK-II related software.
     * **m2-tools/** Tools for programming on MARK-II. Emulator, assembler...
     * **loader/** Serial bootloader firmware.
-
-TODO List:
---------------------
-- [ ] Write better documentation.
-- [ ] SDRAM controller.
-- [ ] Improve CPU architecture.
-- [ ] Get C compiler.
+    * **tests/** Some old test programs.
+    * **stdio/** Simple STDIO library for UART and text operations.
+* **doc/** Documentation for MARK-II.
+    * **refman/** Reference manual directory.
