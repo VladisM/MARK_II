@@ -8,7 +8,7 @@ entity systim is
     );
     port(
         --bus
-		clk: in std_logic;
+        clk: in std_logic;
         res: in std_logic;
         address: in unsigned(23 downto 0);
         data_mosi: in unsigned(31 downto 0);
@@ -23,19 +23,18 @@ end entity systim;
 
 architecture systim_arch of systim is
     signal counter: unsigned(23 downto 0);
-        
+
     --control register
-    signal control_reg: unsigned(25 downto 0);    
+    signal control_reg: unsigned(24 downto 0);
     signal top: unsigned(23 downto 0);
-    signal timeren: std_logic;    
-    signal en_intrq: std_logic;    
-    
+    signal timeren: std_logic;
+
     signal compare_match: std_logic;
-    
+
     --for bus interface
     signal reg_sel: std_logic_vector(1 downto 0);
     signal clear_from_write: std_logic; --clear the counter when value is writen to its register
-    
+
 begin
 
     --this is core timer
@@ -49,7 +48,7 @@ begin
                 cnt := cnt + 1;
             end if;
         end if;
-        
+
         counter <= cnt;
     end process;
 
@@ -61,18 +60,17 @@ begin
             compare_match <= '0';
         end if;
     end process;
-    
+
     --for interrupts
-    intrq <= compare_match and en_intrq;
-    
+    intrq <= compare_match;
+
     --control
     top <= control_reg(23 downto 0);
     timeren <= control_reg(24);
-    en_intrq <= control_reg(25);
-    
+
     -----------------
     --bus interface
-    
+
     --chip select
     process(address) is begin
         if    (address = BASE_ADDRESS) then
@@ -83,7 +81,7 @@ begin
             reg_sel <= "00";
         end if;
     end process;
-    
+
     --registers
     process(clk, res, WR, data_mosi, reg_sel) is begin
         if rising_edge(clk) then
@@ -94,11 +92,11 @@ begin
             end if;
         end if;
     end process;
-    
+
     --output from registers
     data_miso <= "000000" & control_reg when (RD = '1' and reg_sel = "01") else
                  x"00"    & counter     when (RD = '1' and reg_sel = "10") else (others => 'Z');
-    
+
     --generate signal when there is write acces to counter
     process(WR, reg_sel) is begin
         if(WR = '1' and reg_sel = "10") then
@@ -107,8 +105,8 @@ begin
             clear_from_write <= '0';
         end if;
     end process;
-    
+
     ack <= '1' when ((WR = '1' and reg_sel /= "00") or (RD = '1' and reg_sel /= "00")) else '0';
-    
+
 end architecture systim_arch;
-        
+
