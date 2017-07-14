@@ -10,8 +10,6 @@
 -- Resolution:      640x480 @ 73Hz
 -- Text resolution: 80x30 chars
 -- Char resolution: 16x8 px
--- Colors:          Monochome
---
 --
 -- Displayed text is stored in dual port video ram, in following order:
 --
