@@ -11,26 +11,26 @@ start:
 main:
     MVIL R2 0x1000
 
-    MVIL R1 0x0048
+    MVIL R1 0x13C8
     STI R1 R2
 
-    MVIL R1 0x0065
+    MVIL R1 0x13E5
     INC R2 R2
     STI R1 R2
 
-    MVIL R1 0x006c
+    MVIL R1 0x13Ec
     INC R2 R2
     STI R1 R2
 
-    MVIL R1 0x006c
+    MVIL R1 0x13Ec
     INC R2 R2
     STI R1 R2
 
-    MVIL R1 0x006f
+    MVIL R1 0x13Ef
     INC R2 R2
     STI R1 R2
 
-    MVIL R1 0x0021
+    MVIL R1 0x0121
     INC R2 R2
     STI R1 R2
 

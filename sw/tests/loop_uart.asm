@@ -7,8 +7,8 @@ start:
     MVIL SP 0x07FF   ;place a top of RAM into SP
     BZ R0 main
 
-.ORG 0x00000034 ;KEYBOARD ISR
-    CALL KEYBOARD_ISR
+.ORG 0x00000022 ;UART0 rx ISR
+    CALL UART0_RX_ISR
     RETI
 
 ;main program
@@ -16,23 +16,21 @@ start:
 main:
     ;config uart0 to 1200 baud 8n1
     MVIL R1 0x02ED
-    MVIH R1 0x0000
     ST R1 UCR0
-    ;enable interrupt from keyboard
-    MVIL R1 0x0000
-    MVIH R1 0x0004
-    ST R1 INTMR
-    ;enable led
+    ;set porta as output
     MVIL R1 0x00FF
-    MVIH R1 0x0000
     ST R1 DDRA
+    ;enable interrupt from USART0 RX
+    MVIL R1 0x0200
+    ST R1 INTMR
 loop:
     BZ R0 loop
 
-;service routine for keyboard
-KEYBOARD_ISR:
-    LD KEYBOARD R1
-    ST R1 UDR0
+;service routine, show data on LED and send them back
+UART0_RX_ISR:
+    LD UDR0 R1
     ST R1 PORTA
+    ST R1 UDR0
     RET
+
 
