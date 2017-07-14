@@ -27,3 +27,9 @@ Project structure:
     * **stdio/** Simple STDIO library for UART and text operations.
 * **doc/** Documentation for MARK-II.
     * **refman/** Reference manual directory.
+
+License
+--------------------
+
+Whole project, except reference manual, is licensed under MIT license. See /LICENSE for mode details.
+Reference manual is licensed under Creative Commons Attribution-NonCommercial 4.0 International License.
