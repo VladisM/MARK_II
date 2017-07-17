@@ -62,11 +62,12 @@ Arguments:
                         /dev/ttyUSB0.
        --baudrate       Set baudrate for port. Default value is 1200.
        --version        Print version number and exit.
+    -e --emulator       Add this option if you are connecting to emulator.
 """
 
 def get_args():
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "hb:p:", ["help","version","baudrate="])
+        opts, args = getopt.getopt(sys.argv[1:], "hb:p:e", ["help","version","baudrate=","emulator"])
     except getopt.GetoptError as err:
         print str(err)
         usage()
@@ -76,6 +77,7 @@ def get_args():
     base_address = None
     port = None
     baudrate = 1200
+    emulator = False
 
     for option, value in opts:
         if option in ("-h", "--help"):
@@ -90,6 +92,8 @@ def get_args():
             sys.exit(1)
         elif option == "--baudrate":
             baudrate = int(value)
+        elif option in ("-e", "--emulator"):
+            emulator = True
         else:
             print "Unrecognized option " + option
             print "Type 'loader -h' for more informations."
@@ -113,7 +117,7 @@ def get_args():
     input_file = args[0]
 
 
-    return [input_file, base_address, port, baudrate]
+    return [input_file, base_address, port, baudrate, emulator]
 
 def send_char(char_to_send, port):
     port.write(char_to_send)
@@ -125,7 +129,7 @@ def send_char(char_to_send, port):
 
 def main():
 
-    input_file, base_address, port, baudrate = get_args()
+    input_file, base_address, port, baudrate, emulator = get_args()
 
     try:
         f = file(input_file, "r")
@@ -160,7 +164,11 @@ def main():
     buff = tmpbuff
 
     #send everithing
-    ser = serial.Serial(port, baudrate, rtscts=True, dsrdtr=True)
+
+    if emulator == True:
+        ser = serial.Serial(port, baudrate, rtscts=True, dsrdtr=True)
+    else:
+        ser = serial.Serial(port, baudrate)
 
     #try connect to loader in MARK
 
