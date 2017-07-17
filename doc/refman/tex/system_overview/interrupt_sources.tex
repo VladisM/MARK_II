@@ -1,6 +1,15 @@
 \subsection{Interrupt sources}
 
-\begin{table}[]
+In the table \ref{tab:intsources} are listed all interrupt vectors. Destinations
+addresses of interrupts are hardwired into CPU and cannot be changed. All
+interrupts are mascable using interrupt controller.
+
+Support for nested interrupts isn't implemented. When one interrupt come, CPU
+will jump into interrupt service routine and until RETI instruction is executed,
+another interrupt cannot be raised. Anyway, when an interrupt is active, another
+one is then put into queue.
+
+\begin{table}[h]
     \centering
     \begin{tabular}{|l|l|l|l|}
         \hline
@@ -42,11 +51,4 @@
     \label{tab:intsources}
 \end{table}
 
-In the table \ref{tab:intsources} are listed all interrupt vectors. Destinations
-addresses of interrupts are hardwired into CPU and cannot be changed. All
-interrupts are mascable using interrupt controller.
 
-Support for nested interrupts isn't implemented. When one interrupt come, CPU
-will jump into interrupt service routine and until RETI instruction is executed,
-another interrupt cannot be raised. Anyway, when an interrupt is active, another
-one is then put into queue.

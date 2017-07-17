@@ -1,6 +1,14 @@
 \subsection{Memory map}
 
-\begin{table}[]
+In the table \ref{tab:memory_map} is simple memory map. There are listed all
+peripherals implemented in MARK II SoC. Each peripheral have one or more registers at different
+addresses.
+
+Lets say, GPIO have 0x00100 as base address, one of the GPIO register
+is DDRB register with offset +3, so address of DDRB register is 0x00103. For
+informations about individual register please see corresponding peripheral sections.
+
+\begin{table}[h]
     \centering
     \begin{tabular}{|l|l|l|l|l|}
         \hline
@@ -24,11 +32,3 @@
     \caption{Memory map}
     \label{tab:memory_map}
 \end{table}
-
-In the table \ref{tab:memory_map} is simple memory map. There are listed all
-peripherals implemented in MARK II SoC. Each peripheral have one or more registers at different
-addresses.
-
-Lets say, GPIO have 0x00100 as base address, one of the GPIO register
-is DDRB register with offset +3, so address of DDRB register is 0x00103. For
-informations about individual register please see corresponding peripheral sections.

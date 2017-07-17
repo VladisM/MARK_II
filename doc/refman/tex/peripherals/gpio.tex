@@ -1,9 +1,11 @@
 \subsection{GPIO}
 
-\subsubsection{Introduction}
-
 Simple peripheral with two 8bit input/outputs ports. Function is similar to AVR
-GPIO ports, there is two register, DDR and PORT, logical one in DDR set this
+GPIO ports.
+
+\subsubsection{Function}
+
+There is two register, DDR and PORT, logical one in DDR set this
 pin as output, value written into right bit of PORT register will be on pin.
 When logical zero in in DDR register, CPU can read values what are connected to
 the pins through PORT register.

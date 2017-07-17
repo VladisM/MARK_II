@@ -1,5 +1,19 @@
 \subsection{Registers}
 
+In the table \ref{tab:registers_list} are listed all CPU registers, including
+special ones.
+
+GPR mean general purpose register, these registers are 32bit wide.
+Zero register is one of special registers, it always contain zero.
+You can write there whatever you want, but always read zero. Program
+counter (PC) and Stack pointer (SP) are implemented like any others
+registers but they are holding actual address in program and actual
+address of top of stack.
+
+There is no limitation in register usage in instructions. Every
+instruction can work with every register include PC and SP. There is
+no register windows, banks or something like that.
+
 \begin{table}[h]
     \centering
     \begin{tabular}{|l|l|l|l|}
@@ -18,16 +32,4 @@
     \label{tab:registers_list}
 \end{table}
 
-In the table \ref{tab:registers_list} are listed all CPU registers, including
-special ones.
 
-GPR mean general purpose register, these registers are 32bit wide.
-Zero register is one of special registers, it always contain zero.
-You can write there whatever you want, but always read zero. Program
-counter (PC) and Stack pointer (SP) are implemented like any others
-registers but they are holding actual address in program and actual
-address of top of stack.
-
-There is no limitation in register usage in instructions. Every
-instruction can work with every register include PC and SP. There is
-no register windows, banks or something like that.

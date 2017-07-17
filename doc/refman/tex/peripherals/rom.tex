@@ -1,14 +1,18 @@
 \subsection{ROM}
 
-\subsubsection{Introduction}
-
 Simple memory for program store. CPU can read program from this but it is not
 able to write data there. By default, in rom0 is stored serial port loader and
 CPU start execution there.
 
+\subsubsection{Function}
+
 Memory is implemented in same way as RAM, but write signals is not present
 there. Content of ROM is specified in ".mif" memory initialization files. These
 files are used during synthesis of SoC into FPGA.
+
+Usage is straightforward, write data with LD instruction to address that belong
+to RAM.
+
 
 \subsubsection{Hacking}
 
