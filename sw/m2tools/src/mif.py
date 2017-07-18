@@ -1,4 +1,5 @@
 # Simple library for reading and writing mifs
+# -*- coding: utf-8 -*-
 #
 # Part of MARK II project. For informations about license, please
 # see file /LICENSE .
