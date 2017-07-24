@@ -36,57 +36,24 @@ begin
 
     process(OpA, OpB, OpCode) is
     begin
-        if   (OpCode = "000") then
 
-            if(OpA = OpB) then
-                Result <= '1';
-            else
+        case OpCode is
+            when "000" =>
+                if(OpA = OpB) then Result <= '1'; else Result <= '0'; end if;
+            when "001" =>
+                if(OpA = OpB) then Result <= '0'; else Result <= '1'; end if;
+            when "010" =>
+                if(signed(OpA) < signed(OpB)) then Result <= '0'; else Result <= '1'; end if;
+            when "011" =>
+                if(OpA < OpB) then Result <= '0'; else Result <= '1'; end if;
+            when "100" =>
+                if(signed(OpA) >= signed(OpB)) then Result <= '0'; else Result <= '1'; end if;
+            when "101" =>
+                if(OpA >= OpB) then Result <= '0'; else Result <= '1'; end if;
+            when others =>
                 Result <= '0';
-            end if;
+        end case;
 
-        elsif(OpCode = "001") then
-
-            if(OpA = OpB) then
-                Result <= '0';
-            else
-                Result <= '1';
-            end if;
-
-        elsif(OpCode = "010") then
-
-            if(signed(OpA) < signed(OpB)) then
-                Result <= '0';
-            else
-                Result <= '1';
-            end if;
-
-        elsif(OpCode = "011") then
-
-            if(OpA < OpB) then
-                Result <= '0';
-            else
-                Result <= '1';
-            end if;
-
-        elsif(OpCode = "100") then
-
-            if(signed(OpA) >= signed(OpB)) then
-                Result <= '0';
-            else
-                Result <= '1';
-            end if;
-
-        elsif(OpCode = "101") then
-
-            if(OpA >= OpB) then
-                Result <= '0';
-            else
-                Result <= '1';
-            end if;
-
-        else
-            Result <= '0';
-        end if;
     end process;
 
 end architecture comparator_arch;
