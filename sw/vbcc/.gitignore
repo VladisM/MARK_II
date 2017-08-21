@@ -1,0 +1,7 @@
+*.o
+bin/
+machines/*/dt.h
+machines/*/dt.c
+compile.sh
+clean.sh
+bringmedoc.sh

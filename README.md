@@ -25,6 +25,7 @@ Project structure:
     * **loader/** Serial bootloader firmware.
     * **tests/** Some old test programs.
     * **stdio/** Simple STDIO library for UART and text operations.
+    * **vbcc/** ISO C compiler with MARK-II backend.
 * **doc/** Documentation for MARK-II.
     * **refman/** Reference manual directory.
 
