@@ -202,7 +202,7 @@ class assembler():
                     location_counter = location_counter + 1
 
                 else:
-                    print "Error! I found unknown pseudoInstruction at " + token.fileName + "@" + token.lineNumber + ". File contain: '" + token.lineString + "'."
+                    print "Error! I found unknown pseudoInstruction at " + token.fileName + "@" + str(token.lineNumber) + ". File contain: '" + token.lineString + "'."
                     sys.exit(1)
 
             elif token.__name__ == "instruction":
