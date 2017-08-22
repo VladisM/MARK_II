@@ -163,7 +163,7 @@ def decodeInstruction(instructionWord):
     elif opcode == "PUSH":
         return "PUSH \t" + convertRegToName(regA)
     elif opcode == "POP":
-        return "PUSH \t" + convertRegToName(regA)
+        return "POP \t" + convertRegToName(regA)
     elif opcode == "LDI":
         return "LDI  \t" +  convertRegToName(regB) + " " + convertRegToName(regA)
     elif opcode == "STI":

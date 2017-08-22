@@ -185,7 +185,7 @@ class disassembler:
         elif opcode == "PUSH":
             return "PUSH \t" + self.convertRegToName(regA)
         elif opcode == "POP":
-            return "PUSH \t" + self.convertRegToName(regA)
+            return "POP \t" + self.convertRegToName(regA)
         elif opcode == "LDI":
             return "LDI  \t" +  self.convertRegToName(regB) + " " + self.convertRegToName(regA)
         elif opcode == "STI":
