@@ -178,12 +178,12 @@ def main():
     if ser.in_waiting > 0:
         response = int((ser.read(1)).encode('hex'), 16)
         if response != 0xAA:
-            print "Can't connect to MARK II Loader. Aborting.."
+            print "Can't connect to MARK II Loader. Aborting..."
             return 1
         else:
             print "Connected, start sending. Please wait..."
     else:
-        print "Can't connect to MARK II Loader. Aborting.."
+        print "Can't connect to MARK II Loader. Aborting..."
         return 1
 
     #send data
