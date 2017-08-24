@@ -23,8 +23,6 @@ Project structure:
 * **sw/** MARK-II related software.
     * **m2-tools/** Tools for programming on MARK-II. Emulator, assembler...
     * **loader/** Serial bootloader firmware.
-    * **tests/** Some old test programs.
-    * **stdio/** Simple STDIO library for UART and text operations.
     * **vbcc/** ISO C compiler with MARK-II backend.
 * **doc/** Documentation for MARK-II.
     * **refman/** Reference manual directory.
@@ -32,5 +30,8 @@ Project structure:
 License
 --------------------
 
-Whole project, except reference manual, is licensed under MIT license. See /LICENSE for mode details.
-Reference manual is licensed under Creative Commons Attribution-NonCommercial 4.0 International License.
+Whole project, except reference manual and vbcc, is licensed under MIT license.
+See /LICENSE for mode details. Reference manual is licensed under Creative
+Commons Attribution-NonCommercial 4.0 International License. The vbcc compiler
+is licensed by  Dr. Volker Barthelmann, full license can be found in vbcc
+documentation. MARK II backend for vbcc is licensed under MIT too.
