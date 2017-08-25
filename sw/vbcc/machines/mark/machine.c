@@ -939,24 +939,26 @@ void load_into_reg(FILE *f, int dest_reg, struct obj *o, int type, int tmp_reg){
 
             switch((o->v->storage_class) & (STATIC|EXTERN|AUTO|REGISTER)){
                 case STATIC:
-                    emit(f, "\tMVIA \t %s L_%ld\n", regnames[dest_reg], zm2l(o->v->offset));
-
                     if((zm2l(o->val.vmax)/4L) != 0){
+                        emit(f, "\tMVIA \t %s L_%ld\n", regnames[dest_reg], zm2l(o->v->offset));
                         load_cons(f, tmp_reg, zm2l(o->val.vmax)/4L);
                         emit(f, "\tADD \t %s %s %s\n", regnames[dest_reg], regnames[tmp_reg], regnames[dest_reg]);
+                        emit(f, "\tLDI \t %s %s\n", regnames[dest_reg], regnames[dest_reg]);
                     }
-
-                    emit(f, "\tLDI \t %s %s\n", regnames[dest_reg], regnames[dest_reg]);
+                    else{
+                        emit(f, "\tLD \t L_%ld %s\n", zm2l(o->v->offset), regnames[dest_reg]);
+                    }
                     break;
                 case EXTERN:
-                    emit(f, "\tMVIA \t %s %s\n", regnames[dest_reg], o->v->identifier);
-
                     if((zm2l(o->val.vmax)/4L) != 0){
+                        emit(f, "\tMVIA \t %s %s\n", regnames[dest_reg], o->v->identifier);
                         load_cons(f, tmp_reg, zm2l(o->val.vmax)/4L);
                         emit(f, "\tADD \t %s %s %s\n", regnames[dest_reg], regnames[tmp_reg], regnames[dest_reg]);
+                        emit(f, "\tLDI \t %s %s\n", regnames[dest_reg], regnames[dest_reg]);
                     }
-
-                    emit(f, "\tLDI \t %s %s\n", regnames[dest_reg], regnames[dest_reg]);
+                    else{
+                        emit(f, "\tLD \t %s %s\n", o->v->identifier , regnames[dest_reg]);
+                    }
                     break;
                 case AUTO:
                     if((o->v->offset) < 0){
@@ -1011,23 +1013,27 @@ void load_into_reg(FILE *f, int dest_reg, struct obj *o, int type, int tmp_reg){
 
             switch((o->v->storage_class) & (STATIC|EXTERN|AUTO|REGISTER)){
                 case STATIC:
-                    emit(f, "\tMVIA \t %s L_%ld\n", regnames[dest_reg], zm2l(o->v->offset));
-
                     if((zm2l(o->val.vmax)/4L) != 0){
+                        emit(f, "\tMVIA \t %s L_%ld\n", regnames[dest_reg], zm2l(o->v->offset));
                         load_cons(f, tmp_reg, zm2l(o->val.vmax)/4L);
                         emit(f, "\tADD \t %s %s %s\n", regnames[dest_reg], regnames[tmp_reg], regnames[dest_reg]);
+                        emit(f, "\tLDI \t %s %s\n", regnames[dest_reg], regnames[dest_reg]);
                     }
-
+                    else{
+                        emit(f, "\tLD  \t L_%ld %s\n", zm2l(o->v->offset), regnames[dest_reg]);
+                    }
                     emit(f, "\tLDI \t %s %s\n", regnames[dest_reg], regnames[dest_reg]);
                     break;
                 case EXTERN:
-                    emit(f, "\tMVIA \t %s %s\n", regnames[dest_reg], o->v->identifier);
-
                     if((zm2l(o->val.vmax)/4L) != 0){
+                        emit(f, "\tMVIA \t %s %s\n", regnames[dest_reg], o->v->identifier);
                         load_cons(f, tmp_reg, zm2l(o->val.vmax)/4L);
                         emit(f, "\tADD \t %s %s %s\n", regnames[dest_reg], regnames[tmp_reg], regnames[dest_reg]);
+                        emit(f, "\tLDI \t %s %s\n", regnames[dest_reg], regnames[dest_reg]);
                     }
-
+                    else{
+                        emit(f, "\tLD \t %s %s\n", o->v->identifier , regnames[dest_reg]);
+                    }
                     emit(f, "\tLDI \t %s %s\n", regnames[dest_reg], regnames[dest_reg]);
                     break;
                 case AUTO:
@@ -1119,24 +1125,26 @@ void store_from_reg(FILE *f, int source_reg, struct obj *o, int type, int tmp_re
             //load register into variable
             switch((o->v->storage_class) & (STATIC|EXTERN|AUTO|REGISTER)){
                 case STATIC:
-                    emit(f, "\tMVIA \t %s L_%ld\n", regnames[tmp_reg], zm2l(o->v->offset));
-
                     if((zm2l(o->val.vmax)/4L) != 0){
+                        emit(f, "\tMVIA \t %s L_%ld\n", regnames[tmp_reg], zm2l(o->v->offset));
                         load_cons(f, tmp_reg_b, zm2l(o->val.vmax)/4L);
                         emit(f, "\tADD \t %s %s %s\n", regnames[tmp_reg], regnames[tmp_reg_b], regnames[tmp_reg]);
+                        emit(f, "\tSTI \t %s %s\n", regnames[source_reg], regnames[tmp_reg]);
                     }
-
-                    emit(f, "\tSTI \t %s %s\n", regnames[source_reg], regnames[tmp_reg]);
+                    else{
+                        emit(f, "\tST  \t %s L_%ld\n", regnames[tmp_reg], zm2l(o->v->offset));
+                    }
                     break;
                 case EXTERN:
-                    emit(f, "\tMVIA \t %s %s\n", regnames[tmp_reg], o->v->identifier);
-
                     if((zm2l(o->val.vmax)/4L) != 0){
+                        emit(f, "\tMVIA \t %s %s\n", regnames[tmp_reg], o->v->identifier);
                         load_cons(f, tmp_reg_b, zm2l(o->val.vmax)/4L);
                         emit(f, "\tADD \t %s %s %s\n", regnames[tmp_reg], regnames[tmp_reg_b], regnames[tmp_reg]);
+                        emit(f, "\tSTI \t %s %s\n", regnames[source_reg], regnames[tmp_reg]);
                     }
-
-                    emit(f, "\tSTI \t %s %s\n", regnames[source_reg], regnames[tmp_reg]);
+                    else{
+                        emit(f, "\tST  \t %s %s\n", regnames[tmp_reg], o->v->identifier);
+                    }
                     break;
                 case AUTO:
                     if((o->v->offset) < 0){
@@ -1185,25 +1193,27 @@ void store_from_reg(FILE *f, int source_reg, struct obj *o, int type, int tmp_re
             //use value in variable as pointer into memory
             switch((o->v->storage_class) & (STATIC|EXTERN|AUTO|REGISTER)){
                 case STATIC:
-                    emit(f, "\tMVIA \t %s L_%ld\n", regnames[tmp_reg], zm2l(o->v->offset));
-
                     if((zm2l(o->val.vmax)/4L) != 0){
+                        emit(f, "\tMVIA \t %s L_%ld\n", regnames[tmp_reg], zm2l(o->v->offset));
                         load_cons(f, tmp_reg_b, zm2l(o->val.vmax)/4L);
                         emit(f, "\tADD \t %s %s %s\n", regnames[tmp_reg], regnames[tmp_reg_b], regnames[tmp_reg]);
+                        emit(f, "\tSTI \t %s %s\n", regnames[source_reg], regnames[tmp_reg]);
                     }
-
-                    emit(f, "\tLDI \t %s %s\n", regnames[tmp_reg], regnames[tmp_reg]);
+                    else{
+                        emit(f, "\tST  \t %s L_%ld\n", regnames[tmp_reg], zm2l(o->v->offset));
+                    }
                     emit(f, "\tSTI \t %s %s\n", regnames[source_reg], regnames[tmp_reg]);
                     break;
                 case EXTERN:
-                    emit(f, "\tMVIA \t %s %s\n", regnames[tmp_reg], o->v->identifier);
-
                     if((zm2l(o->val.vmax)/4L) != 0){
+                        emit(f, "\tMVIA \t %s %s\n", regnames[tmp_reg], o->v->identifier);
                         load_cons(f, tmp_reg_b, zm2l(o->val.vmax)/4L);
                         emit(f, "\tADD \t %s %s %s\n", regnames[tmp_reg], regnames[tmp_reg_b], regnames[tmp_reg]);
+                        emit(f, "\tSTI \t %s %s\n", regnames[source_reg], regnames[tmp_reg]);
                     }
-
-                    emit(f, "\tLDI \t %s %s\n", regnames[tmp_reg], regnames[tmp_reg]);
+                    else{
+                        emit(f, "\tST  \t %s %s\n", regnames[tmp_reg], o->v->identifier);
+                    }
                     emit(f, "\tSTI \t %s %s\n", regnames[source_reg], regnames[tmp_reg]);
                     break;
                 case AUTO:
