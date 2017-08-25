@@ -61,7 +61,7 @@ class instruction(item):
         else: reg = -1
 
         if reg == -1:
-            print "Error! Instruction '" + selfopcode + "' at " + self.parrent.fileName + "@" + str(self.parrent.lineNumber) + ". Invalid name of register."
+            print "Error! Instruction '" + self.opcode + "' at " + self.parrent.fileName + "@" + str(self.parrent.lineNumber) + ". Invalid name of register."
             sys.exit(1)
         else:
             return reg
