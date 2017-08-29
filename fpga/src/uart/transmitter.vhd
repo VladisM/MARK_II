@@ -19,7 +19,7 @@ entity transmitter is
         tx_data: in unsigned(7 downto 0);
         tx: out std_logic;
         tx_dcfifo_rdreq: out std_logic;
-        tx_dcfifo_rdusedw: in std_logic_vector(4 downto 0);
+        tx_dcfifo_rdusedw: in std_logic_vector(5 downto 0);
         tx_sended: out std_logic
     );
 end entity transmitter;
@@ -70,7 +70,7 @@ begin
             else
                 case state is
                     when idle =>
-                        if ((tx_dcfifo_rdusedw /= "00000") and (en = '1')) then
+                        if ((tx_dcfifo_rdusedw /= "000000") and (en = '1')) then
                             state <= sample_data_0;
                         else
                             state <= idle;

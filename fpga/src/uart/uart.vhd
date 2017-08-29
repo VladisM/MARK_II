@@ -52,11 +52,11 @@ architecture uart_arch of uart is
             rx: in std_logic;           --rx TLE pin
 
             rx_data_output: out unsigned(7 downto 0); --rx data read from fifo
-            rx_data_count: out unsigned(4 downto 0);  --byte count in fifo
+            rx_data_count: out unsigned(5 downto 0);  --byte count in fifo
             rx_data_rdreq: in std_logic;              --request read from rx fifo
 
             tx_data_input: in unsigned(7 downto 0);   --tx data write into fifo
-            tx_data_count: out unsigned(4 downto 0);  --byte count in tx fifo
+            tx_data_count: out unsigned(5 downto 0);  --byte count in tx fifo
             tx_data_wrreq: in std_logic;              --request write into tx fifo
 
             n: in unsigned(15 downto 0);    --control signals
@@ -71,10 +71,10 @@ architecture uart_arch of uart is
     signal reg_sel: std_logic_vector(3 downto 0);
 
     signal rx_data_output: unsigned(7 downto 0);
-    signal rx_data_count: unsigned(4 downto 0);
+    signal rx_data_count: unsigned(5 downto 0);
     signal rx_data_rdreq: std_logic;
     signal tx_data_input: unsigned(7 downto 0);
-    signal tx_data_count: unsigned(4 downto 0);
+    signal tx_data_count: unsigned(5 downto 0);
     signal tx_data_wrreq: std_logic;
     signal n: unsigned(15 downto 0);
     signal txen: std_logic;
@@ -92,7 +92,7 @@ architecture uart_arch of uart is
 
     signal tx_buff_empty, tx_buff_half, rx_buff_full, rx_buff_half: std_logic;
 
-    signal status_reg: std_logic_vector(15 downto 0);
+    signal status_reg: std_logic_vector(17 downto 0);
     signal flagread: std_logic;
 
     type fsm_state_type is (idle, write0, write1, write2, read0, read1, read2);
@@ -133,7 +133,7 @@ begin
 
     process(tx_data_count) is
     begin
-        if tx_data_count = "00000" then
+        if tx_data_count = "000000" then
             tx_buff_empty <= '1';
         else
             tx_buff_empty <= '0';
@@ -142,7 +142,7 @@ begin
 
     process(tx_data_count) is
     begin
-        if tx_data_count = "10000" then
+        if tx_data_count = "010000" then
             tx_buff_half <= '1';
         else
             tx_buff_half <= '0';
@@ -151,7 +151,7 @@ begin
 
     process(rx_data_count) is
     begin
-        if rx_data_count = "11111" then
+        if rx_data_count = "100000" then
             rx_buff_full <= '1';
         else
             rx_buff_full <= '0';
@@ -160,7 +160,7 @@ begin
 
     process(rx_data_count) is
     begin
-        if rx_data_count = "10000" then
+        if rx_data_count = "010000" then
             rx_buff_half <= '1';
         else
             rx_buff_half <= '0';
@@ -199,14 +199,14 @@ begin
         control_reg <= control_reg_v;
     end process;
 
-    status_reg(4 downto 0) <= std_logic_vector(rx_data_count);
-    status_reg(9 downto 5) <= std_logic_vector(tx_data_count);
-    status_reg(10) <= rx_int_bufffull_flag;
-    status_reg(11) <= rx_int_buffhalf_flag;
-    status_reg(12) <= rx_int_flag;
-    status_reg(13) <= tx_int_buffempty_flag;
-    status_reg(14) <= tx_int_buffhalf_flag;
-    status_reg(15) <= tx_int_flag;
+    status_reg(5 downto 0) <= std_logic_vector(rx_data_count);
+    status_reg(11 downto 6) <= std_logic_vector(tx_data_count);
+    status_reg(12) <= rx_int_bufffull_flag;
+    status_reg(13) <= rx_int_buffhalf_flag;
+    status_reg(14) <= rx_int_flag;
+    status_reg(15) <= tx_int_buffempty_flag;
+    status_reg(16) <= tx_int_buffhalf_flag;
+    status_reg(17) <= tx_int_flag;
 
     process(RD, reg_sel) is
     begin
@@ -295,7 +295,7 @@ begin
             when read0=>
                 case reg_sel is
                     when "0001" => data_miso <= (others => 'Z');
-                    when "0100" => data_miso <= x"0000" & unsigned(status_reg);
+                    when "0100" => data_miso <= x"00" & "000000" & unsigned(status_reg);
                     when "1000" => data_miso <= "0000000" & unsigned(control_reg);
                     when others => data_miso <= (others => 'Z');
                 end case;

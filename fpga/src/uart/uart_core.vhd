@@ -19,11 +19,11 @@ entity uart_core is
         rx: in std_logic;           --rx TLE pin
 
         rx_data_output: out unsigned(7 downto 0); --rx data read from fifo
-        rx_data_count: out unsigned(4 downto 0);  --byte count in fifo
+        rx_data_count: out unsigned(5 downto 0);  --byte count in fifo
         rx_data_rdreq: in std_logic;              --request read from rx fifo
 
         tx_data_input: in unsigned(7 downto 0);   --tx data write into fifo
-        tx_data_count: out unsigned(4 downto 0);  --byte count in tx fifo
+        tx_data_count: out unsigned(5 downto 0);  --byte count in tx fifo
         tx_data_wrreq: in std_logic;              --request write into tx fifo
 
         n: in unsigned(15 downto 0);    --control signals
@@ -55,7 +55,7 @@ architecture uart_core_arch of uart_core is
             tx_data: in unsigned(7 downto 0);
             tx: out std_logic;
             tx_dcfifo_rdreq: out std_logic;
-            tx_dcfifo_rdusedw: in std_logic_vector(4 downto 0);
+            tx_dcfifo_rdusedw: in std_logic_vector(5 downto 0);
             tx_sended: out std_logic
         );
     end component transmitter;
@@ -86,30 +86,31 @@ architecture uart_core_arch of uart_core is
             underflow_checking: string;
             use_eab: string;
             write_aclr_synch: string;
-            wrsync_delaypipe: natural
+            wrsync_delaypipe: natural;
+            add_usedw_msb_bit: string
         );
         port(
             rdclk   : in std_logic ;
             q       : out std_logic_vector (7 downto 0);
             wrclk   : in std_logic ;
             wrreq   : in std_logic ;
-            wrusedw : out std_logic_vector (4 downto 0);
+            wrusedw : out std_logic_vector (5 downto 0);
             aclr    : in std_logic ;
             data    : in std_logic_vector (7 downto 0);
             rdreq   : in std_logic ;
-            rdusedw : out std_logic_vector (4 downto 0)
+            rdusedw : out std_logic_vector (5 downto 0)
         );
     end component;
 
     signal baud16_clk_en: std_logic;
     signal rx_data: unsigned(7 downto 0);
     signal rx_dcfifo_q: std_logic_vector(7 downto 0);
-    signal rx_dcfifo_rdusedw: std_logic_vector(4 downto 0);
+    signal rx_dcfifo_rdusedw: std_logic_vector(5 downto 0);
     signal tx_dcfifo_data: std_logic_vector(7 downto 0);
-    signal tx_dcfifo_wrusedw: std_logic_vector(4 downto 0);
+    signal tx_dcfifo_wrusedw: std_logic_vector(5 downto 0);
     signal tx_data: unsigned(7 downto 0);
     signal tx_dcfifo_rdreq: std_logic;
-    signal tx_dcfifo_rdusedw: std_logic_vector(4 downto 0);
+    signal tx_dcfifo_rdusedw: std_logic_vector(5 downto 0);
     signal n_uart: unsigned(15 downto 0);
     signal rx_dcfifo_data: std_logic_vector(7 downto 0);
     signal tx_dcfifo_q: std_logic_vector(7 downto 0);
@@ -147,14 +148,15 @@ begin
         lpm_showahead => "off",
         lpm_type => "dcfifo",
         lpm_width => 8,
-        lpm_widthu => 5,
+        lpm_widthu => 6,
         overflow_checking => "on",
         rdsync_delaypipe => 4,
         read_aclr_synch => "on",
         underflow_checking => "on",
         use_eab => "on",
         write_aclr_synch => "on",
-        wrsync_delaypipe => 4
+        wrsync_delaypipe => 4,
+        add_usedw_msb_bit => "ON"
     )
     port map (
         rdclk => clk_sys,
@@ -175,14 +177,15 @@ begin
         lpm_showahead => "off",
         lpm_type => "dcfifo",
         lpm_width => 8,
-        lpm_widthu => 5,
+        lpm_widthu => 6,
         overflow_checking => "on",
         rdsync_delaypipe => 4,
         read_aclr_synch => "on",
         underflow_checking => "on",
         use_eab => "on",
         write_aclr_synch => "on",
-        wrsync_delaypipe => 4
+        wrsync_delaypipe => 4,
+        add_usedw_msb_bit => "ON"
     )
     port map (
         rdclk => clk_uart,
