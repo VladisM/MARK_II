@@ -87,10 +87,10 @@ architecture uart_arch of uart is
     signal tx_intrq, tx_halfbuff_intrq, tx_emptybuff_intrq: std_logic;
     signal rx_intrq, rx_halfbuff_intrq, rx_fullbuff_intrq: std_logic;
 
-    signal tx_int_flag, tx_int_buffhalf_flag, tx_int_bufffull_flag: std_logic;
+    signal tx_int_flag, tx_int_buffhalf_flag, tx_int_buffempty_flag: std_logic;
     signal rx_int_flag, rx_int_buffhalf_flag, rx_int_bufffull_flag: std_logic;
 
-    signal tx_buff_full, tx_buff_half, rx_buff_full, rx_buff_half: std_logic;
+    signal tx_buff_empty, tx_buff_half, rx_buff_full, rx_buff_half: std_logic;
 
     signal status_reg: std_logic_vector(15 downto 0);
     signal flagread: std_logic;
@@ -126,21 +126,25 @@ begin
 
     tx_intrq <= control_reg(24) and tx_done and not(tx_int_flag);
     tx_halfbuff_intrq <= control_reg(23) and tx_buff_half and not(tx_int_buffhalf_flag);
-    tx_emptybuff_intrq <= control_reg(22) and tx_buff_full and not(tx_int_bufffull_flag);
+    tx_emptybuff_intrq <= control_reg(22) and tx_buff_empty and not(tx_int_buffempty_flag);
     rx_intrq <= control_reg(21) and rx_done and not(rx_int_flag);
     rx_halfbuff_intrq <= control_reg(20) and rx_buff_half and not(rx_int_buffhalf_flag);
     rx_fullbuff_intrq <= control_reg(19) and rx_buff_full and not(rx_int_bufffull_flag);
 
     process(tx_data_count) is
     begin
-        if tx_data_count = "11111" then
-            tx_buff_full <= '1';
-            tx_buff_half <= '0';
-        elsif tx_data_count = "01111" then
-            tx_buff_full <= '0';
+        if tx_data_count = "00000" then
+            tx_buff_empty <= '1';
+        else
+            tx_buff_empty <= '0';
+        end if;
+    end process;
+
+    process(tx_data_count) is
+    begin
+        if tx_data_count = "01111" then
             tx_buff_half <= '1';
         else
-            tx_buff_full <= '0';
             tx_buff_half <= '0';
         end if;
     end process;
@@ -149,15 +153,20 @@ begin
     begin
         if rx_data_count = "11111" then
             rx_buff_full <= '1';
-            rx_buff_half <= '0';
-        elsif rx_data_count = "01111" then
-            rx_buff_full <= '0';
-            rx_buff_half <= '1';
         else
             rx_buff_full <= '0';
+        end if;
+    end process;
+
+    process(rx_data_count) is
+    begin
+        if rx_data_count = "01111" then
+            rx_buff_half <= '1';
+        else
             rx_buff_half <= '0';
         end if;
     end process;
+
 
     flag_tx_int: flag
         port map(clk, res, tx_intrq, flagread, tx_int_flag);
@@ -166,7 +175,7 @@ begin
         port map(clk, res, tx_halfbuff_intrq, flagread, tx_int_buffhalf_flag);
 
     flag_tx_bufffull_int: flag
-        port map(clk, res, tx_emptybuff_intrq, flagread, tx_int_bufffull_flag);
+        port map(clk, res, tx_emptybuff_intrq, flagread, tx_int_buffempty_flag);
 
     flag_rx_int: flag
         port map(clk, res, rx_intrq, flagread, rx_int_flag);
@@ -195,7 +204,7 @@ begin
     status_reg(10) <= rx_int_bufffull_flag;
     status_reg(11) <= rx_int_buffhalf_flag;
     status_reg(12) <= rx_int_flag;
-    status_reg(13) <= tx_int_bufffull_flag;
+    status_reg(13) <= tx_int_buffempty_flag;
     status_reg(14) <= tx_int_buffhalf_flag;
     status_reg(15) <= tx_int_flag;
 
