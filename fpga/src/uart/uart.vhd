@@ -142,7 +142,7 @@ begin
 
     process(tx_data_count) is
     begin
-        if tx_data_count = "01111" then
+        if tx_data_count = "10000" then
             tx_buff_half <= '1';
         else
             tx_buff_half <= '0';
@@ -160,7 +160,7 @@ begin
 
     process(rx_data_count) is
     begin
-        if rx_data_count = "01111" then
+        if rx_data_count = "10000" then
             rx_buff_half <= '1';
         else
             rx_buff_half <= '0';
