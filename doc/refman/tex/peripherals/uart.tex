@@ -149,18 +149,18 @@ Bit field called $N$ is constant for baudrate generator.
     \centering
     \begin{tikzpicture}
         \bitrect{16}{32-\bit}
-        \robits{0}{16}{}
+        \robits{0}{14}{}
+        \rwbits{15}{1}{thif}
+        \rwbits{14}{1}{txif}
     \end{tikzpicture}
     \begin{tikzpicture}
         \bitrect{16}{16-\bit}
-        \rwbits{11}{5}{rxcount}
-        \rwbits{6}{5}{txcount}
-        \rwbits{5}{1}{rfif}
-        \rwbits{4}{1}{rhif}
-        \rwbits{3}{1}{rxif}
-        \rwbits{2}{1}{teif}
-        \rwbits{1}{1}{thif}
-        \rwbits{0}{1}{txif}
+        \rwbits{10}{6}{rxcount}
+        \rwbits{4}{6}{txcount}
+        \rwbits{3}{1}{rfif}
+        \rwbits{2}{1}{rhif}
+        \rwbits{1}{1}{rxif}
+        \rwbits{0}{1}{teif}
     \end{tikzpicture}
     \caption{USR register}
     \label{fig:USR_reg}
