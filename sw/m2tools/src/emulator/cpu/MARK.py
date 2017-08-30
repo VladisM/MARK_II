@@ -26,7 +26,7 @@ class MARK():
         self.ram1 = ram(0x100000, 13, "ram1")
         self.systim0 = systim(0x000104, self.interrupt, "systim0")
         self.intControler0 = intControler(0x000108, self.cpu0, "intControler0")
-        self.uart0 = uart(0x00010A, self.interrupt, uart0_map, "uart0")
+        self.uart0 = uart(0x000120, self.interrupt, uart0_map, "uart0")
 
     def readFunction(self, address):
         """CPU (master on bus) call this function to read data from specified address"""
