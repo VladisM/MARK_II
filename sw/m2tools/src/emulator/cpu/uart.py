@@ -58,8 +58,12 @@ class uart():
                 value = self.txfifo.read()
                 self.ser.write(chr(value & 0xFF))
 
-        self.control_reg = (self.control_reg & 0xFFFFFFC0) | (self.rxfifo.count & 0x3F)
-        self.control_reg = (self.control_reg & 0xFFFFF03F) | ((self.txfifo.count & 0x3F) << 6)
+        if self.status_reg_read == True:
+            self.status_reg_read = False
+            self.status_reg = 0
+
+        self.status_reg = (self.status_reg & 0xFFFFFFC0) | (self.rxfifo.count & 0x3F)
+        self.status_reg = (self.status_reg & 0xFFFFF03F) | ((self.txfifo.count & 0x3F) << 6)
 
         if self.control_reg & 0x40000 == 0x40000:   #test for interrupts
             if self.rxfifo.check_full() and self.__is_int_enabled("rfint") and not(self.__is_flag_set("rfif")):
