@@ -1,64 +1,185 @@
 \subsection{UART}
 
-This is an simple full duplex UART driver, hardwired to 8N1 format, with
-ability to change baud-rate and with interrupt on RX and TX events.
+UART is simple way to communicate with another microprocessor system or
+computer. UART core in MARK II SoC have build-in baudrate generator, FIFO
+buffers for transmitting and receiving, and six configurable interrupt
+conditions. However, communication format is hardwired to 8N1.
 
 \subsubsection{Function}
 
-UART have three registers. First is control register, where constant called n
-is stored, this constant is 16bit wide and it is controlling the baud-rate
-generator. Value of constant n can be calculated like this:
+From the CPU side the UART is seen as four registers. There registers are:
+
+\begin{itemize}
+    \item Control register
+    \item Status register
+    \item TX data register
+    \item RX data register
+\end{itemize}
+
+All registers are described detailed in section \ref{sec:peripherals_uart_reg}.
+TX register and RX register is not actually register. Actually these locations
+are connected to RX/TX FIFO. But you can use them like register. Both FIFO buffers
+are able to store up to 32 bytes.
+
+When you want to use UART you have to configure it first. This can be done in
+control register. You have to enable transmitter and/or receiver. Then you have
+to specify $n$ constant for baudrate generator.
+
+Constant $n$ is integer constant that control baudrate generator. It can be
+calculated using following formula:
 
 $$
-    n = \frac{F_{clk}}{baudrate*16} - 1
+    n = \frac{F_{clk_uart}}{baudrate*16} - 1
 $$
 
-But remember, only integer constant can be stored in this register. Some
-prepared constant value can be found in /doc/baudrate.ods file.
+Optionally, you may want to enable interrupts.
 
-Next two registers are RX register and TX register. They both have same
-address, but when you read from this address, you read RX register, when you
-write to this address you write into TX register.
+When configuration is done, then you can start transmitting. For doing so,
+simply write byte to send into TX data register, transmit will be triggered
+automatically, and will continue until there are something left in FIFO buffer.
 
-TX and RX register are place to store/read data handled by UART. When UART
-receive an new byte, interrupt is called and received byte is put into RX
-register. Old byte is staying in RX register until next byte come.
+Interrupt may be generated when TX FIFO buffer is empty, half empty, or even when
+one byte is sent.
 
-By writing a new value into TX register, transmitting is triggered and byte
-will be send. Due to full duplex character of UART peripherals, TX can be
-active during RX.
+Receiving is fully automatic. When start condition occur on RX line, receiving is
+triggered. After whole byte is received is automatically stored into RX FIFO where
+data waiting for CPU to be read.
+
+Interrupt may be generated when new byte is received, or RX FIFO buffer is full, or even
+half full.
+
+When some interrupt is raised, flag in status register is also set. Flags in this
+register can be used to determine, what kind of interrupt request was raised. Flags
+can be read only once and cannot be written. Also, when flag is active, another interrupt
+request cannot be raised. So it is important to read status register in ISR.
+
+In status register are also current counts of bytes stored in buffers.
 
 \subsubsection{Registers}
+\label{sec:peripherals_uart_reg}
 
-All registers are listed in tables \ref{tab:uart_read_reg_map} and
-\ref{tab:uart_write_reg_map}. Tables are split by type of operation
-(read/write). Meaning of register during read operation is in table
-\ref{tab:uart_read_reg_map} and during write operation is in table
-\ref{tab:uart_write_reg_map}.
+Table \ref{tab:uart_reg_map} refer all registers with their offsets. Bit meaning
+of individual registers are on figures \ref{fig:UTDR_reg} to \ref{fig:USR_reg}.
 
-\begin{table}[h]
+\begin{table}[H]
     \centering
     \begin{tabular}{|l|l|l|}
         \hline
-        \textbf{Offset} & \textbf{Name} & \textbf{Purpose}            \\ \hline
-        $+0$            & UDRx          & RX register of UARTx        \\ \hline
-        $+1$            & UCRx          & Control register for UARTx. \\ \hline
+        \textbf{Offset} & \textbf{Name} & \textbf{Purpose}           \\ \hline
+        $+0$            & UTDR          & Transmitter data register  \\ \hline
+        $+1$            & URDR          & Receiver data register     \\ \hline
+        $+2$            & USR           & Status register            \\ \hline
+        $+3$            & UCR           & Control register           \\ \hline
     \end{tabular}
-    \caption{UART register map - read operation}
-    \label{tab:uart_read_reg_map}
+    \caption{UART register map}
+    \label{tab:uart_reg_map}
 \end{table}
 
-\begin{table}[h]
+\begin{figure}[H]
     \centering
-    \begin{tabular}{|l|l|l|}
-        \hline
-        \textbf{Offset} & \textbf{Name} & \textbf{Purpose}            \\ \hline
-        $+0$            & UDRx          & TX register of UARTx        \\ \hline
-        $+1$            & UCRx          & Control register for UARTx. \\ \hline
-    \end{tabular}
-    \caption{UART register map - write operation}
-    \label{tab:uart_write_reg_map}
-\end{table}
+    \begin{tikzpicture}
+        \bitrect{16}{32-\bit}
+        \robits{0}{16}{}
+    \end{tikzpicture}
+    \begin{tikzpicture}
+        \bitrect{16}{16-\bit}
+        \robits{0}{8}{}
+        \rwbits{8}{8}{Tx data}
+    \end{tikzpicture}
+    \caption{UTDR register}
+    \label{fig:UTDR_reg}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \begin{tikzpicture}
+        \bitrect{16}{32-\bit}
+        \robits{0}{16}{}
+    \end{tikzpicture}
+    \begin{tikzpicture}
+        \bitrect{16}{16-\bit}
+        \robits{0}{8}{}
+        \rwbits{8}{8}{Rx data}
+    \end{tikzpicture}
+    \caption{URDR register}
+    \label{fig:URDR_reg}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \begin{tikzpicture}
+        \bitrect{16}{32-\bit}
+        \rwbits{15}{1}{txen}
+        \rwbits{14}{1}{rxen}
+        \rwbits{13}{1}{inten}
+        \rwbits{12}{1}{rfint}
+        \rwbits{11}{1}{rhint}
+        \rwbits{10}{1}{rxint}
+        \rwbits{9}{1}{teint}
+        \rwbits{8}{1}{thint}
+        \rwbits{7}{1}{txint}
+        \robits{0}{7}{}
+    \end{tikzpicture}
+    \begin{tikzpicture}
+        \bitrect{16}{16-\bit}
+        \rwbits{0}{16}{N}
+    \end{tikzpicture}
+    \caption{UCR register}
+    \label{fig:UCR_reg}
+\end{figure}
+
+UCR register is control register. There is all control bits to configure UART interface.
+Meaning of individual bits is in following list:
+
+\begin{itemize}
+    \item \textbf{txen} - Enable transmitting
+    \item \textbf{rxen} - Enable receiver
+    \item \textbf{inten} - Enable interrupt
+    \item \textbf{rfint} - Enable interrupt full RX FIFO
+    \item \textbf{rhint} - Enable interrupt half full RX FIFO
+    \item \textbf{rxint} - Enable interrupt RX byte come
+    \item \textbf{teint} - Enable interrupt empty TX FIFO
+    \item \textbf{thint} - Enable interrupt half empty TX FIFO
+    \item \textbf{txint} - Enable interrupt TX byte sent
+\end{itemize}
+
+Bit field called $N$ is constant for baudrate generator.
+
+\begin{figure}[H]
+    \centering
+    \begin{tikzpicture}
+        \bitrect{16}{32-\bit}
+        \robits{0}{14}{}
+        \rwbits{15}{1}{thif}
+        \rwbits{14}{1}{txif}
+    \end{tikzpicture}
+    \begin{tikzpicture}
+        \bitrect{16}{16-\bit}
+        \rwbits{10}{6}{rxcount}
+        \rwbits{4}{6}{txcount}
+        \rwbits{3}{1}{rfif}
+        \rwbits{2}{1}{rhif}
+        \rwbits{1}{1}{rxif}
+        \rwbits{0}{1}{teif}
+    \end{tikzpicture}
+    \caption{USR register}
+    \label{fig:USR_reg}
+\end{figure}
+
+Register USR can be read but cannot be set. It contain status of UART interface.
+There are two bit field, rxcount and txcount, that inform about state of FIFO buffers.
+There is also six flags that can be used to determinate what kind of interrupt
+was raised. By reading these flags is cleared. Individual flags are described in
+following list:
+
+\begin{itemize}
+    \item \textbf{rfif} - full RX FIFO interrupt flag
+    \item \textbf{rhif} - half full RX FIFO interrupt flag
+    \item \textbf{rxif} - RX byte come interrupt flag
+    \item \textbf{teif} - empty TX FIFO interrupt flag
+    \item \textbf{thif} - half empty TX FIFO interrupt flag
+    \item \textbf{txif} - TX byte sent interrupt flag
+\end{itemize}
 
 \subsubsection{Hacking}
 
@@ -81,19 +202,22 @@ entity uart is
         RD: in std_logic;
         ack: out std_logic;
         --device
+        clk_uart: in std_logic;
         rx: in std_logic;
         tx: out std_logic;
-        rx_int: out std_logic;
-        tx_int: out std_logic
+        intrq: out std_logic
     );
 end entity uart;
 \end{lstlisting}
 
 Entity UART have same bus interface as all others modules. That mean clk, res,
 address, data\_mosi, data\_miso, WR, RD, ack and BASE\_ADDRESS argument. But there
-are also some device specific signals. These are rx, tx, rx\_int and tx\_int.
+are also some device specific signals. These are rx, tx, intrq and clk\_uart.
 
-Signals tx\_int and rx\_int are interrupt requests. You should connect them to
+Signals intrq is interrupt requests. You should connect it to
 the input of the interrupt controller. Signals rx and tx are transmitter and
 receiver signals. You probably want connect them to the top levels pins. If rx
 pin is not connected, there should be logical one on it.
+
+Signal clk\_uart is clock for baudrate generator. It should be connected to PLL
+component, that generate desired clock for uarts.

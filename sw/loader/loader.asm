@@ -22,8 +22,11 @@
 ;
 
 .CONS INTMR 0x000108
-.CONS UDR0  0x00010A
-.CONS UCR0  0x00010B
+
+.CONS UTDR0 0x120
+.CONS URDR0 0x121
+.CONS USR0  0x122
+.CONS UCR0  0x123
 
 .CONS MODE_SYNC  0x01
 .CONS MODE_BASE  0x02
@@ -48,33 +51,19 @@ start:
     .MVI R11 MODE_SYNC
 
     ;config uart0 to 1200 baud 8n1
-    MVIL R1 0x02ED
+    .MVI R1 0x002702ED
     ST R1 UCR0
 
     ;enable interrupt
-    MVIL R1 0x0200
+    MVIL R1 0x0100
     ST R1 INTMR
 
     ;goto main program
     BZ R0 main
 
-main:
-    ; if mode == MODE_DONE then goto base
-    .MVI R1 MODE_DONE
-    CMP EQ R1 R11 R1
-    BNZI R1 R10
+.ORG 0x00000020 ;UART0 RX ISR
 
-    ; if mode == MODE_ERROR make horrible things!
-    .MVI R1 MODE_ERROR
-    CMP EQ R1 R11 R1
-    BNZ R1 error_sig
-
-    BZ R0 main
-
-error_sig:
-    BZ R0 error_sig
-
-.ORG 0x00000022 ;UART0 RX ISR
+    LD USR0 R2
 
     ;decide what code branch to execute - this is something like FSM
     .MVI R2 MODE_SYNC
@@ -100,14 +89,14 @@ error_sig:
 mode_sync_code:
 
     ;if UDR0 != 0x55 then goto mode_sync_code_error
-    LD UDR0 R2
+    LD URDR0 R2
     .MVI R3 0x55
     CMP EQ R2 R3 R2
     BZ R2 mode_sync_code_error
 
     ;send 0xAA responde for loader
     .MVI R3 0xAA
-    ST R3 UDR0
+    ST R3 UTDR0
 
     ;mode = mode_base
     .MVI R11 MODE_BASE
@@ -126,7 +115,7 @@ mode_base_code:
     LSL 8 R6 R6
 
     ;tmp |= udr0
-    LD UDR0 R2
+    LD URDR0 R2
     OR R2 R6 R6
 
     ;bytenum++
@@ -155,7 +144,7 @@ mode_count_code:
     LSL 8 R6 R6
 
     ;tmp |= udr0
-    LD UDR0 R2
+    LD URDR0 R2
     OR R2 R6 R6
 
     ;bytenum++
@@ -184,7 +173,7 @@ mode_data_code:
     LSL 8 R6 R6
 
     ;tmp |= udr0
-    LD UDR0 R2
+    LD URDR0 R2
     OR R2 R6 R6
 
     ;bytenum++
@@ -221,5 +210,23 @@ mode_data_code_complete:
 
 signalize_and_reti:
     .MVI R2 0xBB
-    ST R2 UDR0
+    ST R2 UTDR0
     RETI
+
+
+
+main:
+    ; if mode == MODE_DONE then goto base
+    .MVI R1 MODE_DONE
+    CMP EQ R1 R11 R1
+    BNZI R1 R10
+
+    ; if mode == MODE_ERROR make horrible things!
+    .MVI R1 MODE_ERROR
+    CMP EQ R1 R11 R1
+    BNZ R1 error_sig
+
+    BZ R0 main
+
+error_sig:
+    BZ R0 error_sig

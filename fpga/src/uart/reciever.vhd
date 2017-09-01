@@ -12,28 +12,28 @@ use ieee.numeric_std.all;
 
 entity reciever is
     port(
+        en: in std_logic;
         clk: in std_logic;
         res: in std_logic;
         rx: in std_logic;
         baud16_clk_en: in std_logic;
         rx_data: out unsigned(7 downto 0);
-        rx_intrq: out std_logic
+        rx_done: out std_logic
     );
 end entity reciever;
 
 architecture reciever_arch of reciever is
 
-    type tx_state_type is (idle, start_sync, wait_for_sync, sync, wait_b0, get_b0, wait_b1, get_b1,wait_b2, get_b2,
+    type rx_state_type is (idle, start_sync, wait_for_sync, sync, wait_b0, get_b0, wait_b1, get_b1,wait_b2, get_b2,
                            wait_b3, get_b3,wait_b4, get_b4,wait_b5, get_b5,wait_b6, get_b6,wait_b7, get_b7,
-                           wait_stopbit, store_data);
+                           wait_stopbit, store_data_0, store_data_1);
 
-    signal state: tx_state_type; -- state for RX FSM
+    signal state: rx_state_type; -- state for RX FSM
 
     signal sipo_val: unsigned(7 downto 0);
     signal rx_rec_com, res_counter, shift_sipo_reg: std_logic; -- control signals for RX FSM
     signal baud_clk_en: std_logic; -- this is an baud clock
     signal count: unsigned(3 downto 0); -- this is rx counter value
-
 
 begin
 
@@ -99,7 +99,7 @@ begin
             else
                 case state is
                     when idle =>
-                        if rx = '0' then
+                        if ((rx = '0') and (en = '1')) then
                             state <= start_sync;
                         else
                             state <= idle;
@@ -181,11 +181,12 @@ begin
 
                     when wait_stopbit =>
                         if baud_clk_en = '1' then
-                            state <= store_data;
+                            state <= store_data_0;
                         else
                             state <= wait_stopbit;
                         end if;
-                    when store_data => state <= idle;
+                    when store_data_0 => state <= store_data_1;
+                    when store_data_1 => state <= idle;
                 end case;
             end if;
         end if;
@@ -194,28 +195,29 @@ begin
     process(state) is
     begin
         case state is
-            when idle =>            rx_rec_com <= '0'; res_counter <= '0'; shift_sipo_reg <= '0'; rx_intrq <= '0';
-            when start_sync =>      rx_rec_com <= '0'; res_counter <= '1'; shift_sipo_reg <= '0'; rx_intrq <= '0';
-            when wait_for_sync =>   rx_rec_com <= '0'; res_counter <= '0'; shift_sipo_reg <= '0'; rx_intrq <= '0';
-            when sync =>            rx_rec_com <= '0'; res_counter <= '1'; shift_sipo_reg <= '0'; rx_intrq <= '0';
-            when wait_b0 =>         rx_rec_com <= '0'; res_counter <= '0'; shift_sipo_reg <= '0'; rx_intrq <= '0';
-            when get_b0 =>          rx_rec_com <= '0'; res_counter <= '0'; shift_sipo_reg <= '1'; rx_intrq <= '0';
-            when wait_b1 =>         rx_rec_com <= '0'; res_counter <= '0'; shift_sipo_reg <= '0'; rx_intrq <= '0';
-            when get_b1 =>          rx_rec_com <= '0'; res_counter <= '0'; shift_sipo_reg <= '1'; rx_intrq <= '0';
-            when wait_b2 =>         rx_rec_com <= '0'; res_counter <= '0'; shift_sipo_reg <= '0'; rx_intrq <= '0';
-            when get_b2 =>          rx_rec_com <= '0'; res_counter <= '0'; shift_sipo_reg <= '1'; rx_intrq <= '0';
-            when wait_b3 =>         rx_rec_com <= '0'; res_counter <= '0'; shift_sipo_reg <= '0'; rx_intrq <= '0';
-            when get_b3 =>          rx_rec_com <= '0'; res_counter <= '0'; shift_sipo_reg <= '1'; rx_intrq <= '0';
-            when wait_b4 =>         rx_rec_com <= '0'; res_counter <= '0'; shift_sipo_reg <= '0'; rx_intrq <= '0';
-            when get_b4 =>          rx_rec_com <= '0'; res_counter <= '0'; shift_sipo_reg <= '1'; rx_intrq <= '0';
-            when wait_b5 =>         rx_rec_com <= '0'; res_counter <= '0'; shift_sipo_reg <= '0'; rx_intrq <= '0';
-            when get_b5 =>          rx_rec_com <= '0'; res_counter <= '0'; shift_sipo_reg <= '1'; rx_intrq <= '0';
-            when wait_b6 =>         rx_rec_com <= '0'; res_counter <= '0'; shift_sipo_reg <= '0'; rx_intrq <= '0';
-            when get_b6 =>          rx_rec_com <= '0'; res_counter <= '0'; shift_sipo_reg <= '1'; rx_intrq <= '0';
-            when wait_b7 =>         rx_rec_com <= '0'; res_counter <= '0'; shift_sipo_reg <= '0'; rx_intrq <= '0';
-            when get_b7 =>          rx_rec_com <= '0'; res_counter <= '0'; shift_sipo_reg <= '1'; rx_intrq <= '0';
-            when wait_stopbit =>    rx_rec_com <= '0'; res_counter <= '0'; shift_sipo_reg <= '0'; rx_intrq <= '0';
-            when store_data =>      rx_rec_com <= '1'; res_counter <= '0'; shift_sipo_reg <= '0'; rx_intrq <= '1';
+            when idle =>             rx_rec_com <= '0'; res_counter <= '0'; shift_sipo_reg <= '0'; rx_done <= '0';
+            when start_sync =>       rx_rec_com <= '0'; res_counter <= '1'; shift_sipo_reg <= '0'; rx_done <= '0';
+            when wait_for_sync =>    rx_rec_com <= '0'; res_counter <= '0'; shift_sipo_reg <= '0'; rx_done <= '0';
+            when sync =>             rx_rec_com <= '0'; res_counter <= '1'; shift_sipo_reg <= '0'; rx_done <= '0';
+            when wait_b0 =>          rx_rec_com <= '0'; res_counter <= '0'; shift_sipo_reg <= '0'; rx_done <= '0';
+            when get_b0 =>           rx_rec_com <= '0'; res_counter <= '0'; shift_sipo_reg <= '1'; rx_done <= '0';
+            when wait_b1 =>          rx_rec_com <= '0'; res_counter <= '0'; shift_sipo_reg <= '0'; rx_done <= '0';
+            when get_b1 =>           rx_rec_com <= '0'; res_counter <= '0'; shift_sipo_reg <= '1'; rx_done <= '0';
+            when wait_b2 =>          rx_rec_com <= '0'; res_counter <= '0'; shift_sipo_reg <= '0'; rx_done <= '0';
+            when get_b2 =>           rx_rec_com <= '0'; res_counter <= '0'; shift_sipo_reg <= '1'; rx_done <= '0';
+            when wait_b3 =>          rx_rec_com <= '0'; res_counter <= '0'; shift_sipo_reg <= '0'; rx_done <= '0';
+            when get_b3 =>           rx_rec_com <= '0'; res_counter <= '0'; shift_sipo_reg <= '1'; rx_done <= '0';
+            when wait_b4 =>          rx_rec_com <= '0'; res_counter <= '0'; shift_sipo_reg <= '0'; rx_done <= '0';
+            when get_b4 =>           rx_rec_com <= '0'; res_counter <= '0'; shift_sipo_reg <= '1'; rx_done <= '0';
+            when wait_b5 =>          rx_rec_com <= '0'; res_counter <= '0'; shift_sipo_reg <= '0'; rx_done <= '0';
+            when get_b5 =>           rx_rec_com <= '0'; res_counter <= '0'; shift_sipo_reg <= '1'; rx_done <= '0';
+            when wait_b6 =>          rx_rec_com <= '0'; res_counter <= '0'; shift_sipo_reg <= '0'; rx_done <= '0';
+            when get_b6 =>           rx_rec_com <= '0'; res_counter <= '0'; shift_sipo_reg <= '1'; rx_done <= '0';
+            when wait_b7 =>          rx_rec_com <= '0'; res_counter <= '0'; shift_sipo_reg <= '0'; rx_done <= '0';
+            when get_b7 =>           rx_rec_com <= '0'; res_counter <= '0'; shift_sipo_reg <= '1'; rx_done <= '0';
+            when wait_stopbit =>     rx_rec_com <= '0'; res_counter <= '0'; shift_sipo_reg <= '0'; rx_done <= '0';
+            when store_data_0 =>     rx_rec_com <= '1'; res_counter <= '0'; shift_sipo_reg <= '0'; rx_done <= '0';
+            when store_data_1 =>     rx_rec_com <= '0'; res_counter <= '0'; shift_sipo_reg <= '0'; rx_done <= '1';
         end case;
     end process;
 
