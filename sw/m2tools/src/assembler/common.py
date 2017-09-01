@@ -91,7 +91,7 @@ def trySolveImmediateOperand(instruction, symbol_table, special_symbol_table, ke
          #if key is symbol, we have to get an number from it
         numberResult = tryConvertNumber(result[1])
         if numberResult[0] == True:
-            return [numberResult[1], False, True]
+            return [numberResult[1], True, True]
         else:
             #symbol contain non int value, this is really really really bad :(
             print "Error! Instruction '" + instruction.opcode + "' at " + instruction.parrent.fileName + "@" + str(instruction.parrent.lineNumber) + ".  Operand is supposed to be an special symbol but symbol doesn't contain integer."
