@@ -1,1 +1,3 @@
 hw/* linguist-vendored=true
+sw/vbcc/* linguist-vendored=true
+sw/vbcc/machines/mark/* linguist-vendored=false
