@@ -12,13 +12,15 @@ use ieee.numeric_std.all;
 
 entity transmitter is
     port(
+        en: in std_logic;
         clk: in std_logic;
         res: in std_logic;
         baud16_clk_en: in std_logic;
         tx_data: in unsigned(7 downto 0);
         tx: out std_logic;
-        tx_intrq: out std_logic;
-        send: in std_logic
+        tx_dcfifo_rdreq: out std_logic;
+        tx_dcfifo_rdusedw: in std_logic_vector(5 downto 0);
+        tx_sended: out std_logic
     );
 end entity transmitter;
 
@@ -26,7 +28,7 @@ architecture transmitter_arch of transmitter is
     signal count: unsigned(3 downto 0);
     signal baud_clk_en: std_logic;
 
-    type tx_state_type is (idle,sample_data, set_startbit, wait_startbit, set_b0, wait_b0, set_b1, wait_b1,
+    type tx_state_type is (idle,sample_data_0, sample_data_1, set_startbit, wait_startbit, set_b0, wait_b0, set_b1, wait_b1,
                       set_b2, wait_b2, set_b3, wait_b3, set_b4, wait_b4, set_b5, wait_b5,
                       set_b6, wait_b6, set_b7, wait_b7, set_stopbit, wait_stopbit, set_flags);
     signal state: tx_state_type;
@@ -61,31 +63,20 @@ begin
         end if;
     end process;
 
-    process(clk, res, send, send_started) is begin
-        if rising_edge(clk) then
-            if res = '1' then
-                send_reg <= '0';
-            elsif send_started = '1' then
-                send_reg <= '0';
-            elsif send = '1' then
-                send_reg <= '1';
-            end if;
-        end if;
-    end process;
-
-    process(clk, res, baud_clk_en) is begin
+    process(clk, res, baud_clk_en, tx_dcfifo_rdusedw) is begin
         if rising_edge(clk) then
             if res = '1' then
                 state <= idle;
             else
                 case state is
                     when idle =>
-                        if send_reg = '1' then
-                            state <= sample_data;
+                        if ((tx_dcfifo_rdusedw /= "000000") and (en = '1')) then
+                            state <= sample_data_0;
                         else
                             state <= idle;
                         end if;
-                    when sample_data => state <= set_startbit;
+                    when sample_data_0 => state <= sample_data_1;
+                    when sample_data_1 => state <= set_startbit;
                     when set_startbit => state <= wait_startbit;
                     when wait_startbit =>
                         if baud_clk_en = '1' then
@@ -175,51 +166,53 @@ begin
     process(state) is begin
         case state is
             when idle  =>
-                send_started <= '0'; shift_data <= '0'; load_data <= '0'; tx_intrq <= '0'; sync_counter <= '0';
-            when sample_data =>
-                send_started <= '1'; shift_data <= '0'; load_data <= '1'; tx_intrq <= '0'; sync_counter <= '0';
+                shift_data <= '0'; load_data <= '0'; sync_counter <= '0'; tx_dcfifo_rdreq <= '0'; tx_sended <= '0';
+            when sample_data_0 =>
+                shift_data <= '0'; load_data <= '0'; sync_counter <= '0'; tx_dcfifo_rdreq <= '1'; tx_sended <= '0';
+            when sample_data_1 =>
+                shift_data <= '0'; load_data <= '1'; sync_counter <= '0'; tx_dcfifo_rdreq <= '0'; tx_sended <= '0';
             when set_startbit =>
-                send_started <= '0'; shift_data <= '1'; load_data <= '0'; tx_intrq <= '0'; sync_counter <= '1';
+                shift_data <= '1'; load_data <= '0'; sync_counter <= '1'; tx_dcfifo_rdreq <= '0'; tx_sended <= '0';
             when wait_startbit =>
-                send_started <= '0'; shift_data <= '0'; load_data <= '0'; tx_intrq <= '0'; sync_counter <= '0';
+                shift_data <= '0'; load_data <= '0'; sync_counter <= '0'; tx_dcfifo_rdreq <= '0'; tx_sended <= '0';
             when set_b0 =>
-                send_started <= '0'; shift_data <= '1'; load_data <= '0'; tx_intrq <= '0'; sync_counter <= '0';
+                shift_data <= '1'; load_data <= '0'; sync_counter <= '0'; tx_dcfifo_rdreq <= '0'; tx_sended <= '0';
             when wait_b0 =>
-                send_started <= '0'; shift_data <= '0'; load_data <= '0'; tx_intrq <= '0'; sync_counter <= '0';
+                shift_data <= '0'; load_data <= '0'; sync_counter <= '0'; tx_dcfifo_rdreq <= '0'; tx_sended <= '0';
             when set_b1 =>
-                send_started <= '0'; shift_data <= '1'; load_data <= '0'; tx_intrq <= '0'; sync_counter <= '0';
+                shift_data <= '1'; load_data <= '0'; sync_counter <= '0'; tx_dcfifo_rdreq <= '0'; tx_sended <= '0';
             when wait_b1 =>
-                send_started <= '0'; shift_data <= '0'; load_data <= '0'; tx_intrq <= '0'; sync_counter <= '0';
+                shift_data <= '0'; load_data <= '0'; sync_counter <= '0'; tx_dcfifo_rdreq <= '0'; tx_sended <= '0';
             when set_b2 =>
-                send_started <= '0'; shift_data <= '1'; load_data <= '0'; tx_intrq <= '0'; sync_counter <= '0';
+                shift_data <= '1'; load_data <= '0'; sync_counter <= '0'; tx_dcfifo_rdreq <= '0'; tx_sended <= '0';
             when wait_b2 =>
-                send_started <= '0'; shift_data <= '0'; load_data <= '0'; tx_intrq <= '0'; sync_counter <= '0';
+                shift_data <= '0'; load_data <= '0'; sync_counter <= '0'; tx_dcfifo_rdreq <= '0'; tx_sended <= '0';
             when set_b3 =>
-                send_started <= '0'; shift_data <= '1'; load_data <= '0'; tx_intrq <= '0'; sync_counter <= '0';
+                shift_data <= '1'; load_data <= '0'; sync_counter <= '0'; tx_dcfifo_rdreq <= '0'; tx_sended <= '0';
             when wait_b3 =>
-                send_started <= '0'; shift_data <= '0'; load_data <= '0'; tx_intrq <= '0'; sync_counter <= '0';
+                shift_data <= '0'; load_data <= '0'; sync_counter <= '0'; tx_dcfifo_rdreq <= '0'; tx_sended <= '0';
             when set_b4 =>
-                send_started <= '0'; shift_data <= '1'; load_data <= '0'; tx_intrq <= '0'; sync_counter <= '0';
+                shift_data <= '1'; load_data <= '0'; sync_counter <= '0'; tx_dcfifo_rdreq <= '0'; tx_sended <= '0';
             when wait_b4 =>
-                send_started <= '0'; shift_data <= '0'; load_data <= '0'; tx_intrq <= '0'; sync_counter <= '0';
+                shift_data <= '0'; load_data <= '0'; sync_counter <= '0'; tx_dcfifo_rdreq <= '0'; tx_sended <= '0';
             when set_b5 =>
-                send_started <= '0'; shift_data <= '1'; load_data <= '0'; tx_intrq <= '0'; sync_counter <= '0';
+                shift_data <= '1'; load_data <= '0'; sync_counter <= '0'; tx_dcfifo_rdreq <= '0'; tx_sended <= '0';
             when wait_b5 =>
-                send_started <= '0'; shift_data <= '0'; load_data <= '0'; tx_intrq <= '0'; sync_counter <= '0';
+                shift_data <= '0'; load_data <= '0'; sync_counter <= '0'; tx_dcfifo_rdreq <= '0'; tx_sended <= '0';
             when set_b6 =>
-                send_started <= '0'; shift_data <= '1'; load_data <= '0'; tx_intrq <= '0'; sync_counter <= '0';
+                shift_data <= '1'; load_data <= '0'; sync_counter <= '0'; tx_dcfifo_rdreq <= '0'; tx_sended <= '0';
             when wait_b6 =>
-                send_started <= '0'; shift_data <= '0'; load_data <= '0'; tx_intrq <= '0'; sync_counter <= '0';
+                shift_data <= '0'; load_data <= '0'; sync_counter <= '0'; tx_dcfifo_rdreq <= '0'; tx_sended <= '0';
             when set_b7 =>
-                send_started <= '0'; shift_data <= '1'; load_data <= '0'; tx_intrq <= '0'; sync_counter <= '0';
+                shift_data <= '1'; load_data <= '0'; sync_counter <= '0'; tx_dcfifo_rdreq <= '0'; tx_sended <= '0';
             when wait_b7 =>
-                send_started <= '0'; shift_data <= '0'; load_data <= '0'; tx_intrq <= '0'; sync_counter <= '0';
+                shift_data <= '0'; load_data <= '0'; sync_counter <= '0'; tx_dcfifo_rdreq <= '0'; tx_sended <= '0';
             when set_stopbit =>
-                send_started <= '0'; shift_data <= '1'; load_data <= '0'; tx_intrq <= '0'; sync_counter <= '0';
+                shift_data <= '1'; load_data <= '0'; sync_counter <= '0'; tx_dcfifo_rdreq <= '0'; tx_sended <= '0';
             when wait_stopbit =>
-                send_started <= '0'; shift_data <= '0'; load_data <= '0'; tx_intrq <= '0'; sync_counter <= '0';
+                shift_data <= '0'; load_data <= '0'; sync_counter <= '0'; tx_dcfifo_rdreq <= '0'; tx_sended <= '0';
             when set_flags =>
-                send_started <= '0'; shift_data <= '0'; load_data <= '0'; tx_intrq <= '1'; sync_counter <= '0';
+                shift_data <= '0'; load_data <= '0'; sync_counter <= '0'; tx_dcfifo_rdreq <= '0'; tx_sended <= '1';
         end case;
     end process;
 

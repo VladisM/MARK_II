@@ -1,0 +1,133 @@
+\subsection{vbcc}
+
+MARK II toolchain also contain ISO C Compiler. This compiler was wrote by
+Dr. Volker Barthelmann and for full documentation please refer original vbcc
+documentation that can be found in folder /sw/vbcc/doc.
+
+Compiler can translate C programs into assembler sources. These sources then can
+be translated into object files, linked together and loaded into MARK II memory.
+
+Homepage of vbcc can be found at this link: \url{http://www.compilers.de/vbcc.html}.
+
+Purpose of this section isn't give informations about vbcc usage, for this please
+refer original documentation. Purpose of this section is to inform about register
+usage, calling conventions and backend related things.
+
+\subsubsection{Register usage}
+
+CPU have sixteen registers, three of them are special registers. Almost all
+of these registers are used for compiler purposes. Function of all registers
+can be found in table \ref{tab:registers_list_ussage}.
+
+\begin{table}[h]
+    \centering
+    \begin{tabular}{|l|l|l|l|}
+        \hline
+        \textbf{Register name} & \textbf{Purpose}  & \textbf{Register name} & \textbf{Purpose} \\ \hline
+        R0                     & zero register     & R8                     & tmp register     \\ \hline
+        R1                     & compiler reserved & R9                     & tmp register     \\ \hline
+        R2                     & compiler reserved & R10                    & tmp register     \\ \hline
+        R3                     & compiler reserved & R11                    & tmp register     \\ \hline
+        R4                     & condition flag    & R12                    & tmp register     \\ \hline
+        R5                     & return value      & R13                    & frame pointer    \\ \hline
+        R6                     & tmp register      & R14                    & program counter  \\ \hline
+        R7                     & tmp register      & R15                    & stack pointer    \\ \hline
+    \end{tabular}
+    \caption{Register usage}
+    \label{tab:registers_list_ussage}
+\end{table}
+
+Compiler reserved registers $R1$ - $R3$ are used by compiler for loading
+variables, calculating addresses, comparisons and so on.
+
+Condition flag register $R4$ are used for conditional jumps. CMP instruction
+will always store return value into this register. Following instruction should
+be branch instruction that will use this register.
+
+Registers $R1$ to $R4$ are always pushed into stack in function head and then
+poped out at function bottom.
+
+Register $R5$ is used as return register. When function have to return some value
+this value will be returned in this register.
+
+Frame pointer and stack pointer, registers $R13$ and $R15$ are used for manipulating
+stack. At stack are stored all local variables. For more information please refer
+section about stack usage.
+
+Program counter is maintained by CPU and vbcc backend doesn't manipulate it directly.
+
+There are seven tmp registers, registers $R6$ to $R12$. These registers can be
+used freely by vbcc backend or by assembler programmer. But at head of each
+function/subroutine, used registers have to be pushed into stack.
+
+\subsubsection{Stack usage by functions}
+
+When function is called, new stack frame is emitted. For this frame pointer and
+stack pointer registers are used. Stack frame consist from arguments passed into
+called function, return address and old frame pointer.
+
+So whole calling sequence look like this:
+
+\begin{lstlisting}[language={[markII]Assembler}, frame=single]
+    PUSH R6     ;push two arguments into stack
+    PUSH R7
+    CALL foo    ;call function foo
+\end{lstlisting}
+
+Head of function foo will look like this:
+
+\begin{lstlisting}[language={[markII]Assembler}, frame=single]
+    .EXPORT foo
+    foo:
+        PUSH R13    ;store old frame pointer
+        MOV SP R13  ;create new frame pointer
+
+        ;make space for auto class variables by pushing R0
+
+        ;store all used registers
+\end{lstlisting}
+
+At first, name of function is exported, then label is generated. In new function
+first thing to do is backup frame pointer by pushing $R13$. Then creating a new
+frame pointer by copy value from $SP$ into $R13$. Finally, function will store all
+registers that will use with PUSH instruction.
+
+At the end of function, return value is moved into $R5$ and function bottom is
+generated.
+
+Function bottom consist from poping out used registers from stack, restoring frame pointer,
+and calling instruction RET. This look like this:
+
+\begin{lstlisting}[language={[markII]Assembler}, frame=single]
+    ; move return value into R5
+
+    ; pop all used registers
+
+    MOV R13 SP  ; restore SP
+    POP R13     ; restore FP
+    RET
+\end{lstlisting}
+
+Stack is also the place where all locals variables are stored. For their addressing
+is used frame pointer. And they are stored after stored old frame pointer.
+
+\subsubsection{Simple optimizations tips}
+
+\begin{itemize}
+
+    \item
+    Reorder local variables declaration. First declared variable should be
+    variable that is used most often. Second most often used variable should be
+    declared right after first declaration. Order of next variables do not
+    matter. Also make sure, that first and second variables are not arrays or
+    structures.
+
+    \item
+    Avoid multiplication whenever is possible. Use shifts instead, this is
+    always faster than multiplication.
+
+\end{itemize}
+
+\subsubsection{Libraries}
+
+At this time, there isn't libraries for MARK II.

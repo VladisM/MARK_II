@@ -12,12 +12,55 @@
 \usepackage[left=2.5cm,right=2.5cm,top=2.5cm,bottom=2.5cm]{geometry}
 \usepackage{listings}
 \lstset{breaklines=true}
+\usepackage{float}
 
 %watermark
 %\usepackage{draftwatermark}
 %\SetWatermarkText{Preliminary}
 %\SetWatermarkLightness{0.9}
 %\SetWatermarkScale{1}
+
+\usepackage{tikz}
+
+\pgfdeclarelayer{background}
+\pgfdeclarelayer{foreground}
+\pgfsetlayers{background,main,foreground}
+
+\newcommand{\bitrect}[2]{
+  \begin{pgfonlayer}{foreground}
+    \draw [thick] (0,0) rectangle (#1,1);
+    \pgfmathsetmacro\result{#1-1}
+    \foreach \x in {1,...,\result}
+      \draw [thick] (\x,1) -- (\x, 0.8);
+  \end{pgfonlayer}
+%  \node [below left, align=right] at (0,0) {Type \\ Reset};
+  \bitlabels{#1}{#2}
+}
+
+\newcommand{\rwbits}[3]{
+  \draw [thick] (#1,0) rectangle ++(#2,1) node[pos=0.5]{#3};
+  \pgfmathsetmacro\start{#1+0.5}
+  \pgfmathsetmacro\finish{#1+#2-0.5}
+%  \foreach \x in {\start,...,\finish}
+%    \node [below, align=center] at (\x, 0) {R/W \\ 0};
+}
+
+\newcommand{\robits}[3]{
+  \begin{pgfonlayer}{background}
+    \draw [thick, fill=lightgray] (#1,0) rectangle ++(#2,1) node[pos=0.5]{#3};
+  \end{pgfonlayer}
+  \pgfmathsetmacro\start{#1+0.5}
+  \pgfmathsetmacro\finish{#1+#2-0.5}
+%  \foreach \x in {\start,...,\finish}
+%    \node [below, align=center] at (\x, 0) {RO \\ 0};
+}
+
+\newcommand{\bitlabels}[2]{
+  \foreach \bit in {1,...,#1}{
+     \pgfmathsetmacro\result{#2}
+     \node [above] at (\bit-0.5, 1) {\pgfmathprintnumber{\result}};
+   }
+}
 
 \lstdefinelanguage[markII]{Assembler}
 {
@@ -95,6 +138,7 @@
 \include{tex/toolchain/toolchain}
 \include{tex/toolchain/assembler}
 \include{tex/toolchain/emulator}
+\include{tex/toolchain/vbcc}
 \include{tex/toolchain/usage}
 
 \end{document}
