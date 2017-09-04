@@ -60,18 +60,39 @@ bits are in table \ref{tab:tim_tccr_bits}.
     \label{tab:tim_reg_map}
 \end{table}
 
+\begin{figure}[H]
+    \centering
+    \begin{tikzpicture}
+        \bitrect{16}{32-\bit}
+        \robits{0}{16}{}
+    \end{tikzpicture}
+    \begin{tikzpicture}
+        \bitrect{16}{16-\bit}
+        \robits{0}{9}{}
+        \rwbits{15}{1}{ccmen}
+        \rwbits{14}{1}{timen}
+        \rwbits{13}{1}{ovint}
+        \rwbits{12}{1}{cmint}
+        \rwbits{11}{1}{pwmen}
+        \rwbits{10}{1}{pre0}
+        \rwbits{9}{1}{pre1}
+    \end{tikzpicture}
+    \caption{UTDR register}
+    \label{fig:TCCR_reg}
+\end{figure}
+
 \begin{table}[h]
     \centering
-    \begin{tabular}{|l|l|}
+    \begin{tabular}{|l|l|l|}
         \hline
-        \textbf{Bit} & \textbf{Purpose}                                                         \\ \hline
-        $0$          & Enable clear on compare match.                                           \\ \hline
-        $1$          & Enable timer.                                                            \\ \hline
-        $2$          & Enable interrupt on overflow.                                            \\ \hline
-        $3$          & Enable interrupt on compare match.                                       \\ \hline
-        $4$          & Enable both channels of PWM.                                             \\ \hline
-        $5$          & clksel0 - Select prescaler, see table \ref{tab:tim_prescaler_setting}.   \\ \hline
-        $6$          & clksel1 - Select prescaler, see table \ref{tab:tim_prescaler_setting}.   \\ \hline
+        \textbf{Bit} & \textbf{Name} & \textbf{Purpose}                                               \\ \hline
+        $0$          & ccmen         & Enable clear on compare match.                                 \\ \hline
+        $1$          & timen         & Enable timer.                                                  \\ \hline
+        $2$          & ovint         & Enable interrupt on overflow.                                  \\ \hline
+        $3$          & cmint         & Enable interrupt on compare match.                             \\ \hline
+        $4$          & pwmen         & Enable both channels of PWM.                                   \\ \hline
+        $5$          & pre0          & Select prescaler, see table \ref{tab:tim_prescaler_setting}.   \\ \hline
+        $6$          & pre1          & Select prescaler, see table \ref{tab:tim_prescaler_setting}.   \\ \hline
     \end{tabular}
     \caption{TCCR bits.}
     \label{tab:tim_tccr_bits}
@@ -81,7 +102,7 @@ bits are in table \ref{tab:tim_tccr_bits}.
     \centering
     \begin{tabular}{|l|l|l|}
         \hline
-        \textbf{clkse1} & \textbf{clksel0} & \textbf{Prescaler} \\ \hline
+        \textbf{pre1} & \textbf{pre0} & \textbf{Prescaler} \\ \hline
         $0$ & $0$ & $F_{clk}/1$ \\ \hline
         $0$ & $1$ & $F_{clk}/2$ \\ \hline
         $1$ & $0$ & $F_{clk}/4$ \\ \hline

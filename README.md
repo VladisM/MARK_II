@@ -24,6 +24,7 @@ Project structure:
     * **m2-tools/** Tools for programming on MARK-II. Emulator, assembler...
     * **loader/** Serial bootloader firmware.
     * **vbcc/** ISO C compiler with MARK-II backend.
+    * **spl/** Standard peripheral library.
 * **doc/** Documentation for MARK-II.
     * **refman/** Reference manual directory.
 
