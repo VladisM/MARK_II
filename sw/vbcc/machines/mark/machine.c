@@ -502,9 +502,15 @@ void gen_code(FILE *f,struct IC *p,struct Var *v,zmax offset){
                     switch((p->q1.v->storage_class) & (AUTO|REGISTER|STATIC|EXTERN)){
                         case EXTERN:
                             emit(f, "\tCALL \t %s\n", p->q1.v->identifier);
+                            for(int i = 0; i < (p->q2.val.vmax / 4); i++){
+                                emit(f, "\tPOP \t R0\n");
+                            }
                             break;
                         case STATIC:
                             emit(f, "\tCALL \t L_%ld\n", zm2l(p->q1.v->offset));
+                            for(int i = 0; i < (p->q2.val.vmax / 4); i++){
+                                emit(f, "\tPOP \t R0\n");
+                            }
                             break;
                         default:
                             #ifdef DEBUG_MARK

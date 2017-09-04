@@ -219,7 +219,7 @@ main:
     ; if mode == MODE_DONE then goto base
     .MVI R1 MODE_DONE
     CMP EQ R1 R11 R1
-    BNZI R1 R10
+    BNZ R1 start_loaded
 
     ; if mode == MODE_ERROR make horrible things!
     .MVI R1 MODE_ERROR
@@ -230,3 +230,19 @@ main:
 
 error_sig:
     BZ R0 error_sig
+
+
+;goto loaded program
+start_loaded:
+
+    ;wait a bit
+    .MVI R1 0xFFFFF
+start_loaded_loop:
+    DEC R1 R1
+    BNZ R1 start_loaded_loop
+
+    ;disable UART and jump into program
+    ST R0 INTMR
+    ST R0 UCR0
+    LD USR0 R0
+    BZI R0 R10
