@@ -1,4 +1,4 @@
-LIB = ~/m2_toolchain/spl
+LIB = $(HOME)/m2_toolchain/spl
 PORT = /dev/ttyUSB0
 CCFLAG = -I$(LIB) -quiet -c99
 
