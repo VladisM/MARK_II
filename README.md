@@ -1,16 +1,18 @@
 MARK II SoC
 ====================
 
-MARK II is system on chip written in VHDL, it have custom 32bit CPU and few peripherals.
-Also there is a few tools written in Python.
+MARK II is system on chip written in VHDL, it have custom 32bit CPU and few custom peripherals.
+Also there is full featured toolchain including assembler, linker, emulator, c compiler and serial
+port loader.
 
 Installation & Usage
 --------------------
 
-* Clone this repository and make sure you are on master branch.
-* Merge branch bugfixs.
-* Build and print and read reference manual from /doc/refman.
-* Place /sw/m2-tools somewhere (eg. in /opt/m2tools) and add bin directory to your $PATH.
+* Clone this repository.
+* If you know, what you are doing, checkout master branch, otherwise checkout version you want.
+* Build, print and read at least reference manual. Use compile_doc.sh script.
+* Build toolchain with install_toolchain.sh script. Run script and follow instructions.
+    * Path to SPL is important for vbcc compiler.
 * Write your code, compile it, load it, run it and enjoy!
 
 Project structure:

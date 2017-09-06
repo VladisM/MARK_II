@@ -32,7 +32,7 @@
 #define UCR0_txint 0x01000000
 
 #define USR0_rxcount 0x0000003F
-#define USR0_rxcount 0x00000FC0
+#define USR0_txcount 0x00000FC0
 #define USR0_rfif 0x00001000
 #define USR0_rhif 0x00002000
 #define USR0_rxif 0x00004000
@@ -52,7 +52,7 @@
 #define UCR0_txint 0x01000000
 
 #define USR1_rxcount 0x0000003F
-#define USR1_rxcount 0x00000FC0
+#define USR1_txcount 0x00000FC0
 #define USR1_rfif 0x00001000
 #define USR1_rhif 0x00002000
 #define USR1_rxif 0x00004000
@@ -72,7 +72,7 @@
 #define UCR0_txint 0x01000000
 
 #define USR2_rxcount 0x0000003F
-#define USR2_rxcount 0x00000FC0
+#define USR2_txcount 0x00000FC0
 #define USR2_rfif 0x00001000
 #define USR2_rhif 0x00002000
 #define USR2_rxif 0x00004000

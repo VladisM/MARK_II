@@ -1,7 +1,7 @@
 #ifndef SPL_included
 #define SPL_included
 
-#inclide "gpio.h"
+#include "gpio.h"
 #include "uart.h"
 #include "timer.h"
 #include "intdrv.h"
