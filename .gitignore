@@ -34,8 +34,11 @@ toolchain/vbcc/doc/vbcc.aux
 toolchain/vbcc/doc/vbcc.log
 toolchain/vbcc/doc/vbcc.toc
 
+toolchain/spl/latex/
+
 refman.pdf
 vbcc.pdf
+spl_ref.pdf
 
 sw/**/*.o
 sw/**/*.ldm
