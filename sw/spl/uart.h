@@ -5,20 +5,20 @@
 #define UART1_BASE 0x000124
 #define UART2_BASE 0x000128
 
-#define UTDR0     (*(unsigned int *)(UART0_BASE + 0))
-#define URDR0     (*(unsigned int *)(UART0_BASE + 1))
-#define USR0      (*(unsigned int *)(UART0_BASE + 2))
-#define UCR0      (*(unsigned int *)(UART0_BASE + 3))
+#define UTDR0 (*(unsigned int *)(UART0_BASE + 0))
+#define URDR0 (*(unsigned int *)(UART0_BASE + 1))
+#define USR0  (*(unsigned int *)(UART0_BASE + 2))
+#define UCR0  (*(unsigned int *)(UART0_BASE + 3))
 
-#define UTDR1     (*(unsigned int *)(UART1_BASE + 0))
-#define URDR1     (*(unsigned int *)(UART1_BASE + 1))
-#define USR1      (*(unsigned int *)(UART1_BASE + 2))
-#define UCR1      (*(unsigned int *)(UART1_BASE + 3))
+#define UTDR1 (*(unsigned int *)(UART1_BASE + 0))
+#define URDR1 (*(unsigned int *)(UART1_BASE + 1))
+#define USR1  (*(unsigned int *)(UART1_BASE + 2))
+#define UCR1  (*(unsigned int *)(UART1_BASE + 3))
 
-#define UTDR2     (*(unsigned int *)(UART2_BASE + 0))
-#define URDR2     (*(unsigned int *)(UART2_BASE + 1))
-#define USR2      (*(unsigned int *)(UART2_BASE + 2))
-#define UCR2      (*(unsigned int *)(UART2_BASE + 3))
+#define UTDR2 (*(unsigned int *)(UART2_BASE + 0))
+#define URDR2 (*(unsigned int *)(UART2_BASE + 1))
+#define USR2  (*(unsigned int *)(UART2_BASE + 2))
+#define UCR2  (*(unsigned int *)(UART2_BASE + 3))
 
 #define UCR0_N     0x0000FFFF
 #define UCR0_txen  0x00010000

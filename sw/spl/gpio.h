@@ -3,10 +3,10 @@
 
 #define GPIO_BASE 0x000100
 
-#define PORTA    (*(unsigned int *)(GPIO_BASE + 0))
-#define DDRA     (*(unsigned int *)(GPIO_BASE + 1))
-#define PORTB    (*(unsigned int *)(GPIO_BASE + 2))
-#define DDRB     (*(unsigned int *)(GPIO_BASE + 3))
+#define PORTA (*(unsigned int *)(GPIO_BASE + 0))
+#define DDRA  (*(unsigned int *)(GPIO_BASE + 1))
+#define PORTB (*(unsigned int *)(GPIO_BASE + 2))
+#define DDRB  (*(unsigned int *)(GPIO_BASE + 3))
 
 #define PA0 0x01
 #define PA1 0x02

@@ -6,25 +6,25 @@
 #define TIMER2_BASE 0x000118
 #define TIMER3_BASE 0x00011C
 
-#define TCCR0    (*(unsigned int *)(TIMER0_BASE + 0))
-#define OCRA0    (*(unsigned int *)(TIMER0_BASE + 1))
-#define OCRB0    (*(unsigned int *)(TIMER0_BASE + 2))
-#define TCNR0    (*(unsigned int *)(TIMER0_BASE + 3))
+#define TCCR0 (*(unsigned int *)(TIMER0_BASE + 0))
+#define OCRA0 (*(unsigned int *)(TIMER0_BASE + 1))
+#define OCRB0 (*(unsigned int *)(TIMER0_BASE + 2))
+#define TCNR0 (*(unsigned int *)(TIMER0_BASE + 3))
 
-#define TCCR1    (*(unsigned int *)(TIMER1_BASE + 0))
-#define OCRA1    (*(unsigned int *)(TIMER1_BASE + 1))
-#define OCRB1    (*(unsigned int *)(TIMER1_BASE + 2))
-#define TCNR1    (*(unsigned int *)(TIMER1_BASE + 3))
+#define TCCR1 (*(unsigned int *)(TIMER1_BASE + 0))
+#define OCRA1 (*(unsigned int *)(TIMER1_BASE + 1))
+#define OCRB1 (*(unsigned int *)(TIMER1_BASE + 2))
+#define TCNR1 (*(unsigned int *)(TIMER1_BASE + 3))
 
-#define TCCR2    (*(unsigned int *)(TIMER2_BASE + 0))
-#define OCRA2    (*(unsigned int *)(TIMER2_BASE + 1))
-#define OCRB2    (*(unsigned int *)(TIMER2_BASE + 2))
-#define TCNR2    (*(unsigned int *)(TIMER2_BASE + 3))
+#define TCCR2 (*(unsigned int *)(TIMER2_BASE + 0))
+#define OCRA2 (*(unsigned int *)(TIMER2_BASE + 1))
+#define OCRB2 (*(unsigned int *)(TIMER2_BASE + 2))
+#define TCNR2 (*(unsigned int *)(TIMER2_BASE + 3))
 
-#define TCCR3    (*(unsigned int *)(TIMER3_BASE + 0))
-#define OCRA3    (*(unsigned int *)(TIMER3_BASE + 1))
-#define OCRB3    (*(unsigned int *)(TIMER3_BASE + 2))
-#define TCNR3    (*(unsigned int *)(TIMER3_BASE + 3))
+#define TCCR3 (*(unsigned int *)(TIMER3_BASE + 0))
+#define OCRA3 (*(unsigned int *)(TIMER3_BASE + 1))
+#define OCRB3 (*(unsigned int *)(TIMER3_BASE + 2))
+#define TCNR3 (*(unsigned int *)(TIMER3_BASE + 3))
 
 #define TCCR0_ccmen 0x00000001
 #define TCCR0_timen 0x00000002
