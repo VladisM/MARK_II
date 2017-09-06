@@ -1,4 +1,5 @@
-LIB = /home/vladis/m2_toolchain/spl
+LIB = ~/m2_toolchain/spl
+PORT = /dev/ttyUSB0
 CCFLAG = -I$(LIB) -quiet -c99
 
 all: blink.ldm
@@ -21,4 +22,4 @@ clean:
 	rm -rf blink.asm blink.ldm *.o
 
 load: blink.ldm
-	m2-loader -p /dev/ttyUSB0 -b 0x400 blink.ldm
+	m2-loader -p $(PORT) -b 0x400 blink.ldm
