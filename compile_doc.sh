@@ -1,6 +1,6 @@
 #!/bin/bash
 
-cd sw/vbcc/doc/
+cd toolchain/vbcc/doc/
 texi2pdf vbcc.texi
 mv vbcc.pdf ../../../vbcc.pdf
 rm -rf vbcc.aux vbcc.log vbcc.toc

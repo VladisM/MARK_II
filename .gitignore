@@ -1,15 +1,15 @@
 junk/
 
-sw/loader/*.o
-sw/loader/*.ldm
-sw/loader/*.mif
+toolchain/loader/*.o
+toolchain/loader/*.ldm
+toolchain/loader/*.mif
 
-sw/m2tools/**/*.pyc
+toolchain/m2tools/**/*.pyc
 
-sw/vbcc/**/*.o
-sw/vbcc/bin/**
-sw/vbcc/machines/**/dt.h
-sw/vbcc/machines/**/dt.c
+toolchain/vbcc/**/*.o
+toolchain/vbcc/bin/**
+toolchain/vbcc/machines/**/dt.h
+toolchain/vbcc/machines/**/dt.c
 
 hw/**/*.b#*
 hw/**/*.s#*
@@ -30,6 +30,14 @@ doc/refman/**/*.lof
 doc/refman/**/*.pdf
 doc/refman/**/*.lot
 
-sw/vbcc/doc/vbcc.aux
-sw/vbcc/doc/vbcc.log
-sw/vbcc/doc/vbcc.toc
+toolchain/vbcc/doc/vbcc.aux
+toolchain/vbcc/doc/vbcc.log
+toolchain/vbcc/doc/vbcc.toc
+
+refman.pdf
+vbcc.pdf
+
+sw/**/*.o
+sw/**/*.ldm
+sw/**/*.asm
+!sw/**/startup.asm

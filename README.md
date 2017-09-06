@@ -13,6 +13,7 @@ Installation & Usage
 * Build, print and read at least reference manual. Use compile_doc.sh script.
 * Build toolchain with install_toolchain.sh script. Run script and follow instructions.
     * Path to SPL is important for vbcc compiler.
+* Install Quartus II open, compile and burn project located in folder /fpga/proj into your DE0 nano.
 * Write your code, compile it, load it, run it and enjoy!
 
 Project structure:
@@ -22,7 +23,8 @@ Project structure:
     * **project/** Example project for Quartus II 13.0 sp1 and DE0 Nano board.
     * **src/** VHDL codes of whole MARK-II.
 * **hw/** All about Hardware. Addons for DE0 Nano board.
-* **sw/** MARK-II related software.
+* **sw/** Some simple applications to demonstrate how to work with MARK-II.
+* **toolchain/** MARK-II toolchain.
     * **m2-tools/** Tools for programming on MARK-II. Emulator, assembler...
     * **loader/** Serial bootloader firmware.
     * **vbcc/** ISO C compiler with MARK-II backend.
