@@ -71,6 +71,11 @@ set_global_assignment -name VHDL_FILE src/cpu/condition.vhd
 set_global_assignment -name VHDL_FILE src/cpu/comparator.vhd
 set_global_assignment -name VHDL_FILE src/cpu/barrel_shifter.vhd
 set_global_assignment -name VHDL_FILE src/cpu/alu.vhd
+set_global_assignment -name QIP_FILE src/cpu/fpu/add/add.qip
+set_global_assignment -name QIP_FILE src/cpu/fpu/sub/sub.qip
+set_global_assignment -name QIP_FILE src/cpu/fpu/div/div.qip
+set_global_assignment -name QIP_FILE src/cpu/fpu/mult/mul.qip
+set_global_assignment -name VHDL_FILE src/cpu/fpu/fpu.vhd
 set_global_assignment -name VHDL_FILE src/common/tristate.vhd
 set_global_assignment -name VHDL_FILE src/common/regs.vhd
 set_global_assignment -name VHDL_FILE src/common/int_fsm.vhd
