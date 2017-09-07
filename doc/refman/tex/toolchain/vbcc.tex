@@ -130,4 +130,13 @@ is used frame pointer. And they are stored after stored old frame pointer.
 
 \subsubsection{Libraries}
 
-At this time, there isn't libraries for MARK II.
+C Standard Library is not yet implemented but there is SPL - Standard
+Peripheral Library for MARK II available. This library is only header files
+defining some useful macros and constants for reading and writing registers,
+accessing RAM, ROM and VRAM memories and bit mask for acessing various bits in
+registers. For more details please refer SPL reference manual, or see examples
+in sw directory.
+
+Usage is really simple. When toolchain is installed, install script emit path to
+SPL. These path have to be parsed into vbcc at compile time with -I argument.
+Then you can normally include header file spl.h as usual.
