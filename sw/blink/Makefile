@@ -67,5 +67,5 @@ $(PRG).ldm: $(OBJS)
 clean:
 	rm -rf *.asm *.o *.ldm
 
-load:
-	loader -b $(BASE_ADDRESS) -p $(LOADER_PORT) $(PRG).ldm
+load: $(PRG).ldm
+	$(LD) -b $(BASE_ADDRESS) -p $(LOADER_PORT) $(PRG).ldm
