@@ -46,6 +46,9 @@ void store_from_reg(FILE *f, int source_reg, struct obj *o, int type, int tmp_re
 void arithmetic(FILE *f, struct IC *p);
 //load constant into register
 void load_cons(FILE *f, int reg, long int value);
+//emit all macros
+void emit_macros(FILE *f);
+int macros_emited = 0;
 
 /*
  * Data Types
@@ -312,6 +315,8 @@ void gen_code(FILE *f,struct IC *p,struct Var *v,zmax offset){
     printf("Called gen_code(FILE *f,struct IC *p,struct Var *v,zmax offset)\n");
     #endif
 
+    emit_macros(f);
+
     //emit function head
     if(v->storage_class==EXTERN){
         if( (v->flags & (INLINEFUNC|INLINEEXT)) != INLINEFUNC ){
@@ -386,8 +391,10 @@ void gen_code(FILE *f,struct IC *p,struct Var *v,zmax offset){
                     emit(f, "\tMOV \t %s %s", regnames[p->q1.reg], regnames[p->z.reg]);
                 }
                 else{
+
                     load_into_reg(f, R1, &(p->q1), p->typf, R2);
                     store_from_reg(f, R1, &(p->z), p->typf, R2, R3);
+
                 }
 
                 break;
@@ -847,12 +854,18 @@ void compare(FILE *f, struct IC *p){
         q1reg = p->q1.reg;
     }
 
-    if(((p->q2.flags) & (KONST|VAR|REG|DREFOBJ|VARADR)) != REG){
-        load_into_reg(f, R2, &(p->q2), p->typf, R3);
-        q2reg = R2;
+    if((p->code) != TEST){
+        if(((p->q2.flags) & (KONST|VAR|REG|DREFOBJ|VARADR)) != REG){
+            load_into_reg(f, R2, &(p->q2), p->typf, R3);
+            q2reg = R2;
+        }
+        else{
+            q2reg = p->q2.reg;
+        }
     }
     else{
-        q2reg = p->q2.reg;
+        q2reg = R2;
+        emit(f, "\tMOV \t %s %s\n", regnames[R0], regnames[R2]);
     }
 
     //find branch IC
@@ -1003,11 +1016,9 @@ void load_into_reg(FILE *f, int dest_reg, struct obj *o, int type, int tmp_reg){
 
             break;
         case (VAR|REG):
-            #ifdef DEBUG_MARK
-            printf("\tWho know what VAR|REG is?!\n");
-            #else
-            ierror(0);
-            #endif //TODO: implement VAR|REG for load
+            if((o->reg) != dest_reg){
+                emit(f, "\tMOV \t %s %s\n", regnames[o->reg], regnames[dest_reg]);
+            }
             break;
         case (REG|DREFOBJ):
             //point into memory with register value
@@ -1081,11 +1092,11 @@ void load_into_reg(FILE *f, int dest_reg, struct obj *o, int type, int tmp_reg){
 
             break;
         case (VAR|REG|DREFOBJ):
-            #ifdef DEBUG_MARK
-            printf("\tAnd you thoung that VAR|REG is brainfucking, well... meet VAR|REG|DREFOBJ!");
-            #else
-            ierror(0);
-            #endif //TODO: implement VAR|REG|DREFOBJ for load
+            if((o->reg) != dest_reg){
+                emit(f, "\tMOV \t %s %s\n", regnames[o->reg], regnames[dest_reg]);
+            }
+            emit(f, "\tLDI \t %s %s\n", regnames[dest_reg], regnames[dest_reg]);
+            break;
         case (VAR|VARADR):
             //into dest_reg store address of variable
             switch((o->v->storage_class) & (STATIC|EXTERN)){
@@ -1186,15 +1197,12 @@ void store_from_reg(FILE *f, int source_reg, struct obj *o, int type, int tmp_re
             }
             break;
         case (VAR|REG):
-            #ifdef DEBUG_MARK //TODO: implement VAR|REG for store
-            printf("\tThis is not implemented!\n");
-            #else
-            ierror(0);
-            #endif
+            emit(f, "\tMOV \t %s %s\n", regnames[source_reg], regnames[o->reg]);
             break;
         case (REG|DREFOBJ):
             //use value in register as pointer into memory
             emit(f, "\n\tSTI \t %s %s\n", regnames[source_reg], regnames[o->reg]);
+            break;
         case (VAR|DREFOBJ):
             //use value in variable as pointer into memory
             switch((o->v->storage_class) & (STATIC|EXTERN|AUTO|REGISTER)){
@@ -1258,11 +1266,7 @@ void store_from_reg(FILE *f, int source_reg, struct obj *o, int type, int tmp_re
             }
             break;
         case (VAR|REG|DREFOBJ):
-            #ifdef DEBUG_MARK //TODO: implement VAR|REG|DREFOBJ for store
-            printf("\tThis is not implemented!\n");
-            #else
-            ierror(0);
-            #endif
+            emit(f, "\tSTI \t %s %s\n", regnames[source_reg], regnames[o->reg]);
             break;
         case (VAR|VARADR): //use variable address as pointer
             switch(o->v->storage_class){
@@ -1406,4 +1410,12 @@ void load_cons(FILE *f, int reg, long int value){
     else{
         emit(f, "\t.MVI \t %s %ld\n", regnames[reg], value);
     }
+}
+
+void emit_macros(FILE *f){
+    if(macros_emited == 1) return;
+
+    emit(f, "#macro MULT RA RB RC\n\tPUSH \t RB\nlabel:\n\tADD \t RC RA RC\n\tDEC \t RB RB\n\tBNZ \t RB label\n\n\tPOP \t RB\n#endmacro\n");
+
+    macros_emited = 1;
 }
