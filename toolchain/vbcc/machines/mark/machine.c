@@ -1,5 +1,5 @@
 #include "supp.h"
-//#define DEBUG_MARK
+#define DEBUG_MARK
 
 static char FILE_[]=__FILE__;
 
@@ -1418,7 +1418,7 @@ void load_cons(FILE *f, int reg, long int value){
 void emit_macros(FILE *f){
     if(macros_emited == 1) return;
 
-    emit(f, "#macro MULT RA RB RC\n\tPUSH \t RB\nlabel:\n\tADD \t RC RA RC\n\tDEC \t RB RB\n\tBNZ \t RB label\n\n\tPOP \t RB\n#endmacro\n");
+    emit(f, "#macro MULT RA RB RC\n\tMOV \t R0 RC\n\tPUSH \t RB\n\tBZ   \t RB end\nlabel:\n\tADD \t RC RA RC\n\tDEC \t RB RB\n\tBNZ \t RB label\nend:\n\tPOP \t RB\n#endmacro\n");
     emit(f, "#macro RSHIFT RA RB RC\n\tPUSH \t RA\n\tPUSH \t RB\n\tBZ   \t RB end\nloop:\n\tLSR \t 1 RA RA\n\tDEC \t RB RB\n\tBNZ \t RB loop\nend:\n\tMOV \t RA RC\n\tPOP \t RB\n\tPOP \t RA\n#endmacro\n");
     emit(f, "#macro LSHIFT RA RB RC\n\tPUSH \t RA\n\tPUSH \t RB\n\tBZ   \t RB end\nloop:\n\tLSL \t 1 RA RA\n\tDEC \t RB RB\n\tBNZ \t RB loop\nend:\n\tMOV \t RA RC\n\tPOP \t RB\n\tPOP \t RA\n#endmacro\n");
 

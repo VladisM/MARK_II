@@ -10,7 +10,7 @@
 #define VRAM0_beg 0x001000 /**< @brief Beginning of vram0. */
 #define VRAM0_end 0x001FFF /**< @brief End of vram0. */
 
-#define VRAM0(ROW, COLUMN) (*(unsigned int *)(VRAM0_beg + (ROW * 0x100) + COLUMN)) /**< @brief Macro for writing into video RAM. */
+#define VRAM0(ROW, COLUMN) (*(unsigned int *)(VRAM0_beg + (ROW * 0x80) + COLUMN)) /**< @brief Macro for writing into video RAM. */
 
 #define FG_BLACK           (0x0 << 7) /**< @brief Foreground color code. */
 #define FG_GRAY            (0x1 << 7) /**< @brief Foreground color code. */
