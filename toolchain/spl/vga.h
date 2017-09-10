@@ -13,37 +13,37 @@
 #define VRAM0(ROW, COLUMN) (*(unsigned int *)(VRAM0_beg + (ROW * 0x80) + COLUMN)) /**< @brief Macro for writing into video RAM. */
 
 #define FG_BLACK           (0x0 << 7) /**< @brief Foreground color code. */
-#define FG_GRAY            (0x1 << 7) /**< @brief Foreground color code. */
-#define FG_GREEN           (0x2 << 7) /**< @brief Foreground color code. */
-#define FG_LIGHT_GREEN     (0x3 << 7) /**< @brief Foreground color code. */
-#define FG_RED             (0x4 << 7) /**< @brief Foreground color code. */
-#define FG_LIGHT_RED       (0x5 << 7) /**< @brief Foreground color code. */
+#define FG_LIGHT_GRAY      (0x1 << 7) /**< @brief Foreground color code. */
+#define FG_RED             (0x2 << 7) /**< @brief Foreground color code. */
+#define FG_LIGHT_RED       (0x3 << 7) /**< @brief Foreground color code. */
+#define FG_GREEN           (0x4 << 7) /**< @brief Foreground color code. */
+#define FG_LIGHT_GREEN     (0x5 << 7) /**< @brief Foreground color code. */
 #define FG_BROWN           (0x6 << 7) /**< @brief Foreground color code. */
 #define FG_YELLOW          (0x7 << 7) /**< @brief Foreground color code. */
 #define FG_BLUE            (0x8 << 7) /**< @brief Foreground color code. */
 #define FG_LIGHT_BLUE      (0x9 << 7) /**< @brief Foreground color code. */
-#define FG_CYAN            (0xA << 7) /**< @brief Foreground color code. */
-#define FG_LIGHT_CYAN      (0xB << 7) /**< @brief Foreground color code. */
-#define FG_MAGENTA         (0xC << 7) /**< @brief Foreground color code. */
-#define FG_LIGHT_MAGENTA   (0xD << 7) /**< @brief Foreground color code. */
-#define FG_LIGHT_GRAY      (0xE << 7) /**< @brief Foreground color code. */
+#define FG_MAGENTA         (0xA << 7) /**< @brief Foreground color code. */
+#define FG_LIGHT_MAGENTA   (0xB << 7) /**< @brief Foreground color code. */
+#define FG_CYAN            (0xC << 7) /**< @brief Foreground color code. */
+#define FG_LIGHT_CYAN      (0xD << 7) /**< @brief Foreground color code. */
+#define FG_GRAY            (0xE << 7) /**< @brief Foreground color code. */
 #define FG_WHITE           (0xF << 7) /**< @brief Foreground color code. */
 
 #define BG_BLACK           (0x0 << 11) /**< @brief Background color code. */
-#define BG_GRAY            (0x1 << 11) /**< @brief Background color code. */
-#define BG_GREEN           (0x2 << 11) /**< @brief Background color code. */
-#define BG_LIGHT_GREEN     (0x3 << 11) /**< @brief Background color code. */
-#define BG_RED             (0x4 << 11) /**< @brief Background color code. */
-#define BG_LIGHT_RED       (0x5 << 11) /**< @brief Background color code. */
+#define BG_LIGHT_GRAY      (0x1 << 11) /**< @brief Background color code. */
+#define BG_RED             (0x2 << 11) /**< @brief Background color code. */
+#define BG_LIGHT_RED       (0x3 << 11) /**< @brief Background color code. */
+#define BG_GREEN           (0x4 << 11) /**< @brief Background color code. */
+#define BG_LIGHT_GREEN     (0x5 << 11) /**< @brief Background color code. */
 #define BG_BROWN           (0x6 << 11) /**< @brief Background color code. */
 #define BG_YELLOW          (0x7 << 11) /**< @brief Background color code. */
 #define BG_BLUE            (0x8 << 11) /**< @brief Background color code. */
 #define BG_LIGHT_BLUE      (0x9 << 11) /**< @brief Background color code. */
-#define BG_CYAN            (0xA << 11) /**< @brief Background color code. */
-#define BG_LIGHT_CYAN      (0xB << 11) /**< @brief Background color code. */
-#define BG_MAGENTA         (0xC << 11) /**< @brief Background color code. */
-#define BG_LIGHT_MAGENTA   (0xD << 11) /**< @brief Background color code. */
-#define BG_LIGHT_GRAY      (0xE << 11) /**< @brief Background color code. */
+#define BG_MAGENTA         (0xA << 11) /**< @brief Background color code. */
+#define BG_LIGHT_MAGENTA   (0xB << 11) /**< @brief Background color code. */
+#define BG_CYAN            (0xC << 11) /**< @brief Background color code. */
+#define BG_LIGHT_CYAN      (0xD << 11) /**< @brief Background color code. */
+#define BG_GRAY            (0xE << 11) /**< @brief Background color code. */
 #define BG_WHITE           (0xF << 11) /**< @brief Background color code. */
 
 #define ROW_0 0     /**< @brief Row constant, use it for VRAM0(ROW, COLUMN) macro. */
