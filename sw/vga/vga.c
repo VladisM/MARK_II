@@ -6,7 +6,7 @@ char hello[] = "Hello world!";
 
 int main(){
 
-    write(ROW_0, COLUMN_0, FG_GREEN, hello);
+    write(ROW_0, COLUMN_0, FG_WHITE, hello);
 
     while(1);
     return 0;
