@@ -109,8 +109,8 @@ of individual registers are on figures \ref{fig:UTDR_reg} to \ref{fig:USR_reg}.
     \centering
     \begin{tikzpicture}
         \bitrect{16}{32-\bit}
-        \rwbits{15}{1}{txen}
-        \rwbits{14}{1}{rxen}
+        \rwbits{15}{1}{rxen}
+        \rwbits{14}{1}{txen}
         \rwbits{13}{1}{inten}
         \rwbits{12}{1}{rfint}
         \rwbits{11}{1}{rhint}
@@ -132,8 +132,8 @@ UCR register is control register. There is all control bits to configure UART in
 Meaning of individual bits is in following list:
 
 \begin{itemize}
-    \item \textbf{txen} - Enable transmitting
     \item \textbf{rxen} - Enable receiver
+    \item \textbf{txen} - Enable transmitting
     \item \textbf{inten} - Enable interrupt
     \item \textbf{rfint} - Enable interrupt full RX FIFO
     \item \textbf{rhint} - Enable interrupt half full RX FIFO

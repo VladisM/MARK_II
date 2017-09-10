@@ -12,7 +12,7 @@ int main(){
 
     while(1){
         write_uart0(hello);
-        delay(0x4FFFF);
+        delay(0xFFFFF);
     }
     return 0;
 }

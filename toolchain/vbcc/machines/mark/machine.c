@@ -114,12 +114,12 @@ int init_cg(void){
 
     int i;
 
-    maxalign=l2zm(4L);
+    maxalign=l2zm(1L);
     char_bit=l2zm(32L);
 
     for(i=0;i<=MAX_TYPE;i++){
         align[i] = l2zm(1L);
-        sizetab[i] = l2zm(4L);
+        sizetab[i] = l2zm(1L);
     }
 
     t_min[CHAR] = zmsub(l2zm(-2147483647L),l2zm(1L));
@@ -240,7 +240,7 @@ int init_cg(void){
 
 
     for(i=0;i<=MAXR;i++){
-        regsize[i] = l2zm(4L);
+        regsize[i] = l2zm(1L);
     }
 
     // Use multiple ccs
@@ -333,7 +333,7 @@ void gen_code(FILE *f,struct IC *p,struct Var *v,zmax offset){
     emit(f, "\tMOV \t %s %s\n", regnames[SP], regnames[FP]); //MOVE SP -> FP
 
     //make space for auto variables at stack
-    for(int i = 0; i < (zm2l(offset)/4); i++){
+    for(int i = 0; i < zm2l(offset); i++){
         emit(f, "\tPUSH \t R0\n");
     }
 
@@ -390,11 +390,19 @@ void gen_code(FILE *f,struct IC *p,struct Var *v,zmax offset){
                    (((p->z.flags) & (KONST|VAR|REG|DREFOBJ|VARADR)) == REG) ){
                     emit(f, "\tMOV \t %s %s", regnames[p->q1.reg], regnames[p->z.reg]);
                 }
-                else{
 
+                //this is another optimalization, if have to assign zero; then
+                //zero is read from R0 insted pushing constant into register
+                else if(
+                (((p->q1.flags) & (KONST|VAR|REG|DREFOBJ|VARADR)) == KONST) &&
+                ((p->q1.val.vmax) == 0)
+                ){
+                    store_from_reg(f, R0, &(p->z), p->typf, R2, R3);
+                }
+
+                else{
                     load_into_reg(f, R1, &(p->q1), p->typf, R2);
                     store_from_reg(f, R1, &(p->z), p->typf, R2, R3);
-
                 }
 
                 break;
@@ -483,10 +491,10 @@ void gen_code(FILE *f,struct IC *p,struct Var *v,zmax offset){
                 (((p->q1.v->storage_class) & (AUTO|REGISTER|STATIC|EXTERN)) == AUTO)
                 ){
                     if(ISARRAY(p->q1.v->flags)){
-                        load_cons(f, R1, (zm2l(p->q1.v->offset)/4L)+(zm2l(p->q1.val.vmax)/4L));
+                        load_cons(f, R1, zm2l(p->q1.v->offset)+zm2l(p->q1.val.vmax));
                     }
                     else{
-                        load_cons(f, R1, zm2l(p->q1.v->offset)/4L);
+                        load_cons(f, R1, zm2l(p->q1.v->offset));
                     }
                     emit(f, "\tADD \t R1 R13 R1\n");
                     store_from_reg(f, R1, &(p->z), p->typf, R2, R3);
@@ -509,13 +517,13 @@ void gen_code(FILE *f,struct IC *p,struct Var *v,zmax offset){
                     switch((p->q1.v->storage_class) & (AUTO|REGISTER|STATIC|EXTERN)){
                         case EXTERN:
                             emit(f, "\tCALL \t %s\n", p->q1.v->identifier);
-                            for(int i = 0; i < (p->q2.val.vmax / 4); i++){
+                            for(int i = 0; i < (p->q2.val.vmax); i++){
                                 emit(f, "\tPOP \t R0\n");
                             }
                             break;
                         case STATIC:
                             emit(f, "\tCALL \t L_%ld\n", zm2l(p->q1.v->offset));
-                            for(int i = 0; i < (p->q2.val.vmax / 4); i++){
+                            for(int i = 0; i < (p->q2.val.vmax); i++){
                                 emit(f, "\tPOP \t R0\n");
                             }
                             break;
@@ -736,7 +744,7 @@ void gen_ds(FILE *f,zmax size,struct Typ *t){
     #ifdef DEBUG_MARK
     printf("Called gen_ds(FILE *f,zmax size,struct Typ *t)\n");
     #endif
-    emit(f, "\t.DS \t%ld\n", zm2l(size)/4L);
+    emit(f, "\t.DS \t%ld\n", zm2l(size));
 }
 
 /*
@@ -936,16 +944,12 @@ void compare(FILE *f, struct IC *p){
 void load_into_reg(FILE *f, int dest_reg, struct obj *o, int type, int tmp_reg){
     switch((o->flags) & (KONST|VAR|REG|DREFOBJ|VARADR)){
         case KONST:
-            //place constant into register
-            emit(f, "\t.MVI \t %s ", regnames[dest_reg]);
-            emitval(f, &(o->val), type);
-            emit(f, "\n");
+            load_cons(f, dest_reg, o->val.vmax);
             break;
         case (KONST|DREFOBJ):
             //place memory location constant point to into register
-            emit(f, "\t.MVI \t %s ", regnames[dest_reg]);
-            emitval(f, &(o->val), type);
-            emit(f, "\n\tLDI \t %s %s\n", regnames[dest_reg], regnames[dest_reg]);
+            load_cons(f, dest_reg, o->val.vmax);
+            emit(f, "\tLDI \t %s %s\n", regnames[dest_reg], regnames[dest_reg]);
             break;
         case REG:
             //move between registers
@@ -958,9 +962,9 @@ void load_into_reg(FILE *f, int dest_reg, struct obj *o, int type, int tmp_reg){
 
             switch((o->v->storage_class) & (STATIC|EXTERN|AUTO|REGISTER)){
                 case STATIC:
-                    if((zm2l(o->val.vmax)/4L) != 0){
+                    if(zm2l(o->val.vmax) != 0){
                         emit(f, "\tMVIA \t %s L_%ld\n", regnames[dest_reg], zm2l(o->v->offset));
-                        load_cons(f, tmp_reg, zm2l(o->val.vmax)/4L);
+                        load_cons(f, tmp_reg, zm2l(o->val.vmax));
                         emit(f, "\tADD \t %s %s %s\n", regnames[dest_reg], regnames[tmp_reg], regnames[dest_reg]);
                         emit(f, "\tLDI \t %s %s\n", regnames[dest_reg], regnames[dest_reg]);
                     }
@@ -969,9 +973,9 @@ void load_into_reg(FILE *f, int dest_reg, struct obj *o, int type, int tmp_reg){
                     }
                     break;
                 case EXTERN:
-                    if((zm2l(o->val.vmax)/4L) != 0){
+                    if(zm2l(o->val.vmax) != 0){
                         emit(f, "\tMVIA \t %s %s\n", regnames[dest_reg], o->v->identifier);
-                        load_cons(f, tmp_reg, zm2l(o->val.vmax)/4L);
+                        load_cons(f, tmp_reg, zm2l(o->val.vmax));
                         emit(f, "\tADD \t %s %s %s\n", regnames[dest_reg], regnames[tmp_reg], regnames[dest_reg]);
                         emit(f, "\tLDI \t %s %s\n", regnames[dest_reg], regnames[dest_reg]);
                     }
@@ -982,13 +986,13 @@ void load_into_reg(FILE *f, int dest_reg, struct obj *o, int type, int tmp_reg){
                 case AUTO:
                     if((o->v->offset) < 0){
                         //this is argument
-                        load_cons(f, dest_reg, (zm2l(o->v->offset)/(-4L))+2+(zm2l(o->val.vmax)/4L));
+                        load_cons(f, dest_reg, (zm2l(o->v->offset)/(-1L))+2+zm2l(o->val.vmax));
                         emit(f, "\tADD \t %s %s %s\n", regnames[dest_reg],regnames[FP], regnames[dest_reg]);
                         emit(f, "\tLDI \t %s %s\n", regnames[dest_reg], regnames[dest_reg]);
                     }
                     else{
                         //this is auto variable
-                        int offset = (zm2l(o->v->offset)/4L)+(zm2l(o->val.vmax)/4L);
+                        int offset = zm2l(o->v->offset)+zm2l(o->val.vmax);
 
                         if(offset == 0){
                             emit(f, "\tLDI \t %s %s\n", regnames[FP], regnames[dest_reg]);
@@ -1030,9 +1034,9 @@ void load_into_reg(FILE *f, int dest_reg, struct obj *o, int type, int tmp_reg){
 
             switch((o->v->storage_class) & (STATIC|EXTERN|AUTO|REGISTER)){
                 case STATIC:
-                    if((zm2l(o->val.vmax)/4L) != 0){
+                    if(zm2l(o->val.vmax) != 0){
                         emit(f, "\tMVIA \t %s L_%ld\n", regnames[dest_reg], zm2l(o->v->offset));
-                        load_cons(f, tmp_reg, zm2l(o->val.vmax)/4L);
+                        load_cons(f, tmp_reg, zm2l(o->val.vmax));
                         emit(f, "\tADD \t %s %s %s\n", regnames[dest_reg], regnames[tmp_reg], regnames[dest_reg]);
                         emit(f, "\tLDI \t %s %s\n", regnames[dest_reg], regnames[dest_reg]);
                     }
@@ -1042,9 +1046,9 @@ void load_into_reg(FILE *f, int dest_reg, struct obj *o, int type, int tmp_reg){
                     emit(f, "\tLDI \t %s %s\n", regnames[dest_reg], regnames[dest_reg]);
                     break;
                 case EXTERN:
-                    if((zm2l(o->val.vmax)/4L) != 0){
+                    if(zm2l(o->val.vmax) != 0){
                         emit(f, "\tMVIA \t %s %s\n", regnames[dest_reg], o->v->identifier);
-                        load_cons(f, tmp_reg, zm2l(o->val.vmax)/4L);
+                        load_cons(f, tmp_reg, zm2l(o->val.vmax));
                         emit(f, "\tADD \t %s %s %s\n", regnames[dest_reg], regnames[tmp_reg], regnames[dest_reg]);
                         emit(f, "\tLDI \t %s %s\n", regnames[dest_reg], regnames[dest_reg]);
                     }
@@ -1056,13 +1060,13 @@ void load_into_reg(FILE *f, int dest_reg, struct obj *o, int type, int tmp_reg){
                 case AUTO:
                     if((o->v->offset) < 0){
                         //this is argument
-                        load_cons(f, dest_reg, (zm2l(o->v->offset)/(-4L))+2+(zm2l(o->val.vmax)/4L));
+                        load_cons(f, dest_reg, (zm2l(o->v->offset)/(-1L))+2+zm2l(o->val.vmax));
                         emit(f, "\tADD \t %s %s %s\n", regnames[dest_reg],regnames[FP], regnames[dest_reg]);
                         emit(f, "\tLDI \t %s %s\n", regnames[dest_reg], regnames[dest_reg]);
                     }
                     else{
                         //this is auto variable
-                        int offset = (zm2l(o->v->offset)/4L)+(zm2l(o->val.vmax)/4L);
+                        int offset = zm2l(o->v->offset)+zm2l(o->val.vmax);
 
                         if(offset == 0){
                             emit(f, "\tLDI \t %s %s\n", regnames[FP], regnames[dest_reg]);
@@ -1128,9 +1132,8 @@ void store_from_reg(FILE *f, int source_reg, struct obj *o, int type, int tmp_re
             break;
         case (KONST|DREFOBJ):
             //use konstant as pointer into memory
-            emit(f, "\t.MVI \t %s ", regnames[tmp_reg]);
-            emitval(f, &(o->val), type);
-            emit(f, "\n\tSTI \t %s %s\n", regnames[source_reg], regnames[tmp_reg]);
+            load_cons(f, tmp_reg, o->val.vmax);
+            emit(f, "\tSTI \t %s %s\n", regnames[source_reg], regnames[tmp_reg]);
             break;
         case REG:
             //move from register into register
@@ -1142,9 +1145,9 @@ void store_from_reg(FILE *f, int source_reg, struct obj *o, int type, int tmp_re
             //load register into variable
             switch((o->v->storage_class) & (STATIC|EXTERN|AUTO|REGISTER)){
                 case STATIC:
-                    if((zm2l(o->val.vmax)/4L) != 0){
+                    if(zm2l(o->val.vmax) != 0){
                         emit(f, "\tMVIA \t %s L_%ld\n", regnames[tmp_reg], zm2l(o->v->offset));
-                        load_cons(f, tmp_reg_b, zm2l(o->val.vmax)/4L);
+                        load_cons(f, tmp_reg_b, zm2l(o->val.vmax));
                         emit(f, "\tADD \t %s %s %s\n", regnames[tmp_reg], regnames[tmp_reg_b], regnames[tmp_reg]);
                         emit(f, "\tSTI \t %s %s\n", regnames[source_reg], regnames[tmp_reg]);
                     }
@@ -1153,9 +1156,9 @@ void store_from_reg(FILE *f, int source_reg, struct obj *o, int type, int tmp_re
                     }
                     break;
                 case EXTERN:
-                    if((zm2l(o->val.vmax)/4L) != 0){
+                    if(zm2l(o->val.vmax) != 0){
                         emit(f, "\tMVIA \t %s %s\n", regnames[tmp_reg], o->v->identifier);
-                        load_cons(f, tmp_reg_b, zm2l(o->val.vmax)/4L);
+                        load_cons(f, tmp_reg_b, zm2l(o->val.vmax));
                         emit(f, "\tADD \t %s %s %s\n", regnames[tmp_reg], regnames[tmp_reg_b], regnames[tmp_reg]);
                         emit(f, "\tSTI \t %s %s\n", regnames[source_reg], regnames[tmp_reg]);
                     }
@@ -1166,13 +1169,13 @@ void store_from_reg(FILE *f, int source_reg, struct obj *o, int type, int tmp_re
                 case AUTO:
                     if((o->v->offset) < 0){
                         //function argument
-                        load_cons(f, tmp_reg, (zm2l(o->v->offset)/(-4L))+2+(zm2l(o->val.vmax)/4L));
+                        load_cons(f, tmp_reg, (zm2l(o->v->offset)/(-1L))+2+zm2l(o->val.vmax));
                         emit(f, "\tADD \t %s %s %s\n", regnames[tmp_reg],regnames[FP], regnames[tmp_reg]);
                         emit(f, "\tSTI \t %s %s\n", regnames[source_reg], regnames[tmp_reg]);
                     }
                     else{
                         //auto variable
-                        int offset = (zm2l(o->v->offset)/4L)+(zm2l(o->val.vmax)/4L);
+                        int offset = zm2l(o->v->offset)+zm2l(o->val.vmax);
                         if (offset == 0){
                             emit(f, "\tSTI \t %s %s\n", regnames[source_reg], regnames[FP]);
                         }
@@ -1207,9 +1210,9 @@ void store_from_reg(FILE *f, int source_reg, struct obj *o, int type, int tmp_re
             //use value in variable as pointer into memory
             switch((o->v->storage_class) & (STATIC|EXTERN|AUTO|REGISTER)){
                 case STATIC:
-                    if((zm2l(o->val.vmax)/4L) != 0){
+                    if(zm2l(o->val.vmax) != 0){
                         emit(f, "\tMVIA \t %s L_%ld\n", regnames[tmp_reg], zm2l(o->v->offset));
-                        load_cons(f, tmp_reg_b, zm2l(o->val.vmax)/4L);
+                        load_cons(f, tmp_reg_b, zm2l(o->val.vmax));
                         emit(f, "\tADD \t %s %s %s\n", regnames[tmp_reg], regnames[tmp_reg_b], regnames[tmp_reg]);
                         emit(f, "\tLDI \t %s %s\n", regnames[tmp_reg], regnames[tmp_reg]);
                     }
@@ -1219,9 +1222,9 @@ void store_from_reg(FILE *f, int source_reg, struct obj *o, int type, int tmp_re
                     emit(f, "\tSTI \t %s %s\n", regnames[source_reg], regnames[tmp_reg]);
                     break;
                 case EXTERN:
-                    if((zm2l(o->val.vmax)/4L) != 0){
+                    if(zm2l(o->val.vmax) != 0){
                         emit(f, "\tMVIA \t %s %s\n", regnames[tmp_reg], o->v->identifier);
-                        load_cons(f, tmp_reg_b, zm2l(o->val.vmax)/4L);
+                        load_cons(f, tmp_reg_b, zm2l(o->val.vmax));
                         emit(f, "\tADD \t %s %s %s\n", regnames[tmp_reg], regnames[tmp_reg_b], regnames[tmp_reg]);
                         emit(f, "\tLDI \t %s %s\n", regnames[tmp_reg], regnames[tmp_reg]);
                     }
@@ -1233,14 +1236,14 @@ void store_from_reg(FILE *f, int source_reg, struct obj *o, int type, int tmp_re
                 case AUTO:
                     if((o->v->offset) < 0){
                         //function argument
-                        load_cons(f, tmp_reg, (zm2l(o->v->offset)/(-4L))+2+(zm2l(o->val.vmax)/4L));
+                        load_cons(f, tmp_reg, (zm2l(o->v->offset)/(-1L))+2+zm2l(o->val.vmax));
                         emit(f, "\tADD \t %s %s %s\n", regnames[tmp_reg],regnames[FP], regnames[tmp_reg]);
                         emit(f, "\tLDI \t %s %s\n", regnames[tmp_reg], regnames[tmp_reg]);
                         emit(f, "\tSTI \t %s %s\n", regnames[source_reg], regnames[tmp_reg]);
                     }
                     else{
                         //auto variable
-                        int offset = (zm2l(o->v->offset)/4L)+(zm2l(o->val.vmax)/4L);
+                        int offset = zm2l(o->v->offset)+zm2l(o->val.vmax);
                         if(offset == 0){
                             emit(f, "\tLDI \t %s %s\n", regnames[FP], regnames[tmp_reg]);
                         }
@@ -1338,7 +1341,7 @@ void arithmetic(FILE *f, struct IC *p){
     //emit instruction opcode
     switch(p->code){
         case OR:
-            emit(f, "\tOR \t ");
+            emit(f, "\tOR   \t ");
             break;
         case XOR:
             emit(f, "\tXOR \t ");
@@ -1346,10 +1349,10 @@ void arithmetic(FILE *f, struct IC *p){
         case AND:
             emit(f, "\tAND \t ");
             break;
-        case LSHIFT: //FIXME: vylepšit CPU o tuto instrukci
+        case LSHIFT:
             emit(f, "\t$LSHIFT \t ");
             break;
-        case RSHIFT: //FIXME: vylepšit CPU o tuto instrukci
+        case RSHIFT:
             emit(f, "\t$RSHIFT \t ");
             break;
         case ADD:
@@ -1358,7 +1361,7 @@ void arithmetic(FILE *f, struct IC *p){
         case SUB:
             emit(f, "\tSUB \t ");
             break;
-        case MULT: //FIXME: vylepšit CPU o tuto instrukci
+        case MULT:
             emit(f, "\t$MULT \t ");
             break;
         case DIV: //FIXME: vylepšit CPU o tuto instrukci
@@ -1416,6 +1419,8 @@ void emit_macros(FILE *f){
     if(macros_emited == 1) return;
 
     emit(f, "#macro MULT RA RB RC\n\tPUSH \t RB\nlabel:\n\tADD \t RC RA RC\n\tDEC \t RB RB\n\tBNZ \t RB label\n\n\tPOP \t RB\n#endmacro\n");
+    emit(f, "#macro RSHIFT RA RB RC\n\tPUSH \t RA\n\tPUSH \t RB\n\tBZ   \t RB end\nloop:\n\tLSR \t 1 RA RA\n\tDEC \t RB RB\n\tBNZ \t RB loop\nend:\n\tMOV \t RA RC\n\tPOP \t RB\n\tPOP \t RA\n#endmacro\n");
+    emit(f, "#macro LSHIFT RA RB RC\n\tPUSH \t RA\n\tPUSH \t RB\n\tBZ   \t RB end\nloop:\n\tLSL \t 1 RA RA\n\tDEC \t RB RB\n\tBNZ \t RB loop\nend:\n\tMOV \t RA RC\n\tPOP \t RB\n\tPOP \t RA\n#endmacro\n");
 
     macros_emited = 1;
 }

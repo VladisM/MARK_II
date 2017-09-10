@@ -27,8 +27,8 @@
 #define UCR2  (*(unsigned int *)(UART2_BASE + 3)) /**< @brief Register UCR2 */
 
 #define UCR0_N     0x0000FFFF /**< @brief Bit mask for baudrate N constant for uart0 */
-#define UCR0_txen  0x00010000 /**< @brief Bit mask for enable transmitter uart0*/
-#define UCR0_rxen  0x00020000 /**< @brief Bit mask for enable receiver uart0 */
+#define UCR0_rxen  0x00010000 /**< @brief Bit mask for enable transmitter uart0*/
+#define UCR0_txen  0x00020000 /**< @brief Bit mask for enable receiver uart0 */
 #define UCR0_inten 0x00040000 /**< @brief Bit mask for enable interrupt from uart0 */
 #define UCR0_rfint 0x00080000 /**< @brief Bit mask for enable receiver fifo full interrupt on uart0 */
 #define UCR0_rhint 0x00100000 /**< @brief Bit mask for enable receiver fifo half full interrupt on uart0 */
@@ -47,8 +47,8 @@
 #define USR0_txif    0x00020000 /**< @brief Bit mask for transmitter byte sent interrupt flag on uart0 */
 
 #define UCR1_N     0x0000FFFF /**< @brief Bit mask for baudrate N constant for uart1 */
-#define UCR1_txen  0x00010000 /**< @brief Bit mask for enable transmitter uart1*/
-#define UCR1_rxen  0x00020000 /**< @brief Bit mask for enable receiver uart1 */
+#define UCR1_rxen  0x00010000 /**< @brief Bit mask for enable transmitter uart1*/
+#define UCR1_txen  0x00020000 /**< @brief Bit mask for enable receiver uart1 */
 #define UCR1_inten 0x00040000 /**< @brief Bit mask for enable interrupt from uart1 */
 #define UCR1_rfint 0x00080000 /**< @brief Bit mask for enable receiver fifo full interrupt on uart1 */
 #define UCR1_rhint 0x00100000 /**< @brief Bit mask for enable receiver fifo half full interrupt on uart1 */
@@ -67,8 +67,8 @@
 #define USR1_txif    0x00020000 /**< @brief Bit mask for transmitter byte sent interrupt flag on uart1 */
 
 #define UCR2_N     0x0000FFFF /**< @brief Bit mask for baudrate N constant for uart2 */
-#define UCR2_txen  0x00010000 /**< @brief Bit mask for enable transmitter uart2*/
-#define UCR2_rxen  0x00020000 /**< @brief Bit mask for enable receiver uart2 */
+#define UCR2_rxen  0x00010000 /**< @brief Bit mask for enable transmitter uart2*/
+#define UCR2_txen  0x00020000 /**< @brief Bit mask for enable receiver uart2 */
 #define UCR2_inten 0x00040000 /**< @brief Bit mask for enable interrupt from uart2 */
 #define UCR2_rfint 0x00080000 /**< @brief Bit mask for enable receiver fifo full interrupt on uart2 */
 #define UCR2_rhint 0x00100000 /**< @brief Bit mask for enable receiver fifo half full interrupt on uart2 */
