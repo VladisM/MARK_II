@@ -510,9 +510,9 @@ int propagate(struct IC *sic,struct obj *o,int cponly,int global)
     return 2;
   }
   if(vaddr&&(o->flags&DREFOBJ)){
-    //    if(o==&sic->q1&&(q1typ(sic)&NU)!=(t&NU)) return 0;
-    //if(o==&sic->q2&&(q2typ(sic)&NU)!=(t&NU)) return 0;
-    //if(o==&sic->z&&(ztyp(sic)&NU)!=(t&NU)) return 0;
+    if(o==&sic->q1&&(q1typ(sic)&NU)!=(t&NU)) return 0;
+    if(o==&sic->q2&&(q2typ(sic)&NU)!=(t&NU)) return 0;
+    if(o==&sic->z&&(ztyp(sic)&NU)!=(t&NU)) return 0;
     if(DEBUG&1024) printf("can replace *<%s> by address\n",o->v->identifier);
     o->v=vaddr;
     o->val.vmax=voff;

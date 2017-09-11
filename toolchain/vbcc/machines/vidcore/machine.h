@@ -3,7 +3,7 @@
 */
 
 /* buil-time configurable options: */
-#define NUM_GPRS 48+64
+#define NUM_GPRS 48
 
 #include "dt.h"
 
