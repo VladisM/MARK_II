@@ -20,7 +20,7 @@
 "redeclaration of <%s>",ERROR|ANSIV,
 "invalid constant expression",ERROR|ANSIV,
 "array dimension must be constant integer",ERROR|ANSIV,
-"no declarator and no identifier in prototype",ERROR|ANSIV,         /*  20  */
+"no declarator and no identifier in prototype",ERROR|ANSIV|FATAL,         /*  20  */
 "invalid storage-class in prototype",ERROR|ANSIV,
 "void not the only function argument",ERROR|ANSIV,
 "<%s> no member of struct/union",ERROR|ANSIV,
@@ -362,3 +362,6 @@
 "initialization of flexible array member",ERROR|ANSIV,
 "empty initializer",ERROR|FATAL|ANSIV,                             /* 360 */
 "redeclaration of var <%s> as new function",ERROR|FATAL|ANSIV,
+"constant implicitly sign-changed",WARNING|DONTWARN,
+"constant implicitly truncated",WARNING,
+"hexadecimal escape sequence overflow",WARNING,
