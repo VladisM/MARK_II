@@ -69,6 +69,7 @@ set_global_assignment -name VHDL_FILE src/cpu/id.vhd
 set_global_assignment -name VHDL_FILE src/cpu/cpu.vhd
 set_global_assignment -name VHDL_FILE src/cpu/condition.vhd
 set_global_assignment -name VHDL_FILE src/cpu/comparator.vhd
+set_global_assignment -name VHDL_FILE src/cpu/barrel/barrel.vhd
 set_global_assignment -name VHDL_FILE src/cpu/barrel_shifter.vhd
 set_global_assignment -name VHDL_FILE src/cpu/alu.vhd
 set_global_assignment -name QIP_FILE src/cpu/fpu/add/add.qip
