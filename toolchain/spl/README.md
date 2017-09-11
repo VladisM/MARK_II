@@ -3,6 +3,15 @@
 Set of standard peripheral library for programming under MARK-II in C. There is
 defined all peripheral registers.
 
+## Register names
+
+All registers have same name as in reference manual. This include all bits too,
+but bits are prefixed with name of register. For example there is an register
+`TCCR0` and inside of this register is bit `TCCR0_timen`.
+
+For all defined macros you can refer generated documentation by doxygen called
+"SPL reference".
+
 ## Usage
 
 Copy all header files somewhere where you have all tool installed. Then invoke

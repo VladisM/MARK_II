@@ -8,9 +8,9 @@
 #
 
 # name of final ldm
-PRG          = blink
+PRG          = uart
 # list all object files
-OBJS         = blink.o
+OBJS         = uart.o
 
 # where MARK-II loader is listening
 LOADER_PORT  = /dev/ttyUSB0

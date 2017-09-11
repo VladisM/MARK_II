@@ -32,8 +32,8 @@ struct reg_handle {
 // obšlehnuto z generic, tady toho je vůbec hodně obšlehnutého
 #define INLINEMEMCPY 1024
 
-// tohle je asi k hovnu
-#define ORDERED_PUSH 0
+// reverse argument push order
+//#define ORDERED_PUSH 0
 
 // argumenty klidně do registrů
 #define HAVE_REGPARMS 1

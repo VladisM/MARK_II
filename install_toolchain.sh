@@ -30,8 +30,19 @@ echo "Install spl..."
 mkdir $DIR/spl
 cp -r toolchain/spl/*.h $DIR/spl/
 
+echo "Install stdlibc..."
+mkdir $DIR/stdlibc
+cd toolchain/stdlibc
+mkdir build
+make
+cp build/__startup.o $DIR/stdlibc/
+make clean
+cd ../..
+
 echo "\n\nDone!\n"
 echo "You have to add following path into your PATH variable:"
 echo $DIR/bin
 echo "SPL are stored in:"
 echo $DIR/spl/
+echo "stdlibc is stored in:"
+echo $DIR/stdlibc/

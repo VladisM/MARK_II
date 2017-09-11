@@ -12,4 +12,13 @@ make clean
 mv main.pdf ../../refman.pdf
 cd ../..
 
+cd toolchain/spl/
+doxygen Doxyfile
+cd latex
+make all
+mv refman.pdf ../../../spl_ref.pdf
+cd ..
+rm -rf latex
+cd ../..
+
 echo "\n\nDone..."
