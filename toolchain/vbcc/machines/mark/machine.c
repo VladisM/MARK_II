@@ -733,7 +733,7 @@ void gen_code(FILE *f,struct IC *p,struct Var *v,zmax offset){
     //emit function epilogue
     emit(f, "\tMOV \t %s %s\n", regnames[FP], regnames[SP]); //restore SP from FP
     emit(f, "\tPOP \t %s\n", regnames[FP]); //restore old FP from stack
-    emit(f, "\tRET\n\n"); //return
+    emit(f, "\tRET\n"); //return
 }
 
 /*
@@ -911,12 +911,12 @@ void compare(FILE *f, struct IC *p){
             if((p->typf & UNSIGNED) == UNSIGNED){
                 emit(f, "\tCMP \t LU %s %s R4\n", regnames[q2reg], regnames[q1reg]);
                 emit(f, "\tCMP \t EQ %s %s %s\n", regnames[q2reg], regnames[q1reg], regnames[q2reg]);
-                emit(f, "\tOR \t %s R4 R4\n", regnames[q2reg]);
+                emit(f, "\tOR  \t %s R4 R4\n", regnames[q2reg]);
             }
             else{
                 emit(f, "\tCMP \t L %s %s R4\n", regnames[q2reg], regnames[q1reg]);
                 emit(f, "\tCMP \t EQ %s %s %s\n", regnames[q2reg], regnames[q1reg], regnames[q2reg]);
-                emit(f, "\tOR \t %s R4 R4\n", regnames[q2reg]);
+                emit(f, "\tOR  \t %s R4 R4\n", regnames[q2reg]);
             }
             break;
         case BGT:
@@ -948,8 +948,9 @@ void load_into_reg(FILE *f, int dest_reg, struct obj *o, int type, int tmp_reg){
             break;
         case (KONST|DREFOBJ):
             //place memory location constant point to into register
-            load_cons(f, dest_reg, o->val.vmax);
-            emit(f, "\tLDI \t %s %s\n", regnames[dest_reg], regnames[dest_reg]);
+            emit(f, "\tLD  \t ");
+            emitval(f, &(o->val), type);
+            emit(f, " %s\n", regnames[dest_reg]);
             break;
         case REG:
             //move between registers
@@ -1132,8 +1133,9 @@ void store_from_reg(FILE *f, int source_reg, struct obj *o, int type, int tmp_re
             break;
         case (KONST|DREFOBJ):
             //use konstant as pointer into memory
-            load_cons(f, tmp_reg, o->val.vmax);
-            emit(f, "\tSTI \t %s %s\n", regnames[source_reg], regnames[tmp_reg]);
+            emit(f, "\tST  \t %s ", regnames[source_reg]);
+            emitval(f, &(o->val), type);
+            emit(f, "\n");
             break;
         case REG:
             //move from register into register
@@ -1204,7 +1206,7 @@ void store_from_reg(FILE *f, int source_reg, struct obj *o, int type, int tmp_re
             break;
         case (REG|DREFOBJ):
             //use value in register as pointer into memory
-            emit(f, "\n\tSTI \t %s %s\n", regnames[source_reg], regnames[o->reg]);
+            emit(f, "\tSTI \t %s %s\n", regnames[source_reg], regnames[o->reg]);
             break;
         case (VAR|DREFOBJ):
             //use value in variable as pointer into memory
