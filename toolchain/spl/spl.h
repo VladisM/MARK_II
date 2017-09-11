@@ -1,3 +1,9 @@
+/**
+@file spl.h
+
+@brief Main file of Standard Peripheral Library
+*/
+
 #ifndef SPL_included
 #define SPL_included
 

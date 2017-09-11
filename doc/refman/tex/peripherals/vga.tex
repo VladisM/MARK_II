@@ -43,20 +43,20 @@ together with their codes in table \ref{tab:vga_colors_codes}.
         \hline
         \textbf{Color} & \textbf{Code}  \\ \hline
         $0000_{2}$     & black          \\ \hline
-        $0001_{2}$     & gray           \\ \hline
-        $0010_{2}$     & green          \\ \hline
-        $0011_{2}$     & light green    \\ \hline
-        $0100_{2}$     & red            \\ \hline
-        $0101_{2}$     & light red      \\ \hline
+        $0001_{2}$     & light gray     \\ \hline
+        $0010_{2}$     & red            \\ \hline
+        $0011_{2}$     & light red      \\ \hline
+        $0100_{2}$     & green          \\ \hline
+        $0101_{2}$     & light green    \\ \hline
         $0110_{2}$     & brown          \\ \hline
         $0111_{2}$     & yellow         \\ \hline
         $1000_{2}$     & blue           \\ \hline
         $1001_{2}$     & light blue     \\ \hline
-        $1010_{2}$     & cyan           \\ \hline
-        $1011_{2}$     & light cyan     \\ \hline
-        $1100_{2}$     & magenta        \\ \hline
-        $1101_{2}$     & light magenta  \\ \hline
-        $1110_{2}$     & light gray     \\ \hline
+        $1010_{2}$     & magenta        \\ \hline
+        $1011_{2}$     & light magenta  \\ \hline
+        $1100_{2}$     & cyan           \\ \hline
+        $1101_{2}$     & light cyan     \\ \hline
+        $1110_{2}$     & gray           \\ \hline
         $1111_{2}$     & white          \\ \hline
     \end{tabular}
     \caption{VGA driver supported colors}
@@ -74,14 +74,14 @@ This organization is in video ram too. Address of character in memory is given
 by following expression:
 
 $$
-    Address = r * 100_{16} + c
+    Address = r * 80_{16} + c
 $$
 
 Where $r$ mean row and $c$ mean column. For example, we want write character to
 sixth row and eight column. Address to write is:
 
 $$
-    Address = r * 100_{16} + c = 6 * 100_{16} + 8 = 608_{16}
+    Address = r * 80_{16} + c = 6 * 80_{16} + 8 = 308_{16}
 $$
 
 Remember, top left corner have coordinates $[0, 0]$.
