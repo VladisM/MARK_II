@@ -77,6 +77,7 @@ set_global_assignment -name QIP_FILE src/cpu/fpu/sub/sub.qip
 set_global_assignment -name QIP_FILE src/cpu/fpu/div/div.qip
 set_global_assignment -name QIP_FILE src/cpu/fpu/mult/mul.qip
 set_global_assignment -name VHDL_FILE src/cpu/fpu/fpu.vhd
+set_global_assignment -name VHDL_FILE src/cpu/alu/alu.vhd
 set_global_assignment -name VHDL_FILE src/cpu/cmp/intcmp.vhd
 set_global_assignment -name VHDL_FILE src/cpu/cmp/comparator.vhd
 set_global_assignment -name QIP_FILE src/cpu/cmp/fpcmp.qip
