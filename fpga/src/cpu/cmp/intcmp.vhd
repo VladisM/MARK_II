@@ -26,83 +26,48 @@ architecture intcmp_arch of intcmp is
 begin
 
     -- comparator for A == B
-    process(clk, res) is
-        variable aeb_v: std_logic;
-    begin
-        if res = '1' then
-            aeb_v := '0';
-        elsif rising_edge(clk) then
-            if unsigned(dataa) = unsigned(datab) then
-                aeb_v := '1';
-            else
-                aeb_v := '0';
-            end if;
+    process(dataa, datab) is begin
+        if unsigned(dataa) = unsigned(datab) then
+            aeb <= '1';
+        else
+            aeb <= '0';
         end if;
-        aeb <= aeb_v;
     end process;
 
     -- comparator for signed A > B
-    process(clk, res) is
-        variable agb_v: std_logic;
-    begin
-        if res = '1' then
-            agb_v := '0';
-        elsif rising_edge(clk) then
-            if signed(dataa) > signed(datab) then
-                agb_v := '1';
-            else
-                agb_v := '0';
-            end if;
+    process(dataa, datab) is begin
+        if signed(dataa) > signed(datab) then
+            agb <= '1';
+        else
+            agb <= '0';
         end if;
-        agb <= agb_v;
     end process;
 
     -- comparator for signed A < B
-    process(clk, res) is
-        variable alb_v: std_logic;
-    begin
-        if res = '1' then
-            alb_v := '0';
-        elsif rising_edge(clk) then
-            if signed(dataa) < signed(datab) then
-                alb_v := '1';
-            else
-                alb_v := '0';
-            end if;
+    process(dataa, datab) is begin
+        if signed(dataa) < signed(datab) then
+            alb <= '1';
+        else
+            alb <= '0';
         end if;
-        alb <= alb_v;
     end process;
 
     -- comparator for unsigned A > B
-    process(clk, res) is
-        variable agbu_v: std_logic;
-    begin
-        if res = '1' then
-            agbu_v := '0';
-        elsif rising_edge(clk) then
-            if unsigned(dataa) > unsigned(datab) then
-                agbu_v := '1';
-            else
-                agbu_v := '0';
-            end if;
+    process(dataa, datab) is begin
+        if unsigned(dataa) > unsigned(datab) then
+            agb_u <= '1';
+        else
+            agb_u <= '0';
         end if;
-        agb_u <= agbu_v;
     end process;
 
     -- comparator for unsigned A < B
-    process(clk, res) is
-        variable albu_v: std_logic;
-    begin
-        if res = '1' then
-            albu_v := '0';
-        elsif rising_edge(clk) then
-            if unsigned(dataa) < unsigned(datab) then
-                albu_v := '1';
-            else
-                albu_v := '0';
-            end if;
+    process(dataa, datab) is begin
+        if unsigned(dataa) < unsigned(datab) then
+            alb_u <= '1';
+        else
+            alb_u <= '0';
         end if;
-        alb_u <= albu_v;
     end process;
 
     -- compute all others flags

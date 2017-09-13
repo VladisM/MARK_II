@@ -5,6 +5,12 @@ use ieee.numeric_std.all;
 library lpm;
 use lpm.all;
 
+-- opcode mode
+-- 00     logical
+-- 01     rotate
+-- 10     arithmetical
+-- 11     don't care
+
 entity barrel is
     port(
         clk: in std_logic;
@@ -47,15 +53,15 @@ begin
     data_b_vect <= std_logic_vector(datab);
 
     shift_log_0: lpm_clshift
-        generic map (1, "logical", 32, 5)
+        generic map (0, "logical", 32, 5)
         port map (res_s, clk, data_a_vect, dir, data_b_vect(4 downto 0), result_log);
 
     shift_rot_0: lpm_clshift
-        generic map (1, "rotate", 32, 5)
+        generic map (0, "rotate", 32, 5)
         port map (res_s, clk, data_a_vect, dir, data_b_vect(4 downto 0), result_rot);
 
     shift_ari_0: lpm_clshift
-        generic map (1, "arithmetic", 32, 5)
+        generic map (0, "arithmetic", 32, 5)
         port map (res_s, clk, data_a_vect, dir, data_b_vect(4 downto 0), result_ari);
 
     process(clk) is

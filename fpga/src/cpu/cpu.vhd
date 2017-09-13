@@ -15,7 +15,8 @@ entity cpu is
         oe: out std_logic;
         ack: in std_logic;
         --interrupts
-        int: in std_logic_vector(31 downto 0);
+        int: in std_logic;
+        int_address: in unsigned(23 downto 0);
         int_accept: out std_logic;
         int_completed: out std_logic
     );
@@ -84,9 +85,60 @@ architecture cpu_arch of cpu is
             result: out unsigned(31 downto 0)
         );
     end component alu;
+    component id is
+        port(
+            clk: in std_logic;
+            res: in std_logic;
+            instruction_word: in std_logic_vector(31 downto 0);
+            instruction_we: out std_logic;
+            regfile0_data_a_regsel: out std_logic_vector(3 downto 0);
+            regfile0_data_b_regsel: out std_logic_vector(3 downto 0);
+            regfile0_data_c_regsel: out std_logic_vector(3 downto 0);
+            regfile0_we: out std_logic;
+            regfile0_data_a_oe: out std_logic;
+            regfile0_data_b_oe: out std_logic;
+            zero_flags: in std_logic_vector(15 downto 0);
+            fpu0_en: out std_logic;
+            fpu0_opcode: out std_logic_vector(1 downto 0);
+            cmp0_en: out std_logic;
+            cmp0_opcode: out std_logic_vector(3 downto 0);
+            barrel0_en: out std_logic;
+            barrel0_dir: out std_logic;
+            barrel0_mode: out std_logic_vector(1 downto 0);
+            alu0_en: out std_logic;
+            alu0_opcode: out std_logic_vector(3 downto 0);
+            miso_oe:  out std_logic;
+            we: out std_logic;
+            oe: out std_logic;
+            ack: in std_logic;
+            int: in std_logic;
+            int_address: in unsigned(23 downto 0);
+            int_accept: out std_logic;
+            int_completed: out std_logic
+        );
+    end component id;
 
     signal data_a, data_b, data_c: unsigned(31 downto 0);
+
     signal zero_flags: std_logic_vector(15 downto 0);
+    signal regfile0_data_a_regsel: std_logic_vector(3 downto 0);
+    signal regfile0_data_b_regsel: std_logic_vector(3 downto 0);
+    signal regfile0_data_c_regsel: std_logic_vector(3 downto 0);
+    signal regfile0_we: std_logic;
+    signal regfile0_data_a_oe: std_logic;
+    signal regfile0_data_b_oe: std_logic;
+    signal fpu0_en: std_logic;
+    signal fpu0_opcode: std_logic_vector(1 downto 0);
+    signal cmp0_en: std_logic;
+    signal cmp0_opcode: std_logic_vector(3 downto 0);
+    signal barrel0_en: std_logic;
+    signal barrel0_dir: std_logic;
+    signal barrel0_mode: std_logic_vector(1 downto 0);
+    signal alu0_en: std_logic;
+    signal alu0_opcode: std_logic_vector(3 downto 0);
+    signal miso_oe:  std_logic;
+    signal instruction_word: std_logic_vector(31 downto 0);
+    signal instruction_we: std_logic;
 
 begin
 
@@ -107,37 +159,30 @@ begin
     alu0: alu
         port map(clk, res, alu0_en, alu0_opcode, data_a, data_b, data_c);
 
+    --bus interface
+    address <= data_a(23 downto 0);
+    data_mosi <= data_b;
+    data_c <= data_miso when miso_oe = '1' else (others => 'Z');
 
+    instr_reg0: process(clk) is
+        variable instruction_var: std_logic_vector(31 downto 0);
+    begin
+        if rising_edge(clk) then
+            if res = '1' then
+                instruction_var := (others => '0');
+            elsif instruction_we = '1' then
+                instruction_var := std_logic_vector(data_miso);
+            end if;
+        end if;
+        instruction_word <= instruction_var;
+    end process;
 
+    id0: id
+        port map(clk, res, instruction_word, instruction_we, regfile0_data_a_regsel,
+                 regfile0_data_b_regsel, regfile0_data_c_regsel, regfile0_we,
+                 regfile0_data_a_oe, regfile0_data_b_oe, fpu0_en, fpu0_opcode,
+                 cmp0_en, cmp0_opcode, barrel0_en, barrel0_dir, barrel0_mode,
+                 alu0_en, alu0_opcode, miso_oe, we, oe, ack,
+                 int, int_address, int_accept, int_completed);
 
-
-
-
-
-
-
-
-
-            -- this all control signals (should be connected into ID)
-            --regfile
-            data_a_regsel: in std_logic_vector(3 downto 0);
-            data_b_regsel: in std_logic_vector(3 downto 0);
-            data_c_regsel: in std_logic_vector(3 downto 0);
-            we: in std_logic;
-            data_a_oe: in std_logic;
-            data_b_oe: in std_logic;
-            --fpu
-            en: in std_logic;
-            opcode: in std_logic_vector(1 downto 0);
-            --cmp
-            en: in std_logic;
-            opcode: in std_logic_vector(3 downto 0);
-            --barrel
-            en: in std_logic;
-            dir: in std_logic;
-            mode: in std_logic_vector(1 downto 0);
-            --alu
-            en: in std_logic;
-            opcode: in std_logic_vector(3 downto 0);
-
-end architecture cpu_arch
+end architecture cpu_arch;

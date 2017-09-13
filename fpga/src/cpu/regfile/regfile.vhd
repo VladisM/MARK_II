@@ -24,8 +24,6 @@ architecture regfile_arch of regfile is
     component regfile_reg is port(
         clk: in std_logic;
         res: in std_logic;
-        increment: in std_logic := '0';
-        decrement: in std_logic := '0';
         we: in std_logic;
         datain: in unsigned(31 downto 0);
         dataout: buffer unsigned(31 downto 0);
@@ -47,49 +45,49 @@ begin
     reg00_zf <= '0';
 
     reg01: regfile_reg
-        port map(clk, res, '0', '0', reg01_we, datac, reg01_q, reg01_zf);
+        port map(clk, res, reg01_we, datac, reg01_q, reg01_zf);
 
     reg02: regfile_reg
-        port map(clk, res, '0', '0', reg02_we, datac, reg02_q, reg02_zf);
+        port map(clk, res, reg02_we, datac, reg02_q, reg02_zf);
 
     reg03: regfile_reg
-        port map(clk, res, '0', '0', reg03_we, datac, reg03_q, reg03_zf);
+        port map(clk, res, reg03_we, datac, reg03_q, reg03_zf);
 
     reg04: regfile_reg
-        port map(clk, res, '0', '0', reg04_we, datac, reg04_q, reg04_zf);
+        port map(clk, res, reg04_we, datac, reg04_q, reg04_zf);
 
     reg05: regfile_reg
-        port map(clk, res, '0', '0', reg05_we, datac, reg05_q, reg05_zf);
+        port map(clk, res, reg05_we, datac, reg05_q, reg05_zf);
 
     reg06: regfile_reg
-        port map(clk, res, '0', '0', reg06_we, datac, reg06_q, reg06_zf);
+        port map(clk, res, reg06_we, datac, reg06_q, reg06_zf);
 
     reg07: regfile_reg
-        port map(clk, res, '0', '0', reg07_we, datac, reg07_q, reg07_zf);
+        port map(clk, res, reg07_we, datac, reg07_q, reg07_zf);
 
     reg08: regfile_reg
-        port map(clk, res, '0', '0', reg08_we, datac, reg08_q, reg08_zf);
+        port map(clk, res, reg08_we, datac, reg08_q, reg08_zf);
 
     reg09: regfile_reg
-        port map(clk, res, '0', '0', reg09_we, datac, reg09_q, reg09_zf);
+        port map(clk, res, reg09_we, datac, reg09_q, reg09_zf);
 
     reg10: regfile_reg
-        port map(clk, res, '0', '0', reg10_we, datac, reg10_q, reg10_zf);
+        port map(clk, res, reg10_we, datac, reg10_q, reg10_zf);
 
     reg11: regfile_reg
-        port map(clk, res, '0', '0', reg11_we, datac, reg11_q, reg11_zf);
+        port map(clk, res, reg11_we, datac, reg11_q, reg11_zf);
 
     reg12: regfile_reg
-        port map(clk, res, '0', '0', reg12_we, datac, reg12_q, reg12_zf);
+        port map(clk, res, reg12_we, datac, reg12_q, reg12_zf);
 
     reg13: regfile_reg
-        port map(clk, res, '0', '0', reg13_we, datac, reg13_q, reg13_zf);
+        port map(clk, res, reg13_we, datac, reg13_q, reg13_zf);
 
     reg14: regfile_reg
-        port map(clk, res, '0', '0', reg14_we, datac, reg14_q, reg14_zf);
+        port map(clk, res, reg14_we, datac, reg14_q, reg14_zf);
 
     reg15: regfile_reg
-        port map(clk, res, '0', '0', reg15_we, datac, reg15_q, reg15_zf);
+        port map(clk, res, reg15_we, datac, reg15_q, reg15_zf);
 
     reg01_we <= '1' when ((we = '1') and (data_c_regsel = x"1")) else '0';
     reg02_we <= '1' when ((we = '1') and (data_c_regsel = x"2")) else '0';

@@ -4,13 +4,13 @@ use ieee.numeric_std.all;
 
 -- Simple FPU based on Altera FP megafunctions.
 --
--- Latency of all operations are 7 cycles.
+-- Latency of all operations are from 5 to 7 cycles.
 --
 -- opcode is select operation:
---   00 - subtraction
---   01 - multiplication
---   10 - division
---   11 - addition
+--   00 - subtraction    - 7 cycles
+--   01 - multiplication - 5 cycles
+--   10 - division       - 6 cycles
+--   11 - addition       - 7 cycles
 
 entity fpu is
     port(
@@ -62,7 +62,6 @@ architecture fpu_arch of fpu is
     signal result_sub, result_mul, result_div, result_mul_raw, result_div_raw, result_add: std_logic_vector(31 downto 0);
     signal result_vect, data_a_vect, data_b_vect: std_logic_vector(31 downto 0);
     signal res_sync : std_logic;
-    signal sub_en, mul_en, div_en, add_en: std_logic;
 
 begin
 
@@ -72,16 +71,16 @@ begin
 
     -- Initialize FP cores
     fpsub0: sub
-        port map(res_sync, sub_en, clk, data_a_vect, data_b_vect, result_sub);
+        port map(res_sync, '1', clk, data_a_vect, data_b_vect, result_sub);
 
     fpmul0: mul
-        port map(res_sync, mul_en, clk, data_a_vect, data_b_vect, result_mul_raw);
+        port map(res_sync, '1', clk, data_a_vect, data_b_vect, result_mul);
 
     fpdiv0: div
-        port map(res_sync, div_en, clk, data_a_vect, data_b_vect, result_div_raw);
+        port map(res_sync, '1', clk, data_a_vect, data_b_vect, result_div);
 
     fpadd0: add
-        port map(res_sync, add_en, clk, data_a_vect, data_b_vect, result_add);
+        port map(res_sync, '1', clk, data_a_vect, data_b_vect, result_add);
 
     -- Synchronize reset for FP cores
     process(clk) is
@@ -97,34 +96,6 @@ begin
         res_sync <= res_v;
     end process;
 
-    -- Delay multiplier result for one clk cycle
-    process(clk) is
-        variable result_mul_v: std_logic_vector(31 downto 0);
-    begin
-        if rising_edge(clk) then
-            if res = '1' then
-                result_mul_v := (others => '0');
-            else
-                result_mul_v := result_mul_raw;
-            end if;
-        end if;
-        result_mul <= result_mul_v;
-    end process;
-
-    -- Delay divider result for one clk cycle
-    process(clk) is
-        variable result_div_v: std_logic_vector(31 downto 0);
-    begin
-        if rising_edge(clk) then
-            if res = '1' then
-                result_div_v := (others => '0');
-            else
-                result_div_v := result_div_raw;
-            end if;
-        end if;
-        result_div <= result_div_v;
-    end process;
-
     -- Result multiplexer
     result_vect <=
         result_sub when ((opcode = "00") and (en = '1')) else
@@ -135,11 +106,5 @@ begin
     
     -- Convert result
     result <= unsigned(result_vect);
-    
-    -- Enable signals for individual parts
-    sub_en <= '1' when ((opcode = "00") and (en = '1')) else '0';
-    mul_en <= '1' when ((opcode = "01") and (en = '1')) else '0';
-    div_en <= '1' when ((opcode = "10") and (en = '1')) else '0';
-    add_en <= '1' when ((opcode = "11") and (en = '1')) else '0';
         
 end fpu_arch;

@@ -5,6 +5,24 @@ use ieee.numeric_std.all;
 library lpm;
 use lpm.all;
 
+-- operation       op     cycle
+-- mulu            0x0    0
+-- muls            0x1    0
+-- divu            0x2    32
+-- divs            0x3    32
+-- divu_remain     0x4    32
+-- divs_remain     0x5    32
+-- add             0x6    0
+-- sub             0x7    0
+-- inc             0x8    0
+-- dec             0x9    0
+-- and             0xa    0
+-- or              0xb    0
+-- xor             0xc    0
+-- mvil            0xd    0
+-- mvih            0xe    0
+-- not             0xf    0
+
 entity alu is
     port(
         clk: in std_logic;
@@ -47,12 +65,12 @@ architecture alu_arch of alu is
         lpm_widthn          : natural
     );
     port (
-            aclr     : in std_logic ;
-            clock    : in std_logic ;
-            remain   : out std_logic_vector (31 downto 0);
-            denom    : in std_logic_vector (31 downto 0);
-            numer    : in std_logic_vector (31 downto 0);
-            quotient : out std_logic_vector (31 downto 0)
+        aclr     : in std_logic ;
+        clock    : in std_logic ;
+        remain   : out std_logic_vector (31 downto 0);
+        denom    : in std_logic_vector (31 downto 0);
+        numer    : in std_logic_vector (31 downto 0);
+        quotient : out std_logic_vector (31 downto 0)
     );
     end component;
 
@@ -87,140 +105,50 @@ begin
     end process;
 
     mul_unsigned_0 : lpm_mult
-        generic map ("maximize_speed=9", 1, "unsigned", 32, 32, 32)
+        generic map ("maximize_speed=9", 0, "unsigned", 32, 32, 32)
         port map (res_s, clk, data_b_vect, data_a_vect, mulu_res);
 
     mul_signed_0 : lpm_mult
-        generic map ("maximize_speed=9", 1, "signed", 32, 32, 32)
+        generic map ("maximize_speed=9", 0, "signed", 32, 32, 32)
         port map (res_s, clk, data_b_vect, data_a_vect, muls_res);
 
     div_unsigned_0: lpm_divide
-        generic map ("unsigned", "maximize_speed=6,lpm_remainderpositive=true", "unsigned", 1, 32, 32)
+        generic map ("unsigned", "maximize_speed=9,lpm_remainderpositive=true", "unsigned", 32, 32, 32)
         port map (res_s, clk,divu_remain, data_b_vect, data_a_vect, divu_res);
 
     div_signed_0: lpm_divide
-        generic map ("signed", "maximize_speed=6,lpm_remainderpositive=true", "signed", 1, 32, 32)
+        generic map ("signed", "maximize_speed=9,lpm_remainderpositive=true", "signed", 32, 32, 32)
         port map (res_s, clk,divs_remain, data_b_vect, data_a_vect, divs_res);
 
     --add
-    adder: process(res, clk) is
-        variable result_v_add_v: unsigned(31 downto 0);
-    begin
-        if res = '1' then
-            result_v_add_v := (others => '0');
-        elsif rising_edge(clk) then
-            result_v_add_v := dataa + datab;
-        end if;
-        add_res <= std_logic_vector(result_v_add_v);
-    end process;
+    add_res <= std_logic_vector(dataa + datab);
 
     --sub
-    substraction: process(res, clk) is
-        variable result_v_sub_v: unsigned(31 downto 0);
-    begin
-        if res = '1' then
-            result_v_sub_v := (others => '0');
-        elsif rising_edge(clk) then
-            result_v_sub_v := dataa - datab;
-        end if;
-        sub_res <= std_logic_vector(result_v_sub_v);
-    end process;
+    sub_res <= std_logic_vector(dataa - datab);
 
     --inc
-    increment: process(res, clk) is
-        variable result_v_inc: unsigned(31 downto 0);
-    begin
-        if res = '1' then
-            result_v_inc := (others => '0');
-        elsif rising_edge(clk) then
-            result_v_inc := dataa + 1;
-        end if;
-        inc_res <= std_logic_vector(result_v_inc);
-    end process;
+    inc_res <= std_logic_vector(dataa + 1);
 
     --dec
-    decrement: process(res, clk) is
-        variable result_v_dec: unsigned(31 downto 0);
-    begin
-        if res = '1' then
-            result_v_dec := (others => '0');
-        elsif rising_edge(clk) then
-            result_v_dec := dataa - 1;
-        end if;
-        dec_res <= std_logic_vector(result_v_dec);
-    end process;
+    dec_res <= std_logic_vector(dataa - 1);
 
     --and
-    bitwiseand: process(res, clk) is
-        variable result_v_and: unsigned(31 downto 0);
-    begin
-        if res = '1' then
-            result_v_and := (others => '0');
-        elsif rising_edge(clk) then
-            result_v_and := dataa and datab;
-        end if;
-        and_res <= std_logic_vector(result_v_and);
-    end process;
+    and_res <= std_logic_vector(dataa and datab);
 
     --or
-    bitwiseor: process(res, clk) is
-        variable result_v_or: unsigned(31 downto 0);
-    begin
-        if res = '1' then
-            result_v_or := (others => '0');
-        elsif rising_edge(clk) then
-            result_v_or := dataa or datab;
-        end if;
-        or_res <= std_logic_vector(result_v_or);
-    end process;
+    or_res <= std_logic_vector(dataa or datab);
 
     --xor
-    bitwisexor: process(res, clk) is
-        variable result_v_xor: unsigned(31 downto 0);
-    begin
-        if res = '1' then
-            result_v_xor := (others => '0');
-        elsif rising_edge(clk) then
-            result_v_xor := dataa xor datab;
-        end if;
-        xor_res <= std_logic_vector(result_v_xor);
-    end process;
+    xor_res <= std_logic_vector(dataa xor datab);
 
     --not
-    bitwisenot: process(res, clk) is
-        variable result_v_not: unsigned(31 downto 0);
-    begin
-        if res = '1' then
-            result_v_not := (others => '0');
-        elsif rising_edge(clk) then
-            result_v_not := not(dataa);
-        end if;
-        not_res <= std_logic_vector(result_v_not);
-    end process;
+    not_res <= std_logic_vector(not(dataa));
 
     --mvil
-    mvilsupp: process(res, clk) is
-        variable result_v_mvil: unsigned(31 downto 0);
-    begin
-        if res = '1' then
-            result_v_mvil := (others => '0');
-        elsif rising_edge(clk) then
-            result_v_mvil := dataa(31 downto 16) & datab(15 downto 0);
-        end if;
-        mvil_res <= std_logic_vector(result_v_mvil);
-    end process;
+    mvil_res <= std_logic_vector(dataa(31 downto 16) & datab(15 downto 0));
 
     --mvih
-    mvihsupp: process(res, clk) is
-        variable result_v_mvih: unsigned(31 downto 0);
-    begin
-        if res = '1' then
-            result_v_mvih := (others => '0');
-        elsif rising_edge(clk) then
-            result_v_mvih := datab(15 downto 0) & dataa(15 downto 0);
-        end if;
-        mvih_res <= std_logic_vector(result_v_mvih);
-    end process;
+    mvih_res <= std_logic_vector(datab(15 downto 0) & dataa(15 downto 0));
 
     --select result
     result_raw <=

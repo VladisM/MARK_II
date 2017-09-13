@@ -6,8 +6,6 @@ entity regfile_reg is
     port(
         clk: in std_logic;
         res: in std_logic;
-        increment: in std_logic := '0';
-        decrement: in std_logic := '0';
         we: in std_logic;
         datain: in unsigned(31 downto 0);
         dataout: buffer unsigned(31 downto 0);
@@ -22,25 +20,13 @@ begin
         variable reg_var: unsigned(31 downto 0);
     begin
         if rising_edge(clk) then
-
             if (res = '1') then
                 reg_var := (others => '0');
-
-            elsif (increment = '1') then
-                reg_var := reg_var + 1;
-
-            elsif (decrement = '1') then
-                reg_var := reg_var - 1;
-
             elsif (we = '1') then
                 reg_var := datain;
-
             end if;
-
         end if;
-
         dataout <= reg_var;
-
     end process;
 
     zero_flag <= '1' when (dataout = x"00000000") else '0';

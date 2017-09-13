@@ -2,6 +2,24 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
+-- function    opcode  cycles
+-- fp_aeb      0       1
+-- fp_agb      1       1
+-- fp_ageb     2       1
+-- fp_alb      3       1
+-- fp_aleb     4       1
+-- fp_aneb     5       1
+-- int_aeb     6       0
+-- int_aneb    7       0
+-- int_agb     8       0
+-- int_ageb    9       0
+-- int_alb     A       0
+-- int_aleb    B       0
+-- int_agb_u   C       0
+-- int_ageb_u  D       0
+-- int_alb_u   E       0
+-- int_aleb_u  F       0
+
 
 entity comparator is
     port(
