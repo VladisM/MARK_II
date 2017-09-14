@@ -37,7 +37,12 @@ architecture cpu_arch of cpu is
             we: in std_logic;
             data_a_oe: in std_logic;
             data_b_oe: in std_logic;
-            zero: out std_logic_vector(15 downto 0)
+            zero: out std_logic_vector(15 downto 0);
+            inc_r14: in std_logic;
+            inc_r15: in std_logic;
+            dec_r14: in std_logic;
+            dec_r15: in std_logic;
+            q_r15: out unsigned(23 downto 0)
         );
     end component regfile;
     component fpu is
@@ -108,13 +113,21 @@ architecture cpu_arch of cpu is
             alu0_en: out std_logic;
             alu0_opcode: out std_logic_vector(3 downto 0);
             miso_oe:  out std_logic;
+            arg_oe: out std_logic;
+            argument: out unsigned(31 downto 0);
             we: out std_logic;
             oe: out std_logic;
             ack: in std_logic;
             int: in std_logic;
             int_address: in unsigned(23 downto 0);
             int_accept: out std_logic;
-            int_completed: out std_logic
+            int_completed: out std_logic;
+            inc_r14: out std_logic;
+            inc_r15: out std_logic;
+            dec_r14: out std_logic;
+            dec_r15: out std_logic;
+            address_alu_oe: out std_logic;
+            address_alu_opcode: out std_logic
         );
     end component id;
 
@@ -139,13 +152,23 @@ architecture cpu_arch of cpu is
     signal miso_oe:  std_logic;
     signal instruction_word: std_logic_vector(31 downto 0);
     signal instruction_we: std_logic;
+    signal arg_oe: std_logic;
+    signal argument: unsigned(31 downto 0);
+    signal inc_r14: std_logic;
+    signal inc_r15: std_logic;
+    signal dec_r14: std_logic;
+    signal dec_r15: std_logic;
+    signal address_alu_oe: std_logic;
+    signal reg15_q: unsigned(23 downto 0);
+    signal address_alu_result: unsigned(23 downto 0);
+    signal address_alu_opcode: std_logic;
 
 begin
 
     regfile0: regfile
         port map(clk, res, data_a, data_b, data_c, regfile0_data_a_regsel,
                  regfile0_data_b_regsel, regfile0_data_c_regsel, regfile0_we,
-                 regfile0_data_a_oe, regfile0_data_b_oe, zero_flags);
+                 regfile0_data_a_oe, regfile0_data_b_oe, zero_flags, reg15_q);
 
     fpu0: fpu
         port map(clk, res, fpu0_en, fpu0_opcode, data_a, data_b, data_c);
@@ -159,8 +182,11 @@ begin
     alu0: alu
         port map(clk, res, alu0_en, alu0_opcode, data_a, data_b, data_c);
 
+
+    address_alu_result <= (reg15_q + 1) when address_alu_opcode = '1' else (reg15_q - 1);
+
     --bus interface
-    address <= data_a(23 downto 0);
+    address <= data_a(23 downto 0) when address_alu_oe = '0' else address_alu_result;
     data_mosi <= data_b;
     data_c <= data_miso when miso_oe = '1' else (others => 'Z');
 
@@ -177,12 +203,15 @@ begin
         instruction_word <= instruction_var;
     end process;
 
+    data_a <= argument when (arg_oe = '1') else (others => 'Z');
+
     id0: id
         port map(clk, res, instruction_word, instruction_we, regfile0_data_a_regsel,
                  regfile0_data_b_regsel, regfile0_data_c_regsel, regfile0_we,
                  regfile0_data_a_oe, regfile0_data_b_oe, fpu0_en, fpu0_opcode,
                  cmp0_en, cmp0_opcode, barrel0_en, barrel0_dir, barrel0_mode,
-                 alu0_en, alu0_opcode, miso_oe, we, oe, ack,
-                 int, int_address, int_accept, int_completed);
+                 alu0_en, alu0_opcode, miso_oe, arg_oe, argument, we, oe, ack,
+                 int, int_address, int_accept, int_completed, inc_r14, inc_r15,
+                 dec_r14, dec_r15, address_alu_oe, address_alu_opcode);
 
 end architecture cpu_arch;

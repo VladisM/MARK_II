@@ -7,6 +7,8 @@ entity regfile_reg is
         clk: in std_logic;
         res: in std_logic;
         we: in std_logic;
+        inc: in std_logic;
+        dec: in std_logic;
         datain: in unsigned(31 downto 0);
         dataout: buffer unsigned(31 downto 0);
         zero_flag: out std_logic
@@ -22,6 +24,10 @@ begin
         if rising_edge(clk) then
             if (res = '1') then
                 reg_var := (others => '0');
+            elsif (inc = '1') then
+                reg_var := reg_var + 1;
+            elsif (dec = '1') then
+                reg_var := reg_var - 1;
             elsif (we = '1') then
                 reg_var := datain;
             end if;
