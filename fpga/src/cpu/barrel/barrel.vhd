@@ -11,6 +11,10 @@ use lpm.all;
 -- 10     arithmetical
 -- 11     don't care
 
+-- dir
+-- 0 - left (toward the MSB)
+-- 1 - right (toward the LSB)
+
 entity barrel is
     port(
         clk: in std_logic;
