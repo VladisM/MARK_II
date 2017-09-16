@@ -58,14 +58,12 @@ architecture id_arch of id is
 
     type id_state_type is (
         start, start_inc, start_dec, start_wait, start_decode,
-        intrq, intrq_wait, intrq_set, intrq_inc, intrq_inc_wait, intrq_inc_set, intrq_dec,
-        intrq_dec_wait, intrq_dec_set,
+        intrq, intrq_set, intrq_inc, intrq_inc_set, intrq_dec, intrq_dec_set,
         ret, reti, reti_wait,
         call, call_set, calli, calli_set,
         pop, push,
         ld, ldi, st, sti,
-        bz, bz_set, bnz, bnz_set,
-        bzi, bzi_set, bnzi, bnzi_set,
+        bz, bnz, bz_bnz_set, bzi, bnzi, bzi_bnzi_set,
         mvi, mvia, barrel, alu,
         cmpi, cmpf, cmpf_2,
         div, div_w0, div_w1, div_w2, div_w3, div_w4, div_w5, div_w6, div_w7,
@@ -80,7 +78,11 @@ architecture id_arch of id is
 
     signal id_state: id_state_type;
 
+    signal argument_vect: std_logic_vector(31 downto 0);
+
 begin
+
+    argument <= unsigned(argument_vect);
 
     flag <=
         zero_flags(0) when flag_sel = x"0" else
@@ -166,12 +168,7 @@ begin
                     when intrq =>
                         case ack is
                             when '1' => id_state <= intrq_set;
-                            when others => id_state <= intrq_wait;
-                        end case;
-                    when intrq_wait =>
-                        case ack is
-                            when '1' => id_state <= intrq_set;
-                            when others => id_state <= intrq_wait;
+                            when others => id_state <= intrq;
                         end case;
                     when intrq_set =>
                         id_state <= start;
@@ -179,12 +176,7 @@ begin
                     when intrq_inc =>
                         case ack is
                             when '1' => id_state <= intrq_inc_set;
-                            when others => id_state <= intrq_inc_wait;
-                        end case;
-                    when intrq_inc_wait =>
-                        case ack is
-                            when '1' => id_state <= intrq_inc_set;
-                            when others => id_state <= intrq_inc_wait;
+                            when others => id_state <= intrq_inc;
                         end case;
                     when intrq_inc_set =>
                         id_state <= start_inc;
@@ -192,12 +184,7 @@ begin
                     when intrq_dec =>
                         case ack is
                             when '1' => id_state <= intrq_dec_set;
-                            when others => id_state <= intrq_dec_wait;
-                        end case;
-                    when intrq_dec_wait =>
-                        case ack is
-                            when '1' => id_state <= intrq_dec_set;
-                            when others => id_state <= intrq_dec_wait;
+                            when others => id_state <= intrq_dec;
                         end case;
                     when intrq_dec_set =>
                         id_state <= start;
@@ -310,56 +297,47 @@ begin
 
                     when bz =>
                         case flag is
-                            when '1' => id_state <= bz_set;
+                            when '1' => id_state <= bz_bnz_set;
                             when others =>
                                 case int is
                                     when '1' => id_state <= intrq;
                                     when others => id_state <= start;
                                 end case;
-                        end case;
-                    when bz_set =>
-                        case int is
-                            when '1' => id_state <= intrq;
-                            when others => id_state <= start;
-                        end case;
-                    when bzi =>
-                        case flag is
-                            when '1' => id_state <= bzi_set;
-                            when others =>
-                                case int is
-                                    when '1' => id_state <= intrq;
-                                    when others => id_state <= start;
-                                end case;
-                        end case;
-                    when bzi_set =>
-                        case int is
-                            when '1' => id_state <= intrq;
-                            when others => id_state <= start;
                         end case;
                     when bnz =>
                         case flag is
-                            when '0' => id_state <= bnz_set;
+                            when '0' => id_state <= bz_bnz_set;
                             when others =>
                                 case int is
                                     when '1' => id_state <= intrq;
                                     when others => id_state <= start;
                                 end case;
                         end case;
-                    when bnz_set =>
+                    when bz_bnz_set =>
                         case int is
                             when '1' => id_state <= intrq;
                             when others => id_state <= start;
                         end case;
-                    when bnzi =>
+
+                    when bzi =>
                         case flag is
-                            when '0' => id_state <= bnzi_set;
+                            when '1' => id_state <= bzi_bnzi_set;
                             when others =>
                                 case int is
                                     when '1' => id_state <= intrq;
                                     when others => id_state <= start;
                                 end case;
                         end case;
-                    when bnzi_set =>
+                    when bnzi =>
+                        case flag is
+                            when '0' => id_state <= bzi_bnzi_set;
+                            when others =>
+                                case int is
+                                    when '1' => id_state <= intrq;
+                                    when others => id_state <= start;
+                                end case;
+                        end case;
+                    when bzi_bnzi_set =>
                         case int is
                             when '1' => id_state <= intrq;
                             when others => id_state <= start;
@@ -492,7 +470,7 @@ begin
                 barrel0_en <= '0'; barrel0_dir <= '0'; barrel0_mode <= "00";
                 alu0_en <= '0'; alu0_opcode <= x"0";
                 miso_oe <= '1'; we <= '0'; oe <= '1';
-                arg_oe <= '0'; argument <= x"00000000";
+                arg_oe <= '0'; argument_vect <= x"00000000";
                 int_accept <= '0'; int_completed <= '0';
                 inc_r14 <= '0'; inc_r15 <= '0'; dec_r14 <= '0'; dec_r15 <= '0';
                 address_alu_oe <= '0'; address_alu_opcode <= '0'; flag_sel <= x"0";
@@ -506,7 +484,7 @@ begin
                 barrel0_en <= '0'; barrel0_dir <= '0'; barrel0_mode <= "00";
                 alu0_en <= '0'; alu0_opcode <= x"0";
                 miso_oe <= '1'; we <= '0'; oe <= '1';
-                arg_oe <= '0'; argument <= x"00000000";
+                arg_oe <= '0'; argument_vect <= x"00000000";
                 int_accept <= '0'; int_completed <= '0';
                 inc_r14 <= '0'; inc_r15 <= '1'; dec_r14 <= '0'; dec_r15 <= '0';
                 address_alu_oe <= '0'; address_alu_opcode <= '0'; flag_sel <= x"0";
@@ -520,7 +498,7 @@ begin
                 barrel0_en <= '0'; barrel0_dir <= '0'; barrel0_mode <= "00";
                 alu0_en <= '0'; alu0_opcode <= x"0";
                 miso_oe <= '1'; we <= '0'; oe <= '1';
-                arg_oe <= '0'; argument <= x"00000000";
+                arg_oe <= '0'; argument_vect <= x"00000000";
                 int_accept <= '0'; int_completed <= '0';
                 inc_r14 <= '0'; inc_r15 <= '0'; dec_r14 <= '0'; dec_r15 <= '1';
                 address_alu_oe <= '0'; address_alu_opcode <= '0'; flag_sel <= x"0";
@@ -534,7 +512,7 @@ begin
                 barrel0_en <= '0'; barrel0_dir <= '0'; barrel0_mode <= "00";
                 alu0_en <= '0'; alu0_opcode <= x"0";
                 miso_oe <= '1'; we <= '0'; oe <= '1';
-                arg_oe <= '0'; argument <= x"00000000";
+                arg_oe <= '0'; argument_vect <= x"00000000";
                 int_accept <= '0'; int_completed <= '0';
                 inc_r14 <= '0'; inc_r15 <= '0'; dec_r14 <= '0'; dec_r15 <= '0';
                 address_alu_oe <= '0'; address_alu_opcode <= '0'; flag_sel <= x"0";
@@ -548,7 +526,7 @@ begin
                 barrel0_en <= '0'; barrel0_dir <= '0'; barrel0_mode <= "00";
                 alu0_en <= '0'; alu0_opcode <= x"0";
                 miso_oe <= '0'; we <= '0'; oe <= '0';
-                arg_oe <= '0'; argument <= x"00000000";
+                arg_oe <= '0'; argument_vect <= x"00000000";
                 int_accept <= '0'; int_completed <= '0';
                 inc_r14 <= '1'; inc_r15 <= '0'; dec_r14 <= '0'; dec_r15 <= '0';
                 address_alu_oe <= '0'; address_alu_opcode <= '0'; flag_sel <= x"0";
@@ -562,21 +540,7 @@ begin
                 barrel0_en <= '0'; barrel0_dir <= '0'; barrel0_mode <= "00";
                 alu0_en <= '0'; alu0_opcode <= x"0";
                 miso_oe <= '0'; we <= '1'; oe <= '0';
-                arg_oe <= '0'; argument <= x"00000000";
-                int_accept <= '0'; int_completed <= '0';
-                inc_r14 <= '0'; inc_r15 <= '0'; dec_r14 <= '0'; dec_r15 <= '0';
-                address_alu_oe <= '0'; address_alu_opcode <= '0'; flag_sel <= x"0";
-
-            when intrq_wait=>
-                instruction_we <= '0';
-                regfile0_data_a_regsel <= x"F"; regfile0_data_b_regsel <= x"E"; regfile0_data_c_regsel <= x"0";
-                regfile0_we <= '0'; regfile0_data_a_oe <= '1'; regfile0_data_b_oe <= '1';
-                fpu0_en <= '0'; fpu0_opcode <= "00";
-                cmp0_en <= '0'; cmp0_opcode  <= x"0";
-                barrel0_en <= '0'; barrel0_dir <= '0'; barrel0_mode <= "00";
-                alu0_en <= '0'; alu0_opcode <= x"0";
-                miso_oe <= '0'; we <= '1'; oe <= '0';
-                arg_oe <= '0'; argument <= x"00000000";
+                arg_oe <= '0'; argument_vect <= x"00000000";
                 int_accept <= '0'; int_completed <= '0';
                 inc_r14 <= '0'; inc_r15 <= '0'; dec_r14 <= '0'; dec_r15 <= '0';
                 address_alu_oe <= '0'; address_alu_opcode <= '0'; flag_sel <= x"0";
@@ -590,7 +554,7 @@ begin
                 barrel0_en <= '0'; barrel0_dir <= '0'; barrel0_mode <= "00";
                 alu0_en <= '1'; alu0_opcode <= x"b";
                 miso_oe <= '0'; we <= '0'; oe <= '0';
-                arg_oe <= '1'; argument <= x"00" & int_address;
+                arg_oe <= '1'; argument_vect <= x"00" & std_logic_vector(int_address);
                 int_accept <= '1'; int_completed <= '0';
                 inc_r14 <= '0'; inc_r15 <= '1'; dec_r14 <= '0'; dec_r15 <= '0';
                 address_alu_oe <= '0'; address_alu_opcode <= '0'; flag_sel <= x"0";
@@ -604,21 +568,7 @@ begin
                 barrel0_en <= '0'; barrel0_dir <= '0'; barrel0_mode <= "00";
                 alu0_en <= '0'; alu0_opcode <= x"0";
                 miso_oe <= '0'; we <= '1'; oe <= '0';
-                arg_oe <= '0'; argument <= x"00000000";
-                int_accept <= '0'; int_completed <= '0';
-                inc_r14 <= '0'; inc_r15 <= '0'; dec_r14 <= '0'; dec_r15 <= '0';
-                address_alu_oe <= '1'; address_alu_opcode <= '1'; flag_sel <= x"0";
-
-            when intrq_inc_wait=>
-                instruction_we <= '0';
-                regfile0_data_a_regsel <= x"0"; regfile0_data_b_regsel <= x"E"; regfile0_data_c_regsel <= x"0";
-                regfile0_we <= '0'; regfile0_data_a_oe <= '0'; regfile0_data_b_oe <= '1';
-                fpu0_en <= '0'; fpu0_opcode <= "00";
-                cmp0_en <= '0'; cmp0_opcode  <= x"0";
-                barrel0_en <= '0'; barrel0_dir <= '0'; barrel0_mode <= "00";
-                alu0_en <= '0'; alu0_opcode <= x"0";
-                miso_oe <= '0'; we <= '1'; oe <= '0';
-                arg_oe <= '0'; argument <= x"00000000";
+                arg_oe <= '0'; argument_vect <= x"00000000";
                 int_accept <= '0'; int_completed <= '0';
                 inc_r14 <= '0'; inc_r15 <= '0'; dec_r14 <= '0'; dec_r15 <= '0';
                 address_alu_oe <= '1'; address_alu_opcode <= '1'; flag_sel <= x"0";
@@ -632,7 +582,7 @@ begin
                 barrel0_en <= '0'; barrel0_dir <= '0'; barrel0_mode <= "00";
                 alu0_en <= '1'; alu0_opcode <= x"b";
                 miso_oe <= '0'; we <= '0'; oe <= '0';
-                arg_oe <= '1'; argument <= x"00" & int_address;
+                arg_oe <= '1'; argument_vect <= x"00" & std_logic_vector(int_address);
                 int_accept <= '1'; int_completed <= '0';
                 inc_r14 <= '0'; inc_r15 <= '1'; dec_r14 <= '0'; dec_r15 <= '0';
                 address_alu_oe <= '0'; address_alu_opcode <= '0'; flag_sel <= x"0";
@@ -646,21 +596,7 @@ begin
                 barrel0_en <= '0'; barrel0_dir <= '0'; barrel0_mode <= "00";
                 alu0_en <= '0'; alu0_opcode <= x"0";
                 miso_oe <= '0'; we <= '1'; oe <= '0';
-                arg_oe <= '0'; argument <= x"00000000";
-                int_accept <= '0'; int_completed <= '0';
-                inc_r14 <= '0'; inc_r15 <= '0'; dec_r14 <= '0'; dec_r15 <= '0';
-                address_alu_oe <= '1'; address_alu_opcode <= '0'; flag_sel <= x"0";
-
-            when intrq_dec_wait=>
-                instruction_we <= '0';
-                regfile0_data_a_regsel <= x"0"; regfile0_data_b_regsel <= x"E"; regfile0_data_c_regsel <= x"0";
-                regfile0_we <= '0'; regfile0_data_a_oe <= '0'; regfile0_data_b_oe <= '1';
-                fpu0_en <= '0'; fpu0_opcode <= "00";
-                cmp0_en <= '0'; cmp0_opcode  <= x"0";
-                barrel0_en <= '0'; barrel0_dir <= '0'; barrel0_mode <= "00";
-                alu0_en <= '0'; alu0_opcode <= x"0";
-                miso_oe <= '0'; we <= '1'; oe <= '0';
-                arg_oe <= '0'; argument <= x"00000000";
+                arg_oe <= '0'; argument_vect <= x"00000000";
                 int_accept <= '0'; int_completed <= '0';
                 inc_r14 <= '0'; inc_r15 <= '0'; dec_r14 <= '0'; dec_r15 <= '0';
                 address_alu_oe <= '1'; address_alu_opcode <= '0'; flag_sel <= x"0";
@@ -674,7 +610,7 @@ begin
                 barrel0_en <= '0'; barrel0_dir <= '0'; barrel0_mode <= "00";
                 alu0_en <= '1'; alu0_opcode <= x"b";
                 miso_oe <= '0'; we <= '0'; oe <= '0';
-                arg_oe <= '1'; argument <= x"00" & int_address;
+                arg_oe <= '1'; argument_vect <= x"00" & std_logic_vector(int_address);
                 int_accept <= '1'; int_completed <= '0';
                 inc_r14 <= '0'; inc_r15 <= '0'; dec_r14 <= '0'; dec_r15 <= '0';
                 address_alu_oe <= '0'; address_alu_opcode <= '0'; flag_sel <= x"0";
@@ -688,7 +624,7 @@ begin
                 barrel0_en <= '0'; barrel0_dir <= '0'; barrel0_mode <= "00";
                 alu0_en <= '0'; alu0_opcode <= x"0";
                 miso_oe <= '1'; we <= '0'; oe <= '1';
-                arg_oe <= '0'; argument <= x"00000000";
+                arg_oe <= '0'; argument_vect <= x"00000000";
                 int_accept <= '0'; int_completed <= '0';
                 inc_r14 <= '0'; inc_r15 <= '0'; dec_r14 <= '0'; dec_r15 <= '0';
                 address_alu_oe <= '1'; address_alu_opcode <= '1'; flag_sel <= x"0";
@@ -702,7 +638,7 @@ begin
                 barrel0_en <= '0'; barrel0_dir <= '0'; barrel0_mode <= "00";
                 alu0_en <= '0'; alu0_opcode <= x"0";
                 miso_oe <= '1'; we <= '0'; oe <= '1';
-                arg_oe <= '0'; argument <= x"00000000";
+                arg_oe <= '0'; argument_vect <= x"00000000";
                 int_accept <= '0'; int_completed <= '1';
                 inc_r14 <= '0'; inc_r15 <= '0'; dec_r14 <= '0'; dec_r15 <= '0';
                 address_alu_oe <= '1'; address_alu_opcode <= '1'; flag_sel <= x"0";
@@ -716,7 +652,7 @@ begin
                 barrel0_en <= '0'; barrel0_dir <= '0'; barrel0_mode <= "00";
                 alu0_en <= '0'; alu0_opcode <= x"0";
                 miso_oe <= '1'; we <= '0'; oe <= '1';
-                arg_oe <= '0'; argument <= x"00000000";
+                arg_oe <= '0'; argument_vect <= x"00000000";
                 int_accept <= '0'; int_completed <= '0';
                 inc_r14 <= '0'; inc_r15 <= '0'; dec_r14 <= '0'; dec_r15 <= '0';
                 address_alu_oe <= '1'; address_alu_opcode <= '1'; flag_sel <= x"0";
@@ -730,7 +666,7 @@ begin
                 barrel0_en <= '0'; barrel0_dir <= '0'; barrel0_mode <= "00";
                 alu0_en <= '0'; alu0_opcode <= x"0";
                 miso_oe <= '0'; we <= '1'; oe <= '0';
-                arg_oe <= '0'; argument <= x"00000000";
+                arg_oe <= '0'; argument_vect <= x"00000000";
                 int_accept <= '0'; int_completed <= '0';
                 inc_r14 <= '0'; inc_r15 <= '0'; dec_r14 <= '0'; dec_r15 <= '0';
                 address_alu_oe <= '0'; address_alu_opcode <= '0'; flag_sel <= x"0";
@@ -744,7 +680,7 @@ begin
                 barrel0_en <= '0'; barrel0_dir <= '0'; barrel0_mode <= "00";
                 alu0_en <= '1'; alu0_opcode <= x"b";
                 miso_oe <= '0'; we <= '0'; oe <= '0';
-                arg_oe <= '1'; argument <= x"00" & instruction_word(23 downto 0);
+                arg_oe <= '1'; argument_vect <= x"00" & instruction_word(23 downto 0);
                 int_accept <= '0'; int_completed <= '0';
                 inc_r14 <= '0'; inc_r15 <= '0'; dec_r14 <= '0'; dec_r15 <= '1';
                 address_alu_oe <= '0'; address_alu_opcode <= '0'; flag_sel <= x"0";
@@ -758,7 +694,7 @@ begin
                 barrel0_en <= '0'; barrel0_dir <= '0'; barrel0_mode <= "00";
                 alu0_en <= '0'; alu0_opcode <= x"0";
                 miso_oe <= '0'; we <= '1'; oe <= '0';
-                arg_oe <= '0'; argument <= x"00000000";
+                arg_oe <= '0'; argument_vect <= x"00000000";
                 int_accept <= '0'; int_completed <= '0';
                 inc_r14 <= '0'; inc_r15 <= '0'; dec_r14 <= '0'; dec_r15 <= '0';
                 address_alu_oe <= '0'; address_alu_opcode <= '0'; flag_sel <= x"0";
@@ -772,7 +708,7 @@ begin
                 barrel0_en <= '0'; barrel0_dir <= '0'; barrel0_mode <= "00";
                 alu0_en <= '1'; alu0_opcode <= x"b";
                 miso_oe <= '0'; we <= '0'; oe <= '0';
-                arg_oe <= '0'; argument <= x"00000000";
+                arg_oe <= '0'; argument_vect <= x"00000000";
                 int_accept <= '0'; int_completed <= '0';
                 inc_r14 <= '0'; inc_r15 <= '0'; dec_r14 <= '0'; dec_r15 <= '1';
                 address_alu_oe <= '0'; address_alu_opcode <= '0'; flag_sel <= x"0";
@@ -786,21 +722,21 @@ begin
                 barrel0_en <= '0'; barrel0_dir <= '0'; barrel0_mode <= "00";
                 alu0_en <= '0'; alu0_opcode <= x"0";
                 miso_oe <= '0'; we <= '1'; oe <= '0';
-                arg_oe <= '0'; argument <= x"00000000";
+                arg_oe <= '0'; argument_vect <= x"00000000";
                 int_accept <= '0'; int_completed <= '0';
                 inc_r14 <= '0'; inc_r15 <= '0'; dec_r14 <= '0'; dec_r15 <= '0';
                 address_alu_oe <= '0'; address_alu_opcode <= '0'; flag_sel <= x"0";
 
             when pop=>
                 instruction_we <= '0';
-                regfile0_data_a_regsel <= x"0"; regfile0_data_b_regsel <= x"0"; regfile0_data_c_regsel <= instruction_word( downto 0);
+                regfile0_data_a_regsel <= x"0"; regfile0_data_b_regsel <= x"0"; regfile0_data_c_regsel <= instruction_word(3 downto 0);
                 regfile0_we <= '1'; regfile0_data_a_oe <= '0'; regfile0_data_b_oe <= '0';
                 fpu0_en <= '0'; fpu0_opcode <= "00";
                 cmp0_en <= '0'; cmp0_opcode  <= x"0";
                 barrel0_en <= '0'; barrel0_dir <= '0'; barrel0_mode <= "00";
                 alu0_en <= '0'; alu0_opcode <= x"0";
                 miso_oe <= '1'; we <= '0'; oe <= '1';
-                arg_oe <= '0'; argument <= x"00000000";
+                arg_oe <= '0'; argument_vect <= x"00000000";
                 int_accept <= '0'; int_completed <= '0';
                 inc_r14 <= '0'; inc_r15 <= '0'; dec_r14 <= '0'; dec_r15 <= '0';
                 address_alu_oe <= '1'; address_alu_opcode <= '1'; flag_sel <= x"0";
@@ -814,7 +750,7 @@ begin
                 barrel0_en <= '0'; barrel0_dir <= '0'; barrel0_mode <= "00";
                 alu0_en <= '0'; alu0_opcode <= x"0";
                 miso_oe <= '1'; we <= '0'; oe <= '1';
-                arg_oe <= '1'; argument <= x"00" & instruction_word(23 downto 0);
+                arg_oe <= '1'; argument_vect <= x"00" & instruction_word(23 downto 0);
                 int_accept <= '0'; int_completed <= '0';
                 inc_r14 <= '0'; inc_r15 <= '0'; dec_r14 <= '0'; dec_r15 <= '0';
                 address_alu_oe <= '0'; address_alu_opcode <= '0'; flag_sel <= x"0";
@@ -828,21 +764,21 @@ begin
                 barrel0_en <= '0'; barrel0_dir <= '0'; barrel0_mode <= "00";
                 alu0_en <= '0'; alu0_opcode <= x"0";
                 miso_oe <= '1'; we <= '0'; oe <= '1';
-                arg_oe <= '0'; argument <= x"00000000";
+                arg_oe <= '0'; argument_vect <= x"00000000";
                 int_accept <= '0'; int_completed <= '0';
                 inc_r14 <= '0'; inc_r15 <= '0'; dec_r14 <= '0'; dec_r15 <= '0';
                 address_alu_oe <= '0'; address_alu_opcode <= '0'; flag_sel <= x"0";
 
             when st=>
                 instruction_we <= '0';
-                regfile0_data_a_regsel <= x"0"; regfile0_data_b_regsel <= instruction_word(27 downto 0); regfile0_data_c_regsel <= x"0";
+                regfile0_data_a_regsel <= x"0"; regfile0_data_b_regsel <= instruction_word(27 downto 24); regfile0_data_c_regsel <= x"0";
                 regfile0_we <= '0'; regfile0_data_a_oe <= '0'; regfile0_data_b_oe <= '1';
                 fpu0_en <= '0'; fpu0_opcode <= "00";
                 cmp0_en <= '0'; cmp0_opcode  <= x"0";
                 barrel0_en <= '0'; barrel0_dir <= '0'; barrel0_mode <= "00";
                 alu0_en <= '0'; alu0_opcode <= x"0";
                 miso_oe <= '0'; we <= '1'; oe <= '0';
-                arg_oe <= '1'; argument <= x"00" & instruction_word(23 downto 0);
+                arg_oe <= '1'; argument_vect <= x"00" & instruction_word(23 downto 0);
                 int_accept <= '0'; int_completed <= '0';
                 inc_r14 <= '0'; inc_r15 <= '0'; dec_r14 <= '0'; dec_r15 <= '0';
                 address_alu_oe <= '0'; address_alu_opcode <= '0'; flag_sel <= x"0";
@@ -856,7 +792,7 @@ begin
                 barrel0_en <= '0'; barrel0_dir <= '0'; barrel0_mode <= "00";
                 alu0_en <= '0'; alu0_opcode <= x"0";
                 miso_oe <= '0'; we <= '1'; oe <= '0';
-                arg_oe <= '0'; argument <= x"00000000";
+                arg_oe <= '0'; argument_vect <= x"00000000";
                 int_accept <= '0'; int_completed <= '0';
                 inc_r14 <= '0'; inc_r15 <= '0'; dec_r14 <= '0'; dec_r15 <= '0';
                 address_alu_oe <= '0'; address_alu_opcode <= '0'; flag_sel <= x"0";
@@ -870,12 +806,12 @@ begin
                 barrel0_en <= '0'; barrel0_dir <= '0'; barrel0_mode <= "00";
                 alu0_en <= '0'; alu0_opcode <= x"0";
                 miso_oe <= '0'; we <= '0'; oe <= '0';
-                arg_oe <= '0'; argument <= x"00000000";
+                arg_oe <= '0'; argument_vect <= x"00000000";
                 int_accept <= '0'; int_completed <= '0';
                 inc_r14 <= '0'; inc_r15 <= '0'; dec_r14 <= '0'; dec_r15 <= '0';
                 address_alu_oe <= '0'; address_alu_opcode <= '0'; flag_sel <= instruction_word(27 downto 24);
 
-            when bz_set=>
+            when bz_bnz_set=>
                 instruction_we <= '0';
                 regfile0_data_a_regsel <= x"0"; regfile0_data_b_regsel <= x"0"; regfile0_data_c_regsel <= x"E";
                 regfile0_we <= '1'; regfile0_data_a_oe <= '0'; regfile0_data_b_oe <= '1';
@@ -884,7 +820,7 @@ begin
                 barrel0_en <= '0'; barrel0_dir <= '0'; barrel0_mode <= "00";
                 alu0_en <= '1'; alu0_opcode <= x"b";
                 miso_oe <= '0'; we <= '0'; oe <= '0';
-                arg_oe <= '1'; argument <= x"00" & instruction_word(23 downto 0);
+                arg_oe <= '1'; argument_vect <= x"00" & instruction_word(23 downto 0);
                 int_accept <= '0'; int_completed <= '0';
                 inc_r14 <= '0'; inc_r15 <= '0'; dec_r14 <= '0'; dec_r15 <= '0';
                 address_alu_oe <= '0'; address_alu_opcode <= '0'; flag_sel <= x"0";
@@ -898,26 +834,12 @@ begin
                 barrel0_en <= '0'; barrel0_dir <= '0'; barrel0_mode <= "00";
                 alu0_en <= '0'; alu0_opcode <= x"0";
                 miso_oe <= '0'; we <= '0'; oe <= '0';
-                arg_oe <= '0'; argument <= x"00000000";
+                arg_oe <= '0'; argument_vect <= x"00000000";
                 int_accept <= '0'; int_completed <= '0';
                 inc_r14 <= '0'; inc_r15 <= '0'; dec_r14 <= '0'; dec_r15 <= '0';
                 address_alu_oe <= '0'; address_alu_opcode <= '0'; flag_sel <= instruction_word(27 downto 24);
 
-            when bnz_set=>
-                instruction_we <= '0';
-                regfile0_data_a_regsel <= x"0"; regfile0_data_b_regsel <= x"0"; regfile0_data_c_regsel <= x"E";
-                regfile0_we <= '1'; regfile0_data_a_oe <= '0'; regfile0_data_b_oe <= '1';
-                fpu0_en <= '0'; fpu0_opcode <= "00";
-                cmp0_en <= '0'; cmp0_opcode  <= x"0";
-                barrel0_en <= '0'; barrel0_dir <= '0'; barrel0_mode <= "00";
-                alu0_en <= '1'; alu0_opcode <= x"b";
-                miso_oe <= '0'; we <= '0'; oe <= '0';
-                arg_oe <= '1'; argument <= x"00" & instruction_word(23 downto 0);
-                int_accept <= '0'; int_completed <= '0';
-                inc_r14 <= '0'; inc_r15 <= '0'; dec_r14 <= '0'; dec_r15 <= '0';
-                address_alu_oe <= '0'; address_alu_opcode <= '0'; flag_sel <= x"0";
---tady jsem zkončil a chybí tu bnzi a bzi instrukce
-            when mvi=>
+            when bzi=>
                 instruction_we <= '0';
                 regfile0_data_a_regsel <= x"0"; regfile0_data_b_regsel <= x"0"; regfile0_data_c_regsel <= x"0";
                 regfile0_we <= '0'; regfile0_data_a_oe <= '0'; regfile0_data_b_oe <= '0';
@@ -926,847 +848,889 @@ begin
                 barrel0_en <= '0'; barrel0_dir <= '0'; barrel0_mode <= "00";
                 alu0_en <= '0'; alu0_opcode <= x"0";
                 miso_oe <= '0'; we <= '0'; oe <= '0';
-                arg_oe <= '0'; argument <= x"00000000";
+                arg_oe <= '0'; argument_vect <= x"00000000";
+                int_accept <= '0'; int_completed <= '0';
+                inc_r14 <= '0'; inc_r15 <= '0'; dec_r14 <= '0'; dec_r15 <= '0';
+                address_alu_oe <= '0'; address_alu_opcode <= '0'; flag_sel <= instruction_word(3 downto 0);
+
+            when bnzi=>
+                instruction_we <= '0';
+                regfile0_data_a_regsel <= x"0"; regfile0_data_b_regsel <= x"0"; regfile0_data_c_regsel <= x"0";
+                regfile0_we <= '0'; regfile0_data_a_oe <= '0'; regfile0_data_b_oe <= '0';
+                fpu0_en <= '0'; fpu0_opcode <= "00";
+                cmp0_en <= '0'; cmp0_opcode  <= x"0";
+                barrel0_en <= '0'; barrel0_dir <= '0'; barrel0_mode <= "00";
+                alu0_en <= '0'; alu0_opcode <= x"0";
+                miso_oe <= '0'; we <= '0'; oe <= '0';
+                arg_oe <= '0'; argument_vect <= x"00000000";
+                int_accept <= '0'; int_completed <= '0';
+                inc_r14 <= '0'; inc_r15 <= '0'; dec_r14 <= '0'; dec_r15 <= '0';
+                address_alu_oe <= '0'; address_alu_opcode <= '0'; flag_sel <= instruction_word(3 downto 0);
+
+            when bzi_bnzi_set=>
+                instruction_we <= '0';
+                regfile0_data_a_regsel <= instruction_word(7 downto 4); regfile0_data_b_regsel <= x"0"; regfile0_data_c_regsel <= x"E";
+                regfile0_we <= '1'; regfile0_data_a_oe <= '1'; regfile0_data_b_oe <= '1';
+                fpu0_en <= '0'; fpu0_opcode <= "00";
+                cmp0_en <= '0'; cmp0_opcode  <= x"0";
+                barrel0_en <= '0'; barrel0_dir <= '0'; barrel0_mode <= "00";
+                alu0_en <= '1'; alu0_opcode <= x"b";
+                miso_oe <= '0'; we <= '0'; oe <= '0';
+                arg_oe <= '0'; argument_vect <= x"00000000";
+                int_accept <= '0'; int_completed <= '0';
+                inc_r14 <= '0'; inc_r15 <= '0'; dec_r14 <= '0'; dec_r15 <= '0';
+                address_alu_oe <= '0'; address_alu_opcode <= '0'; flag_sel <= x"0";
+
+            when mvi=>
+                instruction_we <= '0';
+                regfile0_data_a_regsel <= x"0"; regfile0_data_b_regsel <= instruction_word(19 downto 16); regfile0_data_c_regsel <= instruction_word(19 downto 16);
+                regfile0_we <= '1'; regfile0_data_a_oe <= '0'; regfile0_data_b_oe <= '1';
+                fpu0_en <= '0'; fpu0_opcode <= "00";
+                cmp0_en <= '0'; cmp0_opcode  <= x"0";
+                barrel0_en <= '0'; barrel0_dir <= '0'; barrel0_mode <= "00";
+                alu0_en <= '1'; alu0_opcode <= instruction_word(23 downto 20);
+                miso_oe <= '0'; we <= '0'; oe <= '0';
+                arg_oe <= '1'; argument_vect <= x"0000" & instruction_word(15 downto 0);
                 int_accept <= '0'; int_completed <= '0';
                 inc_r14 <= '0'; inc_r15 <= '0'; dec_r14 <= '0'; dec_r15 <= '0';
                 address_alu_oe <= '0'; address_alu_opcode <= '0'; flag_sel <= x"0";
 
             when mvia=>
                 instruction_we <= '0';
-                regfile0_data_a_regsel <= x"0"; regfile0_data_b_regsel <= x"0"; regfile0_data_c_regsel <= x"0";
-                regfile0_we <= '0'; regfile0_data_a_oe <= '0'; regfile0_data_b_oe <= '0';
+                regfile0_data_a_regsel <= x"0"; regfile0_data_b_regsel <= x"0"; regfile0_data_c_regsel <= instruction_word(27 downto 24);
+                regfile0_we <= '1'; regfile0_data_a_oe <= '0'; regfile0_data_b_oe <= '1';
                 fpu0_en <= '0'; fpu0_opcode <= "00";
                 cmp0_en <= '0'; cmp0_opcode  <= x"0";
                 barrel0_en <= '0'; barrel0_dir <= '0'; barrel0_mode <= "00";
-                alu0_en <= '0'; alu0_opcode <= x"0";
+                alu0_en <= '1'; alu0_opcode <= x"b";
                 miso_oe <= '0'; we <= '0'; oe <= '0';
-                arg_oe <= '0'; argument <= x"00000000";
+                arg_oe <= '1'; argument_vect <= x"00" & instruction_word(23 downto 0);
                 int_accept <= '0'; int_completed <= '0';
                 inc_r14 <= '0'; inc_r15 <= '0'; dec_r14 <= '0'; dec_r15 <= '0';
                 address_alu_oe <= '0'; address_alu_opcode <= '0'; flag_sel <= x"0";
 
             when barrel=>
                 instruction_we <= '0';
-                regfile0_data_a_regsel <= x"0"; regfile0_data_b_regsel <= x"0"; regfile0_data_c_regsel <= x"0";
-                regfile0_we <= '0'; regfile0_data_a_oe <= '0'; regfile0_data_b_oe <= '0';
+                regfile0_data_a_regsel <= instruction_word(11 downto 8); regfile0_data_b_regsel <= instruction_word(7 downto 4); regfile0_data_c_regsel <= instruction_word(3 downto 0);
+                regfile0_we <= '1'; regfile0_data_a_oe <= '1'; regfile0_data_b_oe <= '1';
                 fpu0_en <= '0'; fpu0_opcode <= "00";
                 cmp0_en <= '0'; cmp0_opcode  <= x"0";
-                barrel0_en <= '0'; barrel0_dir <= '0'; barrel0_mode <= "00";
+                barrel0_en <= '1'; barrel0_dir <= instruction_word(12); barrel0_mode <= instruction_word(14 downto 13);
                 alu0_en <= '0'; alu0_opcode <= x"0";
                 miso_oe <= '0'; we <= '0'; oe <= '0';
-                arg_oe <= '0'; argument <= x"00000000";
+                arg_oe <= '0'; argument_vect <= x"00000000";
                 int_accept <= '0'; int_completed <= '0';
                 inc_r14 <= '0'; inc_r15 <= '0'; dec_r14 <= '0'; dec_r15 <= '0';
                 address_alu_oe <= '0'; address_alu_opcode <= '0'; flag_sel <= x"0";
 
             when alu=>
                 instruction_we <= '0';
-                regfile0_data_a_regsel <= x"0"; regfile0_data_b_regsel <= x"0"; regfile0_data_c_regsel <= x"0";
-                regfile0_we <= '0'; regfile0_data_a_oe <= '0'; regfile0_data_b_oe <= '0';
+                regfile0_data_a_regsel <= instruction_word(11 downto 8); regfile0_data_b_regsel <= instruction_word(7 downto 4); regfile0_data_c_regsel <= instruction_word(3 downto 0);
+                regfile0_we <= '1'; regfile0_data_a_oe <= '1'; regfile0_data_b_oe <= '1';
                 fpu0_en <= '0'; fpu0_opcode <= "00";
                 cmp0_en <= '0'; cmp0_opcode  <= x"0";
                 barrel0_en <= '0'; barrel0_dir <= '0'; barrel0_mode <= "00";
-                alu0_en <= '0'; alu0_opcode <= x"0";
+                alu0_en <= '1'; alu0_opcode <= instruction_word(15 downto 12);
                 miso_oe <= '0'; we <= '0'; oe <= '0';
-                arg_oe <= '0'; argument <= x"00000000";
+                arg_oe <= '0'; argument_vect <= x"00000000";
                 int_accept <= '0'; int_completed <= '0';
                 inc_r14 <= '0'; inc_r15 <= '0'; dec_r14 <= '0'; dec_r15 <= '0';
                 address_alu_oe <= '0'; address_alu_opcode <= '0'; flag_sel <= x"0";
 
             when cmpi=>
                 instruction_we <= '0';
-                regfile0_data_a_regsel <= x"0"; regfile0_data_b_regsel <= x"0"; regfile0_data_c_regsel <= x"0";
-                regfile0_we <= '0'; regfile0_data_a_oe <= '0'; regfile0_data_b_oe <= '0';
+                regfile0_data_a_regsel <= instruction_word(11 downto 8); regfile0_data_b_regsel <= instruction_word(7 downto 4); regfile0_data_c_regsel <= instruction_word(3 downto 0);
+                regfile0_we <= '1'; regfile0_data_a_oe <= '1'; regfile0_data_b_oe <= '1';
                 fpu0_en <= '0'; fpu0_opcode <= "00";
-                cmp0_en <= '0'; cmp0_opcode  <= x"0";
+                cmp0_en <= '1'; cmp0_opcode  <= instruction_word(15 downto 12);
                 barrel0_en <= '0'; barrel0_dir <= '0'; barrel0_mode <= "00";
                 alu0_en <= '0'; alu0_opcode <= x"0";
                 miso_oe <= '0'; we <= '0'; oe <= '0';
-                arg_oe <= '0'; argument <= x"00000000";
+                arg_oe <= '0'; argument_vect <= x"00000000";
                 int_accept <= '0'; int_completed <= '0';
                 inc_r14 <= '0'; inc_r15 <= '0'; dec_r14 <= '0'; dec_r15 <= '0';
                 address_alu_oe <= '0'; address_alu_opcode <= '0'; flag_sel <= x"0";
 
             when cmpf=>
                 instruction_we <= '0';
-                regfile0_data_a_regsel <= x"0"; regfile0_data_b_regsel <= x"0"; regfile0_data_c_regsel <= x"0";
-                regfile0_we <= '0'; regfile0_data_a_oe <= '0'; regfile0_data_b_oe <= '0';
+                regfile0_data_a_regsel <= instruction_word(11 downto 8); regfile0_data_b_regsel <= instruction_word(7 downto 4); regfile0_data_c_regsel <= instruction_word(3 downto 0);
+                regfile0_we <= '0'; regfile0_data_a_oe <= '1'; regfile0_data_b_oe <= '1';
                 fpu0_en <= '0'; fpu0_opcode <= "00";
-                cmp0_en <= '0'; cmp0_opcode  <= x"0";
+                cmp0_en <= '1'; cmp0_opcode  <= instruction_word(15 downto 12);
                 barrel0_en <= '0'; barrel0_dir <= '0'; barrel0_mode <= "00";
                 alu0_en <= '0'; alu0_opcode <= x"0";
                 miso_oe <= '0'; we <= '0'; oe <= '0';
-                arg_oe <= '0'; argument <= x"00000000";
+                arg_oe <= '0'; argument_vect <= x"00000000";
                 int_accept <= '0'; int_completed <= '0';
                 inc_r14 <= '0'; inc_r15 <= '0'; dec_r14 <= '0'; dec_r15 <= '0';
                 address_alu_oe <= '0'; address_alu_opcode <= '0'; flag_sel <= x"0";
 
             when cmpf_2=>
                 instruction_we <= '0';
-                regfile0_data_a_regsel <= x"0"; regfile0_data_b_regsel <= x"0"; regfile0_data_c_regsel <= x"0";
-                regfile0_we <= '0'; regfile0_data_a_oe <= '0'; regfile0_data_b_oe <= '0';
+                regfile0_data_a_regsel <= instruction_word(11 downto 8); regfile0_data_b_regsel <= instruction_word(7 downto 4); regfile0_data_c_regsel <= instruction_word(3 downto 0);
+                regfile0_we <= '1'; regfile0_data_a_oe <= '1'; regfile0_data_b_oe <= '1';
                 fpu0_en <= '0'; fpu0_opcode <= "00";
-                cmp0_en <= '0'; cmp0_opcode  <= x"0";
+                cmp0_en <= '1'; cmp0_opcode  <= instruction_word(15 downto 12);
                 barrel0_en <= '0'; barrel0_dir <= '0'; barrel0_mode <= "00";
                 alu0_en <= '0'; alu0_opcode <= x"0";
                 miso_oe <= '0'; we <= '0'; oe <= '0';
-                arg_oe <= '0'; argument <= x"00000000";
+                arg_oe <= '0'; argument_vect <= x"00000000";
                 int_accept <= '0'; int_completed <= '0';
                 inc_r14 <= '0'; inc_r15 <= '0'; dec_r14 <= '0'; dec_r15 <= '0';
                 address_alu_oe <= '0'; address_alu_opcode <= '0'; flag_sel <= x"0";
 
             when div=>
                 instruction_we <= '0';
-                regfile0_data_a_regsel <= x"0"; regfile0_data_b_regsel <= x"0"; regfile0_data_c_regsel <= x"0";
-                regfile0_we <= '0'; regfile0_data_a_oe <= '0'; regfile0_data_b_oe <= '0';
+                regfile0_data_a_regsel <= instruction_word(11 downto 8); regfile0_data_b_regsel <= instruction_word(7 downto 4); regfile0_data_c_regsel <= instruction_word(3 downto 0);
+                regfile0_we <= '0'; regfile0_data_a_oe <= '1'; regfile0_data_b_oe <= '1';
                 fpu0_en <= '0'; fpu0_opcode <= "00";
                 cmp0_en <= '0'; cmp0_opcode  <= x"0";
                 barrel0_en <= '0'; barrel0_dir <= '0'; barrel0_mode <= "00";
-                alu0_en <= '0'; alu0_opcode <= x"0";
+                alu0_en <= '1'; alu0_opcode <= instruction_word(15 downto 12);
                 miso_oe <= '0'; we <= '0'; oe <= '0';
-                arg_oe <= '0'; argument <= x"00000000";
+                arg_oe <= '0'; argument_vect <= x"00000000";
                 int_accept <= '0'; int_completed <= '0';
                 inc_r14 <= '0'; inc_r15 <= '0'; dec_r14 <= '0'; dec_r15 <= '0';
                 address_alu_oe <= '0'; address_alu_opcode <= '0'; flag_sel <= x"0";
 
             when div_w0=>
                 instruction_we <= '0';
-                regfile0_data_a_regsel <= x"0"; regfile0_data_b_regsel <= x"0"; regfile0_data_c_regsel <= x"0";
-                regfile0_we <= '0'; regfile0_data_a_oe <= '0'; regfile0_data_b_oe <= '0';
+                regfile0_data_a_regsel <= instruction_word(11 downto 8); regfile0_data_b_regsel <= instruction_word(7 downto 4); regfile0_data_c_regsel <= instruction_word(3 downto 0);
+                regfile0_we <= '0'; regfile0_data_a_oe <= '1'; regfile0_data_b_oe <= '1';
                 fpu0_en <= '0'; fpu0_opcode <= "00";
                 cmp0_en <= '0'; cmp0_opcode  <= x"0";
                 barrel0_en <= '0'; barrel0_dir <= '0'; barrel0_mode <= "00";
-                alu0_en <= '0'; alu0_opcode <= x"0";
+                alu0_en <= '1'; alu0_opcode <= instruction_word(15 downto 12);
                 miso_oe <= '0'; we <= '0'; oe <= '0';
-                arg_oe <= '0'; argument <= x"00000000";
+                arg_oe <= '0'; argument_vect <= x"00000000";
                 int_accept <= '0'; int_completed <= '0';
                 inc_r14 <= '0'; inc_r15 <= '0'; dec_r14 <= '0'; dec_r15 <= '0';
                 address_alu_oe <= '0'; address_alu_opcode <= '0'; flag_sel <= x"0";
 
             when div_w1=>
                 instruction_we <= '0';
-                regfile0_data_a_regsel <= x"0"; regfile0_data_b_regsel <= x"0"; regfile0_data_c_regsel <= x"0";
-                regfile0_we <= '0'; regfile0_data_a_oe <= '0'; regfile0_data_b_oe <= '0';
+                regfile0_data_a_regsel <= instruction_word(11 downto 8); regfile0_data_b_regsel <= instruction_word(7 downto 4); regfile0_data_c_regsel <= instruction_word(3 downto 0);
+                regfile0_we <= '0'; regfile0_data_a_oe <= '1'; regfile0_data_b_oe <= '1';
                 fpu0_en <= '0'; fpu0_opcode <= "00";
                 cmp0_en <= '0'; cmp0_opcode  <= x"0";
                 barrel0_en <= '0'; barrel0_dir <= '0'; barrel0_mode <= "00";
-                alu0_en <= '0'; alu0_opcode <= x"0";
+                alu0_en <= '1'; alu0_opcode <= instruction_word(15 downto 12);
                 miso_oe <= '0'; we <= '0'; oe <= '0';
-                arg_oe <= '0'; argument <= x"00000000";
+                arg_oe <= '0'; argument_vect <= x"00000000";
                 int_accept <= '0'; int_completed <= '0';
                 inc_r14 <= '0'; inc_r15 <= '0'; dec_r14 <= '0'; dec_r15 <= '0';
                 address_alu_oe <= '0'; address_alu_opcode <= '0'; flag_sel <= x"0";
 
             when div_w2=>
                 instruction_we <= '0';
-                regfile0_data_a_regsel <= x"0"; regfile0_data_b_regsel <= x"0"; regfile0_data_c_regsel <= x"0";
-                regfile0_we <= '0'; regfile0_data_a_oe <= '0'; regfile0_data_b_oe <= '0';
+                regfile0_data_a_regsel <= instruction_word(11 downto 8); regfile0_data_b_regsel <= instruction_word(7 downto 4); regfile0_data_c_regsel <= instruction_word(3 downto 0);
+                regfile0_we <= '0'; regfile0_data_a_oe <= '1'; regfile0_data_b_oe <= '1';
                 fpu0_en <= '0'; fpu0_opcode <= "00";
                 cmp0_en <= '0'; cmp0_opcode  <= x"0";
                 barrel0_en <= '0'; barrel0_dir <= '0'; barrel0_mode <= "00";
-                alu0_en <= '0'; alu0_opcode <= x"0";
+                alu0_en <= '1'; alu0_opcode <= instruction_word(15 downto 12);
                 miso_oe <= '0'; we <= '0'; oe <= '0';
-                arg_oe <= '0'; argument <= x"00000000";
+                arg_oe <= '0'; argument_vect <= x"00000000";
                 int_accept <= '0'; int_completed <= '0';
                 inc_r14 <= '0'; inc_r15 <= '0'; dec_r14 <= '0'; dec_r15 <= '0';
                 address_alu_oe <= '0'; address_alu_opcode <= '0'; flag_sel <= x"0";
 
             when div_w3=>
                 instruction_we <= '0';
-                regfile0_data_a_regsel <= x"0"; regfile0_data_b_regsel <= x"0"; regfile0_data_c_regsel <= x"0";
-                regfile0_we <= '0'; regfile0_data_a_oe <= '0'; regfile0_data_b_oe <= '0';
+                regfile0_data_a_regsel <= instruction_word(11 downto 8); regfile0_data_b_regsel <= instruction_word(7 downto 4); regfile0_data_c_regsel <= instruction_word(3 downto 0);
+                regfile0_we <= '0'; regfile0_data_a_oe <= '1'; regfile0_data_b_oe <= '1';
                 fpu0_en <= '0'; fpu0_opcode <= "00";
                 cmp0_en <= '0'; cmp0_opcode  <= x"0";
                 barrel0_en <= '0'; barrel0_dir <= '0'; barrel0_mode <= "00";
-                alu0_en <= '0'; alu0_opcode <= x"0";
+                alu0_en <= '1'; alu0_opcode <= instruction_word(15 downto 12);
                 miso_oe <= '0'; we <= '0'; oe <= '0';
-                arg_oe <= '0'; argument <= x"00000000";
+                arg_oe <= '0'; argument_vect <= x"00000000";
                 int_accept <= '0'; int_completed <= '0';
                 inc_r14 <= '0'; inc_r15 <= '0'; dec_r14 <= '0'; dec_r15 <= '0';
                 address_alu_oe <= '0'; address_alu_opcode <= '0'; flag_sel <= x"0";
 
             when div_w4=>
                 instruction_we <= '0';
-                regfile0_data_a_regsel <= x"0"; regfile0_data_b_regsel <= x"0"; regfile0_data_c_regsel <= x"0";
-                regfile0_we <= '0'; regfile0_data_a_oe <= '0'; regfile0_data_b_oe <= '0';
+                regfile0_data_a_regsel <= instruction_word(11 downto 8); regfile0_data_b_regsel <= instruction_word(7 downto 4); regfile0_data_c_regsel <= instruction_word(3 downto 0);
+                regfile0_we <= '0'; regfile0_data_a_oe <= '1'; regfile0_data_b_oe <= '1';
                 fpu0_en <= '0'; fpu0_opcode <= "00";
                 cmp0_en <= '0'; cmp0_opcode  <= x"0";
                 barrel0_en <= '0'; barrel0_dir <= '0'; barrel0_mode <= "00";
-                alu0_en <= '0'; alu0_opcode <= x"0";
+                alu0_en <= '1'; alu0_opcode <= instruction_word(15 downto 12);
                 miso_oe <= '0'; we <= '0'; oe <= '0';
-                arg_oe <= '0'; argument <= x"00000000";
+                arg_oe <= '0'; argument_vect <= x"00000000";
                 int_accept <= '0'; int_completed <= '0';
                 inc_r14 <= '0'; inc_r15 <= '0'; dec_r14 <= '0'; dec_r15 <= '0';
                 address_alu_oe <= '0'; address_alu_opcode <= '0'; flag_sel <= x"0";
 
             when div_w5=>
                 instruction_we <= '0';
-                regfile0_data_a_regsel <= x"0"; regfile0_data_b_regsel <= x"0"; regfile0_data_c_regsel <= x"0";
-                regfile0_we <= '0'; regfile0_data_a_oe <= '0'; regfile0_data_b_oe <= '0';
+                regfile0_data_a_regsel <= instruction_word(11 downto 8); regfile0_data_b_regsel <= instruction_word(7 downto 4); regfile0_data_c_regsel <= instruction_word(3 downto 0);
+                regfile0_we <= '0'; regfile0_data_a_oe <= '1'; regfile0_data_b_oe <= '1';
                 fpu0_en <= '0'; fpu0_opcode <= "00";
                 cmp0_en <= '0'; cmp0_opcode  <= x"0";
                 barrel0_en <= '0'; barrel0_dir <= '0'; barrel0_mode <= "00";
-                alu0_en <= '0'; alu0_opcode <= x"0";
+                alu0_en <= '1'; alu0_opcode <= instruction_word(15 downto 12);
                 miso_oe <= '0'; we <= '0'; oe <= '0';
-                arg_oe <= '0'; argument <= x"00000000";
+                arg_oe <= '0'; argument_vect <= x"00000000";
                 int_accept <= '0'; int_completed <= '0';
                 inc_r14 <= '0'; inc_r15 <= '0'; dec_r14 <= '0'; dec_r15 <= '0';
                 address_alu_oe <= '0'; address_alu_opcode <= '0'; flag_sel <= x"0";
 
             when div_w6=>
                 instruction_we <= '0';
-                regfile0_data_a_regsel <= x"0"; regfile0_data_b_regsel <= x"0"; regfile0_data_c_regsel <= x"0";
-                regfile0_we <= '0'; regfile0_data_a_oe <= '0'; regfile0_data_b_oe <= '0';
+                regfile0_data_a_regsel <= instruction_word(11 downto 8); regfile0_data_b_regsel <= instruction_word(7 downto 4); regfile0_data_c_regsel <= instruction_word(3 downto 0);
+                regfile0_we <= '0'; regfile0_data_a_oe <= '1'; regfile0_data_b_oe <= '1';
                 fpu0_en <= '0'; fpu0_opcode <= "00";
                 cmp0_en <= '0'; cmp0_opcode  <= x"0";
                 barrel0_en <= '0'; barrel0_dir <= '0'; barrel0_mode <= "00";
-                alu0_en <= '0'; alu0_opcode <= x"0";
+                alu0_en <= '1'; alu0_opcode <= instruction_word(15 downto 12);
                 miso_oe <= '0'; we <= '0'; oe <= '0';
-                arg_oe <= '0'; argument <= x"00000000";
+                arg_oe <= '0'; argument_vect <= x"00000000";
                 int_accept <= '0'; int_completed <= '0';
                 inc_r14 <= '0'; inc_r15 <= '0'; dec_r14 <= '0'; dec_r15 <= '0';
                 address_alu_oe <= '0'; address_alu_opcode <= '0'; flag_sel <= x"0";
 
             when div_w7=>
                 instruction_we <= '0';
-                regfile0_data_a_regsel <= x"0"; regfile0_data_b_regsel <= x"0"; regfile0_data_c_regsel <= x"0";
-                regfile0_we <= '0'; regfile0_data_a_oe <= '0'; regfile0_data_b_oe <= '0';
+                regfile0_data_a_regsel <= instruction_word(11 downto 8); regfile0_data_b_regsel <= instruction_word(7 downto 4); regfile0_data_c_regsel <= instruction_word(3 downto 0);
+                regfile0_we <= '0'; regfile0_data_a_oe <= '1'; regfile0_data_b_oe <= '1';
                 fpu0_en <= '0'; fpu0_opcode <= "00";
                 cmp0_en <= '0'; cmp0_opcode  <= x"0";
                 barrel0_en <= '0'; barrel0_dir <= '0'; barrel0_mode <= "00";
-                alu0_en <= '0'; alu0_opcode <= x"0";
+                alu0_en <= '1'; alu0_opcode <= instruction_word(15 downto 12);
                 miso_oe <= '0'; we <= '0'; oe <= '0';
-                arg_oe <= '0'; argument <= x"00000000";
+                arg_oe <= '0'; argument_vect <= x"00000000";
                 int_accept <= '0'; int_completed <= '0';
                 inc_r14 <= '0'; inc_r15 <= '0'; dec_r14 <= '0'; dec_r15 <= '0';
                 address_alu_oe <= '0'; address_alu_opcode <= '0'; flag_sel <= x"0";
 
             when div_w8=>
                 instruction_we <= '0';
-                regfile0_data_a_regsel <= x"0"; regfile0_data_b_regsel <= x"0"; regfile0_data_c_regsel <= x"0";
-                regfile0_we <= '0'; regfile0_data_a_oe <= '0'; regfile0_data_b_oe <= '0';
+                regfile0_data_a_regsel <= instruction_word(11 downto 8); regfile0_data_b_regsel <= instruction_word(7 downto 4); regfile0_data_c_regsel <= instruction_word(3 downto 0);
+                regfile0_we <= '0'; regfile0_data_a_oe <= '1'; regfile0_data_b_oe <= '1';
                 fpu0_en <= '0'; fpu0_opcode <= "00";
                 cmp0_en <= '0'; cmp0_opcode  <= x"0";
                 barrel0_en <= '0'; barrel0_dir <= '0'; barrel0_mode <= "00";
-                alu0_en <= '0'; alu0_opcode <= x"0";
+                alu0_en <= '1'; alu0_opcode <= instruction_word(15 downto 12);
                 miso_oe <= '0'; we <= '0'; oe <= '0';
-                arg_oe <= '0'; argument <= x"00000000";
+                arg_oe <= '0'; argument_vect <= x"00000000";
                 int_accept <= '0'; int_completed <= '0';
                 inc_r14 <= '0'; inc_r15 <= '0'; dec_r14 <= '0'; dec_r15 <= '0';
                 address_alu_oe <= '0'; address_alu_opcode <= '0'; flag_sel <= x"0";
 
             when div_w9=>
                 instruction_we <= '0';
-                regfile0_data_a_regsel <= x"0"; regfile0_data_b_regsel <= x"0"; regfile0_data_c_regsel <= x"0";
-                regfile0_we <= '0'; regfile0_data_a_oe <= '0'; regfile0_data_b_oe <= '0';
+                regfile0_data_a_regsel <= instruction_word(11 downto 8); regfile0_data_b_regsel <= instruction_word(7 downto 4); regfile0_data_c_regsel <= instruction_word(3 downto 0);
+                regfile0_we <= '0'; regfile0_data_a_oe <= '1'; regfile0_data_b_oe <= '1';
                 fpu0_en <= '0'; fpu0_opcode <= "00";
                 cmp0_en <= '0'; cmp0_opcode  <= x"0";
                 barrel0_en <= '0'; barrel0_dir <= '0'; barrel0_mode <= "00";
-                alu0_en <= '0'; alu0_opcode <= x"0";
+                alu0_en <= '1'; alu0_opcode <= instruction_word(15 downto 12);
                 miso_oe <= '0'; we <= '0'; oe <= '0';
-                arg_oe <= '0'; argument <= x"00000000";
+                arg_oe <= '0'; argument_vect <= x"00000000";
                 int_accept <= '0'; int_completed <= '0';
                 inc_r14 <= '0'; inc_r15 <= '0'; dec_r14 <= '0'; dec_r15 <= '0';
                 address_alu_oe <= '0'; address_alu_opcode <= '0'; flag_sel <= x"0";
 
             when div_w10=>
                 instruction_we <= '0';
-                regfile0_data_a_regsel <= x"0"; regfile0_data_b_regsel <= x"0"; regfile0_data_c_regsel <= x"0";
-                regfile0_we <= '0'; regfile0_data_a_oe <= '0'; regfile0_data_b_oe <= '0';
+                regfile0_data_a_regsel <= instruction_word(11 downto 8); regfile0_data_b_regsel <= instruction_word(7 downto 4); regfile0_data_c_regsel <= instruction_word(3 downto 0);
+                regfile0_we <= '0'; regfile0_data_a_oe <= '1'; regfile0_data_b_oe <= '1';
                 fpu0_en <= '0'; fpu0_opcode <= "00";
                 cmp0_en <= '0'; cmp0_opcode  <= x"0";
                 barrel0_en <= '0'; barrel0_dir <= '0'; barrel0_mode <= "00";
-                alu0_en <= '0'; alu0_opcode <= x"0";
+                alu0_en <= '1'; alu0_opcode <= instruction_word(15 downto 12);
                 miso_oe <= '0'; we <= '0'; oe <= '0';
-                arg_oe <= '0'; argument <= x"00000000";
+                arg_oe <= '0'; argument_vect <= x"00000000";
                 int_accept <= '0'; int_completed <= '0';
                 inc_r14 <= '0'; inc_r15 <= '0'; dec_r14 <= '0'; dec_r15 <= '0';
                 address_alu_oe <= '0'; address_alu_opcode <= '0'; flag_sel <= x"0";
 
             when div_w11=>
                 instruction_we <= '0';
-                regfile0_data_a_regsel <= x"0"; regfile0_data_b_regsel <= x"0"; regfile0_data_c_regsel <= x"0";
-                regfile0_we <= '0'; regfile0_data_a_oe <= '0'; regfile0_data_b_oe <= '0';
+                regfile0_data_a_regsel <= instruction_word(11 downto 8); regfile0_data_b_regsel <= instruction_word(7 downto 4); regfile0_data_c_regsel <= instruction_word(3 downto 0);
+                regfile0_we <= '0'; regfile0_data_a_oe <= '1'; regfile0_data_b_oe <= '1';
                 fpu0_en <= '0'; fpu0_opcode <= "00";
                 cmp0_en <= '0'; cmp0_opcode  <= x"0";
                 barrel0_en <= '0'; barrel0_dir <= '0'; barrel0_mode <= "00";
-                alu0_en <= '0'; alu0_opcode <= x"0";
+                alu0_en <= '1'; alu0_opcode <= instruction_word(15 downto 12);
                 miso_oe <= '0'; we <= '0'; oe <= '0';
-                arg_oe <= '0'; argument <= x"00000000";
+                arg_oe <= '0'; argument_vect <= x"00000000";
                 int_accept <= '0'; int_completed <= '0';
                 inc_r14 <= '0'; inc_r15 <= '0'; dec_r14 <= '0'; dec_r15 <= '0';
                 address_alu_oe <= '0'; address_alu_opcode <= '0'; flag_sel <= x"0";
 
             when div_w12=>
                 instruction_we <= '0';
-                regfile0_data_a_regsel <= x"0"; regfile0_data_b_regsel <= x"0"; regfile0_data_c_regsel <= x"0";
-                regfile0_we <= '0'; regfile0_data_a_oe <= '0'; regfile0_data_b_oe <= '0';
+                regfile0_data_a_regsel <= instruction_word(11 downto 8); regfile0_data_b_regsel <= instruction_word(7 downto 4); regfile0_data_c_regsel <= instruction_word(3 downto 0);
+                regfile0_we <= '0'; regfile0_data_a_oe <= '1'; regfile0_data_b_oe <= '1';
                 fpu0_en <= '0'; fpu0_opcode <= "00";
                 cmp0_en <= '0'; cmp0_opcode  <= x"0";
                 barrel0_en <= '0'; barrel0_dir <= '0'; barrel0_mode <= "00";
-                alu0_en <= '0'; alu0_opcode <= x"0";
+                alu0_en <= '1'; alu0_opcode <= instruction_word(15 downto 12);
                 miso_oe <= '0'; we <= '0'; oe <= '0';
-                arg_oe <= '0'; argument <= x"00000000";
+                arg_oe <= '0'; argument_vect <= x"00000000";
                 int_accept <= '0'; int_completed <= '0';
                 inc_r14 <= '0'; inc_r15 <= '0'; dec_r14 <= '0'; dec_r15 <= '0';
                 address_alu_oe <= '0'; address_alu_opcode <= '0'; flag_sel <= x"0";
 
             when div_w13=>
                 instruction_we <= '0';
-                regfile0_data_a_regsel <= x"0"; regfile0_data_b_regsel <= x"0"; regfile0_data_c_regsel <= x"0";
-                regfile0_we <= '0'; regfile0_data_a_oe <= '0'; regfile0_data_b_oe <= '0';
+                regfile0_data_a_regsel <= instruction_word(11 downto 8); regfile0_data_b_regsel <= instruction_word(7 downto 4); regfile0_data_c_regsel <= instruction_word(3 downto 0);
+                regfile0_we <= '0'; regfile0_data_a_oe <= '1'; regfile0_data_b_oe <= '1';
                 fpu0_en <= '0'; fpu0_opcode <= "00";
                 cmp0_en <= '0'; cmp0_opcode  <= x"0";
                 barrel0_en <= '0'; barrel0_dir <= '0'; barrel0_mode <= "00";
-                alu0_en <= '0'; alu0_opcode <= x"0";
+                alu0_en <= '1'; alu0_opcode <= instruction_word(15 downto 12);
                 miso_oe <= '0'; we <= '0'; oe <= '0';
-                arg_oe <= '0'; argument <= x"00000000";
+                arg_oe <= '0'; argument_vect <= x"00000000";
                 int_accept <= '0'; int_completed <= '0';
                 inc_r14 <= '0'; inc_r15 <= '0'; dec_r14 <= '0'; dec_r15 <= '0';
                 address_alu_oe <= '0'; address_alu_opcode <= '0'; flag_sel <= x"0";
 
             when div_w14=>
                 instruction_we <= '0';
-                regfile0_data_a_regsel <= x"0"; regfile0_data_b_regsel <= x"0"; regfile0_data_c_regsel <= x"0";
-                regfile0_we <= '0'; regfile0_data_a_oe <= '0'; regfile0_data_b_oe <= '0';
+                regfile0_data_a_regsel <= instruction_word(11 downto 8); regfile0_data_b_regsel <= instruction_word(7 downto 4); regfile0_data_c_regsel <= instruction_word(3 downto 0);
+                regfile0_we <= '0'; regfile0_data_a_oe <= '1'; regfile0_data_b_oe <= '1';
                 fpu0_en <= '0'; fpu0_opcode <= "00";
                 cmp0_en <= '0'; cmp0_opcode  <= x"0";
                 barrel0_en <= '0'; barrel0_dir <= '0'; barrel0_mode <= "00";
-                alu0_en <= '0'; alu0_opcode <= x"0";
+                alu0_en <= '1'; alu0_opcode <= instruction_word(15 downto 12);
                 miso_oe <= '0'; we <= '0'; oe <= '0';
-                arg_oe <= '0'; argument <= x"00000000";
+                arg_oe <= '0'; argument_vect <= x"00000000";
                 int_accept <= '0'; int_completed <= '0';
                 inc_r14 <= '0'; inc_r15 <= '0'; dec_r14 <= '0'; dec_r15 <= '0';
                 address_alu_oe <= '0'; address_alu_opcode <= '0'; flag_sel <= x"0";
 
             when div_w15=>
                 instruction_we <= '0';
-                regfile0_data_a_regsel <= x"0"; regfile0_data_b_regsel <= x"0"; regfile0_data_c_regsel <= x"0";
-                regfile0_we <= '0'; regfile0_data_a_oe <= '0'; regfile0_data_b_oe <= '0';
+                regfile0_data_a_regsel <= instruction_word(11 downto 8); regfile0_data_b_regsel <= instruction_word(7 downto 4); regfile0_data_c_regsel <= instruction_word(3 downto 0);
+                regfile0_we <= '0'; regfile0_data_a_oe <= '1'; regfile0_data_b_oe <= '1';
                 fpu0_en <= '0'; fpu0_opcode <= "00";
                 cmp0_en <= '0'; cmp0_opcode  <= x"0";
                 barrel0_en <= '0'; barrel0_dir <= '0'; barrel0_mode <= "00";
-                alu0_en <= '0'; alu0_opcode <= x"0";
+                alu0_en <= '1'; alu0_opcode <= instruction_word(15 downto 12);
                 miso_oe <= '0'; we <= '0'; oe <= '0';
-                arg_oe <= '0'; argument <= x"00000000";
+                arg_oe <= '0'; argument_vect <= x"00000000";
                 int_accept <= '0'; int_completed <= '0';
                 inc_r14 <= '0'; inc_r15 <= '0'; dec_r14 <= '0'; dec_r15 <= '0';
                 address_alu_oe <= '0'; address_alu_opcode <= '0'; flag_sel <= x"0";
 
             when div_w16=>
                 instruction_we <= '0';
-                regfile0_data_a_regsel <= x"0"; regfile0_data_b_regsel <= x"0"; regfile0_data_c_regsel <= x"0";
-                regfile0_we <= '0'; regfile0_data_a_oe <= '0'; regfile0_data_b_oe <= '0';
+                regfile0_data_a_regsel <= instruction_word(11 downto 8); regfile0_data_b_regsel <= instruction_word(7 downto 4); regfile0_data_c_regsel <= instruction_word(3 downto 0);
+                regfile0_we <= '0'; regfile0_data_a_oe <= '1'; regfile0_data_b_oe <= '1';
                 fpu0_en <= '0'; fpu0_opcode <= "00";
                 cmp0_en <= '0'; cmp0_opcode  <= x"0";
                 barrel0_en <= '0'; barrel0_dir <= '0'; barrel0_mode <= "00";
-                alu0_en <= '0'; alu0_opcode <= x"0";
+                alu0_en <= '1'; alu0_opcode <= instruction_word(15 downto 12);
                 miso_oe <= '0'; we <= '0'; oe <= '0';
-                arg_oe <= '0'; argument <= x"00000000";
+                arg_oe <= '0'; argument_vect <= x"00000000";
                 int_accept <= '0'; int_completed <= '0';
                 inc_r14 <= '0'; inc_r15 <= '0'; dec_r14 <= '0'; dec_r15 <= '0';
                 address_alu_oe <= '0'; address_alu_opcode <= '0'; flag_sel <= x"0";
 
             when div_w17=>
                 instruction_we <= '0';
-                regfile0_data_a_regsel <= x"0"; regfile0_data_b_regsel <= x"0"; regfile0_data_c_regsel <= x"0";
-                regfile0_we <= '0'; regfile0_data_a_oe <= '0'; regfile0_data_b_oe <= '0';
+                regfile0_data_a_regsel <= instruction_word(11 downto 8); regfile0_data_b_regsel <= instruction_word(7 downto 4); regfile0_data_c_regsel <= instruction_word(3 downto 0);
+                regfile0_we <= '0'; regfile0_data_a_oe <= '1'; regfile0_data_b_oe <= '1';
                 fpu0_en <= '0'; fpu0_opcode <= "00";
                 cmp0_en <= '0'; cmp0_opcode  <= x"0";
                 barrel0_en <= '0'; barrel0_dir <= '0'; barrel0_mode <= "00";
-                alu0_en <= '0'; alu0_opcode <= x"0";
+                alu0_en <= '1'; alu0_opcode <= instruction_word(15 downto 12);
                 miso_oe <= '0'; we <= '0'; oe <= '0';
-                arg_oe <= '0'; argument <= x"00000000";
+                arg_oe <= '0'; argument_vect <= x"00000000";
                 int_accept <= '0'; int_completed <= '0';
                 inc_r14 <= '0'; inc_r15 <= '0'; dec_r14 <= '0'; dec_r15 <= '0';
                 address_alu_oe <= '0'; address_alu_opcode <= '0'; flag_sel <= x"0";
 
             when div_w18=>
                 instruction_we <= '0';
-                regfile0_data_a_regsel <= x"0"; regfile0_data_b_regsel <= x"0"; regfile0_data_c_regsel <= x"0";
-                regfile0_we <= '0'; regfile0_data_a_oe <= '0'; regfile0_data_b_oe <= '0';
+                regfile0_data_a_regsel <= instruction_word(11 downto 8); regfile0_data_b_regsel <= instruction_word(7 downto 4); regfile0_data_c_regsel <= instruction_word(3 downto 0);
+                regfile0_we <= '0'; regfile0_data_a_oe <= '1'; regfile0_data_b_oe <= '1';
                 fpu0_en <= '0'; fpu0_opcode <= "00";
                 cmp0_en <= '0'; cmp0_opcode  <= x"0";
                 barrel0_en <= '0'; barrel0_dir <= '0'; barrel0_mode <= "00";
-                alu0_en <= '0'; alu0_opcode <= x"0";
+                alu0_en <= '1'; alu0_opcode <= instruction_word(15 downto 12);
                 miso_oe <= '0'; we <= '0'; oe <= '0';
-                arg_oe <= '0'; argument <= x"00000000";
+                arg_oe <= '0'; argument_vect <= x"00000000";
                 int_accept <= '0'; int_completed <= '0';
                 inc_r14 <= '0'; inc_r15 <= '0'; dec_r14 <= '0'; dec_r15 <= '0';
                 address_alu_oe <= '0'; address_alu_opcode <= '0'; flag_sel <= x"0";
 
             when div_w19=>
                 instruction_we <= '0';
-                regfile0_data_a_regsel <= x"0"; regfile0_data_b_regsel <= x"0"; regfile0_data_c_regsel <= x"0";
-                regfile0_we <= '0'; regfile0_data_a_oe <= '0'; regfile0_data_b_oe <= '0';
+                regfile0_data_a_regsel <= instruction_word(11 downto 8); regfile0_data_b_regsel <= instruction_word(7 downto 4); regfile0_data_c_regsel <= instruction_word(3 downto 0);
+                regfile0_we <= '0'; regfile0_data_a_oe <= '1'; regfile0_data_b_oe <= '1';
                 fpu0_en <= '0'; fpu0_opcode <= "00";
                 cmp0_en <= '0'; cmp0_opcode  <= x"0";
                 barrel0_en <= '0'; barrel0_dir <= '0'; barrel0_mode <= "00";
-                alu0_en <= '0'; alu0_opcode <= x"0";
+                alu0_en <= '1'; alu0_opcode <= instruction_word(15 downto 12);
                 miso_oe <= '0'; we <= '0'; oe <= '0';
-                arg_oe <= '0'; argument <= x"00000000";
+                arg_oe <= '0'; argument_vect <= x"00000000";
                 int_accept <= '0'; int_completed <= '0';
                 inc_r14 <= '0'; inc_r15 <= '0'; dec_r14 <= '0'; dec_r15 <= '0';
                 address_alu_oe <= '0'; address_alu_opcode <= '0'; flag_sel <= x"0";
 
             when div_w20=>
                 instruction_we <= '0';
-                regfile0_data_a_regsel <= x"0"; regfile0_data_b_regsel <= x"0"; regfile0_data_c_regsel <= x"0";
-                regfile0_we <= '0'; regfile0_data_a_oe <= '0'; regfile0_data_b_oe <= '0';
+                regfile0_data_a_regsel <= instruction_word(11 downto 8); regfile0_data_b_regsel <= instruction_word(7 downto 4); regfile0_data_c_regsel <= instruction_word(3 downto 0);
+                regfile0_we <= '0'; regfile0_data_a_oe <= '1'; regfile0_data_b_oe <= '1';
                 fpu0_en <= '0'; fpu0_opcode <= "00";
                 cmp0_en <= '0'; cmp0_opcode  <= x"0";
                 barrel0_en <= '0'; barrel0_dir <= '0'; barrel0_mode <= "00";
-                alu0_en <= '0'; alu0_opcode <= x"0";
+                alu0_en <= '1'; alu0_opcode <= instruction_word(15 downto 12);
                 miso_oe <= '0'; we <= '0'; oe <= '0';
-                arg_oe <= '0'; argument <= x"00000000";
+                arg_oe <= '0'; argument_vect <= x"00000000";
                 int_accept <= '0'; int_completed <= '0';
                 inc_r14 <= '0'; inc_r15 <= '0'; dec_r14 <= '0'; dec_r15 <= '0';
                 address_alu_oe <= '0'; address_alu_opcode <= '0'; flag_sel <= x"0";
 
             when div_w21=>
                 instruction_we <= '0';
-                regfile0_data_a_regsel <= x"0"; regfile0_data_b_regsel <= x"0"; regfile0_data_c_regsel <= x"0";
-                regfile0_we <= '0'; regfile0_data_a_oe <= '0'; regfile0_data_b_oe <= '0';
+                regfile0_data_a_regsel <= instruction_word(11 downto 8); regfile0_data_b_regsel <= instruction_word(7 downto 4); regfile0_data_c_regsel <= instruction_word(3 downto 0);
+                regfile0_we <= '0'; regfile0_data_a_oe <= '1'; regfile0_data_b_oe <= '1';
                 fpu0_en <= '0'; fpu0_opcode <= "00";
                 cmp0_en <= '0'; cmp0_opcode  <= x"0";
                 barrel0_en <= '0'; barrel0_dir <= '0'; barrel0_mode <= "00";
-                alu0_en <= '0'; alu0_opcode <= x"0";
+                alu0_en <= '1'; alu0_opcode <= instruction_word(15 downto 12);
                 miso_oe <= '0'; we <= '0'; oe <= '0';
-                arg_oe <= '0'; argument <= x"00000000";
+                arg_oe <= '0'; argument_vect <= x"00000000";
                 int_accept <= '0'; int_completed <= '0';
                 inc_r14 <= '0'; inc_r15 <= '0'; dec_r14 <= '0'; dec_r15 <= '0';
                 address_alu_oe <= '0'; address_alu_opcode <= '0'; flag_sel <= x"0";
 
             when div_w22=>
                 instruction_we <= '0';
-                regfile0_data_a_regsel <= x"0"; regfile0_data_b_regsel <= x"0"; regfile0_data_c_regsel <= x"0";
-                regfile0_we <= '0'; regfile0_data_a_oe <= '0'; regfile0_data_b_oe <= '0';
+                regfile0_data_a_regsel <= instruction_word(11 downto 8); regfile0_data_b_regsel <= instruction_word(7 downto 4); regfile0_data_c_regsel <= instruction_word(3 downto 0);
+                regfile0_we <= '0'; regfile0_data_a_oe <= '1'; regfile0_data_b_oe <= '1';
                 fpu0_en <= '0'; fpu0_opcode <= "00";
                 cmp0_en <= '0'; cmp0_opcode  <= x"0";
                 barrel0_en <= '0'; barrel0_dir <= '0'; barrel0_mode <= "00";
-                alu0_en <= '0'; alu0_opcode <= x"0";
+                alu0_en <= '1'; alu0_opcode <= instruction_word(15 downto 12);
                 miso_oe <= '0'; we <= '0'; oe <= '0';
-                arg_oe <= '0'; argument <= x"00000000";
+                arg_oe <= '0'; argument_vect <= x"00000000";
                 int_accept <= '0'; int_completed <= '0';
                 inc_r14 <= '0'; inc_r15 <= '0'; dec_r14 <= '0'; dec_r15 <= '0';
                 address_alu_oe <= '0'; address_alu_opcode <= '0'; flag_sel <= x"0";
 
             when div_w23=>
                 instruction_we <= '0';
-                regfile0_data_a_regsel <= x"0"; regfile0_data_b_regsel <= x"0"; regfile0_data_c_regsel <= x"0";
-                regfile0_we <= '0'; regfile0_data_a_oe <= '0'; regfile0_data_b_oe <= '0';
+                regfile0_data_a_regsel <= instruction_word(11 downto 8); regfile0_data_b_regsel <= instruction_word(7 downto 4); regfile0_data_c_regsel <= instruction_word(3 downto 0);
+                regfile0_we <= '0'; regfile0_data_a_oe <= '1'; regfile0_data_b_oe <= '1';
                 fpu0_en <= '0'; fpu0_opcode <= "00";
                 cmp0_en <= '0'; cmp0_opcode  <= x"0";
                 barrel0_en <= '0'; barrel0_dir <= '0'; barrel0_mode <= "00";
-                alu0_en <= '0'; alu0_opcode <= x"0";
+                alu0_en <= '1'; alu0_opcode <= instruction_word(15 downto 12);
                 miso_oe <= '0'; we <= '0'; oe <= '0';
-                arg_oe <= '0'; argument <= x"00000000";
+                arg_oe <= '0'; argument_vect <= x"00000000";
                 int_accept <= '0'; int_completed <= '0';
                 inc_r14 <= '0'; inc_r15 <= '0'; dec_r14 <= '0'; dec_r15 <= '0';
                 address_alu_oe <= '0'; address_alu_opcode <= '0'; flag_sel <= x"0";
 
             when div_w24=>
                 instruction_we <= '0';
-                regfile0_data_a_regsel <= x"0"; regfile0_data_b_regsel <= x"0"; regfile0_data_c_regsel <= x"0";
-                regfile0_we <= '0'; regfile0_data_a_oe <= '0'; regfile0_data_b_oe <= '0';
+                regfile0_data_a_regsel <= instruction_word(11 downto 8); regfile0_data_b_regsel <= instruction_word(7 downto 4); regfile0_data_c_regsel <= instruction_word(3 downto 0);
+                regfile0_we <= '0'; regfile0_data_a_oe <= '1'; regfile0_data_b_oe <= '1';
                 fpu0_en <= '0'; fpu0_opcode <= "00";
                 cmp0_en <= '0'; cmp0_opcode  <= x"0";
                 barrel0_en <= '0'; barrel0_dir <= '0'; barrel0_mode <= "00";
-                alu0_en <= '0'; alu0_opcode <= x"0";
+                alu0_en <= '1'; alu0_opcode <= instruction_word(15 downto 12);
                 miso_oe <= '0'; we <= '0'; oe <= '0';
-                arg_oe <= '0'; argument <= x"00000000";
+                arg_oe <= '0'; argument_vect <= x"00000000";
                 int_accept <= '0'; int_completed <= '0';
                 inc_r14 <= '0'; inc_r15 <= '0'; dec_r14 <= '0'; dec_r15 <= '0';
                 address_alu_oe <= '0'; address_alu_opcode <= '0'; flag_sel <= x"0";
 
             when div_w25=>
                 instruction_we <= '0';
-                regfile0_data_a_regsel <= x"0"; regfile0_data_b_regsel <= x"0"; regfile0_data_c_regsel <= x"0";
-                regfile0_we <= '0'; regfile0_data_a_oe <= '0'; regfile0_data_b_oe <= '0';
+                regfile0_data_a_regsel <= instruction_word(11 downto 8); regfile0_data_b_regsel <= instruction_word(7 downto 4); regfile0_data_c_regsel <= instruction_word(3 downto 0);
+                regfile0_we <= '0'; regfile0_data_a_oe <= '1'; regfile0_data_b_oe <= '1';
                 fpu0_en <= '0'; fpu0_opcode <= "00";
                 cmp0_en <= '0'; cmp0_opcode  <= x"0";
                 barrel0_en <= '0'; barrel0_dir <= '0'; barrel0_mode <= "00";
-                alu0_en <= '0'; alu0_opcode <= x"0";
+                alu0_en <= '1'; alu0_opcode <= instruction_word(15 downto 12);
                 miso_oe <= '0'; we <= '0'; oe <= '0';
-                arg_oe <= '0'; argument <= x"00000000";
+                arg_oe <= '0'; argument_vect <= x"00000000";
                 int_accept <= '0'; int_completed <= '0';
                 inc_r14 <= '0'; inc_r15 <= '0'; dec_r14 <= '0'; dec_r15 <= '0';
                 address_alu_oe <= '0'; address_alu_opcode <= '0'; flag_sel <= x"0";
 
             when div_w26=>
                 instruction_we <= '0';
-                regfile0_data_a_regsel <= x"0"; regfile0_data_b_regsel <= x"0"; regfile0_data_c_regsel <= x"0";
-                regfile0_we <= '0'; regfile0_data_a_oe <= '0'; regfile0_data_b_oe <= '0';
+                regfile0_data_a_regsel <= instruction_word(11 downto 8); regfile0_data_b_regsel <= instruction_word(7 downto 4); regfile0_data_c_regsel <= instruction_word(3 downto 0);
+                regfile0_we <= '0'; regfile0_data_a_oe <= '1'; regfile0_data_b_oe <= '1';
                 fpu0_en <= '0'; fpu0_opcode <= "00";
                 cmp0_en <= '0'; cmp0_opcode  <= x"0";
                 barrel0_en <= '0'; barrel0_dir <= '0'; barrel0_mode <= "00";
-                alu0_en <= '0'; alu0_opcode <= x"0";
+                alu0_en <= '1'; alu0_opcode <= instruction_word(15 downto 12);
                 miso_oe <= '0'; we <= '0'; oe <= '0';
-                arg_oe <= '0'; argument <= x"00000000";
+                arg_oe <= '0'; argument_vect <= x"00000000";
                 int_accept <= '0'; int_completed <= '0';
                 inc_r14 <= '0'; inc_r15 <= '0'; dec_r14 <= '0'; dec_r15 <= '0';
                 address_alu_oe <= '0'; address_alu_opcode <= '0'; flag_sel <= x"0";
 
             when div_w27=>
                 instruction_we <= '0';
-                regfile0_data_a_regsel <= x"0"; regfile0_data_b_regsel <= x"0"; regfile0_data_c_regsel <= x"0";
-                regfile0_we <= '0'; regfile0_data_a_oe <= '0'; regfile0_data_b_oe <= '0';
+                regfile0_data_a_regsel <= instruction_word(11 downto 8); regfile0_data_b_regsel <= instruction_word(7 downto 4); regfile0_data_c_regsel <= instruction_word(3 downto 0);
+                regfile0_we <= '0'; regfile0_data_a_oe <= '1'; regfile0_data_b_oe <= '1';
                 fpu0_en <= '0'; fpu0_opcode <= "00";
                 cmp0_en <= '0'; cmp0_opcode  <= x"0";
                 barrel0_en <= '0'; barrel0_dir <= '0'; barrel0_mode <= "00";
-                alu0_en <= '0'; alu0_opcode <= x"0";
+                alu0_en <= '1'; alu0_opcode <= instruction_word(15 downto 12);
                 miso_oe <= '0'; we <= '0'; oe <= '0';
-                arg_oe <= '0'; argument <= x"00000000";
+                arg_oe <= '0'; argument_vect <= x"00000000";
                 int_accept <= '0'; int_completed <= '0';
                 inc_r14 <= '0'; inc_r15 <= '0'; dec_r14 <= '0'; dec_r15 <= '0';
                 address_alu_oe <= '0'; address_alu_opcode <= '0'; flag_sel <= x"0";
 
             when div_w28=>
                 instruction_we <= '0';
-                regfile0_data_a_regsel <= x"0"; regfile0_data_b_regsel <= x"0"; regfile0_data_c_regsel <= x"0";
-                regfile0_we <= '0'; regfile0_data_a_oe <= '0'; regfile0_data_b_oe <= '0';
+                regfile0_data_a_regsel <= instruction_word(11 downto 8); regfile0_data_b_regsel <= instruction_word(7 downto 4); regfile0_data_c_regsel <= instruction_word(3 downto 0);
+                regfile0_we <= '0'; regfile0_data_a_oe <= '1'; regfile0_data_b_oe <= '1';
                 fpu0_en <= '0'; fpu0_opcode <= "00";
                 cmp0_en <= '0'; cmp0_opcode  <= x"0";
                 barrel0_en <= '0'; barrel0_dir <= '0'; barrel0_mode <= "00";
-                alu0_en <= '0'; alu0_opcode <= x"0";
+                alu0_en <= '1'; alu0_opcode <= instruction_word(15 downto 12);
                 miso_oe <= '0'; we <= '0'; oe <= '0';
-                arg_oe <= '0'; argument <= x"00000000";
+                arg_oe <= '0'; argument_vect <= x"00000000";
                 int_accept <= '0'; int_completed <= '0';
                 inc_r14 <= '0'; inc_r15 <= '0'; dec_r14 <= '0'; dec_r15 <= '0';
                 address_alu_oe <= '0'; address_alu_opcode <= '0'; flag_sel <= x"0";
 
             when div_w29=>
                 instruction_we <= '0';
-                regfile0_data_a_regsel <= x"0"; regfile0_data_b_regsel <= x"0"; regfile0_data_c_regsel <= x"0";
-                regfile0_we <= '0'; regfile0_data_a_oe <= '0'; regfile0_data_b_oe <= '0';
+                regfile0_data_a_regsel <= instruction_word(11 downto 8); regfile0_data_b_regsel <= instruction_word(7 downto 4); regfile0_data_c_regsel <= instruction_word(3 downto 0);
+                regfile0_we <= '0'; regfile0_data_a_oe <= '1'; regfile0_data_b_oe <= '1';
                 fpu0_en <= '0'; fpu0_opcode <= "00";
                 cmp0_en <= '0'; cmp0_opcode  <= x"0";
                 barrel0_en <= '0'; barrel0_dir <= '0'; barrel0_mode <= "00";
-                alu0_en <= '0'; alu0_opcode <= x"0";
+                alu0_en <= '1'; alu0_opcode <= instruction_word(15 downto 12);
                 miso_oe <= '0'; we <= '0'; oe <= '0';
-                arg_oe <= '0'; argument <= x"00000000";
+                arg_oe <= '0'; argument_vect <= x"00000000";
                 int_accept <= '0'; int_completed <= '0';
                 inc_r14 <= '0'; inc_r15 <= '0'; dec_r14 <= '0'; dec_r15 <= '0';
                 address_alu_oe <= '0'; address_alu_opcode <= '0'; flag_sel <= x"0";
 
             when div_w30=>
                 instruction_we <= '0';
-                regfile0_data_a_regsel <= x"0"; regfile0_data_b_regsel <= x"0"; regfile0_data_c_regsel <= x"0";
-                regfile0_we <= '0'; regfile0_data_a_oe <= '0'; regfile0_data_b_oe <= '0';
+                regfile0_data_a_regsel <= instruction_word(11 downto 8); regfile0_data_b_regsel <= instruction_word(7 downto 4); regfile0_data_c_regsel <= instruction_word(3 downto 0);
+                regfile0_we <= '0'; regfile0_data_a_oe <= '1'; regfile0_data_b_oe <= '1';
                 fpu0_en <= '0'; fpu0_opcode <= "00";
                 cmp0_en <= '0'; cmp0_opcode  <= x"0";
                 barrel0_en <= '0'; barrel0_dir <= '0'; barrel0_mode <= "00";
-                alu0_en <= '0'; alu0_opcode <= x"0";
+                alu0_en <= '1'; alu0_opcode <= instruction_word(15 downto 12);
                 miso_oe <= '0'; we <= '0'; oe <= '0';
-                arg_oe <= '0'; argument <= x"00000000";
+                arg_oe <= '0'; argument_vect <= x"00000000";
                 int_accept <= '0'; int_completed <= '0';
                 inc_r14 <= '0'; inc_r15 <= '0'; dec_r14 <= '0'; dec_r15 <= '0';
                 address_alu_oe <= '0'; address_alu_opcode <= '0'; flag_sel <= x"0";
 
             when div_done=>
                 instruction_we <= '0';
-                regfile0_data_a_regsel <= x"0"; regfile0_data_b_regsel <= x"0"; regfile0_data_c_regsel <= x"0";
-                regfile0_we <= '0'; regfile0_data_a_oe <= '0'; regfile0_data_b_oe <= '0';
+                regfile0_data_a_regsel <= instruction_word(11 downto 8); regfile0_data_b_regsel <= instruction_word(7 downto 4); regfile0_data_c_regsel <= instruction_word(3 downto 0);
+                regfile0_we <= '1'; regfile0_data_a_oe <= '1'; regfile0_data_b_oe <= '1';
                 fpu0_en <= '0'; fpu0_opcode <= "00";
                 cmp0_en <= '0'; cmp0_opcode  <= x"0";
                 barrel0_en <= '0'; barrel0_dir <= '0'; barrel0_mode <= "00";
-                alu0_en <= '0'; alu0_opcode <= x"0";
+                alu0_en <= '1'; alu0_opcode <= instruction_word(15 downto 12);
                 miso_oe <= '0'; we <= '0'; oe <= '0';
-                arg_oe <= '0'; argument <= x"00000000";
+                arg_oe <= '0'; argument_vect <= x"00000000";
                 int_accept <= '0'; int_completed <= '0';
                 inc_r14 <= '0'; inc_r15 <= '0'; dec_r14 <= '0'; dec_r15 <= '0';
                 address_alu_oe <= '0'; address_alu_opcode <= '0'; flag_sel <= x"0";
 
             when faddsub=>
                 instruction_we <= '0';
-                regfile0_data_a_regsel <= x"0"; regfile0_data_b_regsel <= x"0"; regfile0_data_c_regsel <= x"0";
-                regfile0_we <= '0'; regfile0_data_a_oe <= '0'; regfile0_data_b_oe <= '0';
-                fpu0_en <= '0'; fpu0_opcode <= "00";
+                regfile0_data_a_regsel <= instruction_word(11 downto 8); regfile0_data_b_regsel <= instruction_word(7 downto 4); regfile0_data_c_regsel <= instruction_word(3 downto 0);
+                regfile0_we <= '0'; regfile0_data_a_oe <= '1'; regfile0_data_b_oe <= '1';
+                fpu0_en <= '1'; fpu0_opcode <= instruction_word(13 downto 12);
                 cmp0_en <= '0'; cmp0_opcode  <= x"0";
                 barrel0_en <= '0'; barrel0_dir <= '0'; barrel0_mode <= "00";
                 alu0_en <= '0'; alu0_opcode <= x"0";
                 miso_oe <= '0'; we <= '0'; oe <= '0';
-                arg_oe <= '0'; argument <= x"00000000";
+                arg_oe <= '0'; argument_vect <= x"00000000";
                 int_accept <= '0'; int_completed <= '0';
                 inc_r14 <= '0'; inc_r15 <= '0'; dec_r14 <= '0'; dec_r15 <= '0';
                 address_alu_oe <= '0'; address_alu_opcode <= '0'; flag_sel <= x"0";
 
             when faddsub_w0=>
                 instruction_we <= '0';
-                regfile0_data_a_regsel <= x"0"; regfile0_data_b_regsel <= x"0"; regfile0_data_c_regsel <= x"0";
-                regfile0_we <= '0'; regfile0_data_a_oe <= '0'; regfile0_data_b_oe <= '0';
-                fpu0_en <= '0'; fpu0_opcode <= "00";
+                regfile0_data_a_regsel <= instruction_word(11 downto 8); regfile0_data_b_regsel <= instruction_word(7 downto 4); regfile0_data_c_regsel <= instruction_word(3 downto 0);
+                regfile0_we <= '0'; regfile0_data_a_oe <= '1'; regfile0_data_b_oe <= '1';
+                fpu0_en <= '1'; fpu0_opcode <= instruction_word(13 downto 12);
                 cmp0_en <= '0'; cmp0_opcode  <= x"0";
                 barrel0_en <= '0'; barrel0_dir <= '0'; barrel0_mode <= "00";
                 alu0_en <= '0'; alu0_opcode <= x"0";
                 miso_oe <= '0'; we <= '0'; oe <= '0';
-                arg_oe <= '0'; argument <= x"00000000";
+                arg_oe <= '0'; argument_vect <= x"00000000";
                 int_accept <= '0'; int_completed <= '0';
                 inc_r14 <= '0'; inc_r15 <= '0'; dec_r14 <= '0'; dec_r15 <= '0';
                 address_alu_oe <= '0'; address_alu_opcode <= '0'; flag_sel <= x"0";
 
             when faddsub_w1=>
                 instruction_we <= '0';
-                regfile0_data_a_regsel <= x"0"; regfile0_data_b_regsel <= x"0"; regfile0_data_c_regsel <= x"0";
-                regfile0_we <= '0'; regfile0_data_a_oe <= '0'; regfile0_data_b_oe <= '0';
-                fpu0_en <= '0'; fpu0_opcode <= "00";
+                regfile0_data_a_regsel <= instruction_word(11 downto 8); regfile0_data_b_regsel <= instruction_word(7 downto 4); regfile0_data_c_regsel <= instruction_word(3 downto 0);
+                regfile0_we <= '0'; regfile0_data_a_oe <= '1'; regfile0_data_b_oe <= '1';
+                fpu0_en <= '1'; fpu0_opcode <= instruction_word(13 downto 12);
                 cmp0_en <= '0'; cmp0_opcode  <= x"0";
                 barrel0_en <= '0'; barrel0_dir <= '0'; barrel0_mode <= "00";
                 alu0_en <= '0'; alu0_opcode <= x"0";
                 miso_oe <= '0'; we <= '0'; oe <= '0';
-                arg_oe <= '0'; argument <= x"00000000";
+                arg_oe <= '0'; argument_vect <= x"00000000";
                 int_accept <= '0'; int_completed <= '0';
                 inc_r14 <= '0'; inc_r15 <= '0'; dec_r14 <= '0'; dec_r15 <= '0';
                 address_alu_oe <= '0'; address_alu_opcode <= '0'; flag_sel <= x"0";
 
             when faddsub_w2=>
                 instruction_we <= '0';
-                regfile0_data_a_regsel <= x"0"; regfile0_data_b_regsel <= x"0"; regfile0_data_c_regsel <= x"0";
-                regfile0_we <= '0'; regfile0_data_a_oe <= '0'; regfile0_data_b_oe <= '0';
-                fpu0_en <= '0'; fpu0_opcode <= "00";
+                regfile0_data_a_regsel <= instruction_word(11 downto 8); regfile0_data_b_regsel <= instruction_word(7 downto 4); regfile0_data_c_regsel <= instruction_word(3 downto 0);
+                regfile0_we <= '0'; regfile0_data_a_oe <= '1'; regfile0_data_b_oe <= '1';
+                fpu0_en <= '1'; fpu0_opcode <= instruction_word(13 downto 12);
                 cmp0_en <= '0'; cmp0_opcode  <= x"0";
                 barrel0_en <= '0'; barrel0_dir <= '0'; barrel0_mode <= "00";
                 alu0_en <= '0'; alu0_opcode <= x"0";
                 miso_oe <= '0'; we <= '0'; oe <= '0';
-                arg_oe <= '0'; argument <= x"00000000";
+                arg_oe <= '0'; argument_vect <= x"00000000";
                 int_accept <= '0'; int_completed <= '0';
                 inc_r14 <= '0'; inc_r15 <= '0'; dec_r14 <= '0'; dec_r15 <= '0';
                 address_alu_oe <= '0'; address_alu_opcode <= '0'; flag_sel <= x"0";
 
             when faddsub_w3=>
                 instruction_we <= '0';
-                regfile0_data_a_regsel <= x"0"; regfile0_data_b_regsel <= x"0"; regfile0_data_c_regsel <= x"0";
-                regfile0_we <= '0'; regfile0_data_a_oe <= '0'; regfile0_data_b_oe <= '0';
-                fpu0_en <= '0'; fpu0_opcode <= "00";
+                regfile0_data_a_regsel <= instruction_word(11 downto 8); regfile0_data_b_regsel <= instruction_word(7 downto 4); regfile0_data_c_regsel <= instruction_word(3 downto 0);
+                regfile0_we <= '0'; regfile0_data_a_oe <= '1'; regfile0_data_b_oe <= '1';
+                fpu0_en <= '1'; fpu0_opcode <= instruction_word(13 downto 12);
                 cmp0_en <= '0'; cmp0_opcode  <= x"0";
                 barrel0_en <= '0'; barrel0_dir <= '0'; barrel0_mode <= "00";
                 alu0_en <= '0'; alu0_opcode <= x"0";
                 miso_oe <= '0'; we <= '0'; oe <= '0';
-                arg_oe <= '0'; argument <= x"00000000";
+                arg_oe <= '0'; argument_vect <= x"00000000";
                 int_accept <= '0'; int_completed <= '0';
                 inc_r14 <= '0'; inc_r15 <= '0'; dec_r14 <= '0'; dec_r15 <= '0';
                 address_alu_oe <= '0'; address_alu_opcode <= '0'; flag_sel <= x"0";
 
             when faddsub_w4=>
                 instruction_we <= '0';
-                regfile0_data_a_regsel <= x"0"; regfile0_data_b_regsel <= x"0"; regfile0_data_c_regsel <= x"0";
-                regfile0_we <= '0'; regfile0_data_a_oe <= '0'; regfile0_data_b_oe <= '0';
-                fpu0_en <= '0'; fpu0_opcode <= "00";
+                regfile0_data_a_regsel <= instruction_word(11 downto 8); regfile0_data_b_regsel <= instruction_word(7 downto 4); regfile0_data_c_regsel <= instruction_word(3 downto 0);
+                regfile0_we <= '0'; regfile0_data_a_oe <= '1'; regfile0_data_b_oe <= '1';
+                fpu0_en <= '1'; fpu0_opcode <= instruction_word(13 downto 12);
                 cmp0_en <= '0'; cmp0_opcode  <= x"0";
                 barrel0_en <= '0'; barrel0_dir <= '0'; barrel0_mode <= "00";
                 alu0_en <= '0'; alu0_opcode <= x"0";
                 miso_oe <= '0'; we <= '0'; oe <= '0';
-                arg_oe <= '0'; argument <= x"00000000";
+                arg_oe <= '0'; argument_vect <= x"00000000";
                 int_accept <= '0'; int_completed <= '0';
                 inc_r14 <= '0'; inc_r15 <= '0'; dec_r14 <= '0'; dec_r15 <= '0';
                 address_alu_oe <= '0'; address_alu_opcode <= '0'; flag_sel <= x"0";
 
             when faddsub_w5=>
                 instruction_we <= '0';
-                regfile0_data_a_regsel <= x"0"; regfile0_data_b_regsel <= x"0"; regfile0_data_c_regsel <= x"0";
-                regfile0_we <= '0'; regfile0_data_a_oe <= '0'; regfile0_data_b_oe <= '0';
-                fpu0_en <= '0'; fpu0_opcode <= "00";
+                regfile0_data_a_regsel <= instruction_word(11 downto 8); regfile0_data_b_regsel <= instruction_word(7 downto 4); regfile0_data_c_regsel <= instruction_word(3 downto 0);
+                regfile0_we <= '0'; regfile0_data_a_oe <= '1'; regfile0_data_b_oe <= '1';
+                fpu0_en <= '1'; fpu0_opcode <= instruction_word(13 downto 12);
                 cmp0_en <= '0'; cmp0_opcode  <= x"0";
                 barrel0_en <= '0'; barrel0_dir <= '0'; barrel0_mode <= "00";
                 alu0_en <= '0'; alu0_opcode <= x"0";
                 miso_oe <= '0'; we <= '0'; oe <= '0';
-                arg_oe <= '0'; argument <= x"00000000";
+                arg_oe <= '0'; argument_vect <= x"00000000";
                 int_accept <= '0'; int_completed <= '0';
                 inc_r14 <= '0'; inc_r15 <= '0'; dec_r14 <= '0'; dec_r15 <= '0';
                 address_alu_oe <= '0'; address_alu_opcode <= '0'; flag_sel <= x"0";
 
             when faddsub_done=>
                 instruction_we <= '0';
-                regfile0_data_a_regsel <= x"0"; regfile0_data_b_regsel <= x"0"; regfile0_data_c_regsel <= x"0";
-                regfile0_we <= '0'; regfile0_data_a_oe <= '0'; regfile0_data_b_oe <= '0';
-                fpu0_en <= '0'; fpu0_opcode <= "00";
+                regfile0_data_a_regsel <= instruction_word(11 downto 8); regfile0_data_b_regsel <= instruction_word(7 downto 4); regfile0_data_c_regsel <= instruction_word(3 downto 0);
+                regfile0_we <= '1'; regfile0_data_a_oe <= '1'; regfile0_data_b_oe <= '1';
+                fpu0_en <= '1'; fpu0_opcode <= instruction_word(13 downto 12);
                 cmp0_en <= '0'; cmp0_opcode  <= x"0";
                 barrel0_en <= '0'; barrel0_dir <= '0'; barrel0_mode <= "00";
                 alu0_en <= '0'; alu0_opcode <= x"0";
                 miso_oe <= '0'; we <= '0'; oe <= '0';
-                arg_oe <= '0'; argument <= x"00000000";
+                arg_oe <= '0'; argument_vect <= x"00000000";
                 int_accept <= '0'; int_completed <= '0';
                 inc_r14 <= '0'; inc_r15 <= '0'; dec_r14 <= '0'; dec_r15 <= '0';
                 address_alu_oe <= '0'; address_alu_opcode <= '0'; flag_sel <= x"0";
 
             when fdiv=>
                 instruction_we <= '0';
-                regfile0_data_a_regsel <= x"0"; regfile0_data_b_regsel <= x"0"; regfile0_data_c_regsel <= x"0";
-                regfile0_we <= '0'; regfile0_data_a_oe <= '0'; regfile0_data_b_oe <= '0';
-                fpu0_en <= '0'; fpu0_opcode <= "00";
+                regfile0_data_a_regsel <= instruction_word(11 downto 8); regfile0_data_b_regsel <= instruction_word(7 downto 4); regfile0_data_c_regsel <= instruction_word(3 downto 0);
+                regfile0_we <= '0'; regfile0_data_a_oe <= '1'; regfile0_data_b_oe <= '1';
+                fpu0_en <= '1'; fpu0_opcode <= instruction_word(13 downto 12);
                 cmp0_en <= '0'; cmp0_opcode  <= x"0";
                 barrel0_en <= '0'; barrel0_dir <= '0'; barrel0_mode <= "00";
                 alu0_en <= '0'; alu0_opcode <= x"0";
                 miso_oe <= '0'; we <= '0'; oe <= '0';
-                arg_oe <= '0'; argument <= x"00000000";
+                arg_oe <= '0'; argument_vect <= x"00000000";
                 int_accept <= '0'; int_completed <= '0';
                 inc_r14 <= '0'; inc_r15 <= '0'; dec_r14 <= '0'; dec_r15 <= '0';
                 address_alu_oe <= '0'; address_alu_opcode <= '0'; flag_sel <= x"0";
 
             when fdiv_w0=>
                 instruction_we <= '0';
-                regfile0_data_a_regsel <= x"0"; regfile0_data_b_regsel <= x"0"; regfile0_data_c_regsel <= x"0";
-                regfile0_we <= '0'; regfile0_data_a_oe <= '0'; regfile0_data_b_oe <= '0';
-                fpu0_en <= '0'; fpu0_opcode <= "00";
+                regfile0_data_a_regsel <= instruction_word(11 downto 8); regfile0_data_b_regsel <= instruction_word(7 downto 4); regfile0_data_c_regsel <= instruction_word(3 downto 0);
+                regfile0_we <= '0'; regfile0_data_a_oe <= '1'; regfile0_data_b_oe <= '1';
+                fpu0_en <= '1'; fpu0_opcode <= instruction_word(13 downto 12);
                 cmp0_en <= '0'; cmp0_opcode  <= x"0";
                 barrel0_en <= '0'; barrel0_dir <= '0'; barrel0_mode <= "00";
                 alu0_en <= '0'; alu0_opcode <= x"0";
                 miso_oe <= '0'; we <= '0'; oe <= '0';
-                arg_oe <= '0'; argument <= x"00000000";
+                arg_oe <= '0'; argument_vect <= x"00000000";
                 int_accept <= '0'; int_completed <= '0';
                 inc_r14 <= '0'; inc_r15 <= '0'; dec_r14 <= '0'; dec_r15 <= '0';
                 address_alu_oe <= '0'; address_alu_opcode <= '0'; flag_sel <= x"0";
 
             when fdiv_w1=>
                 instruction_we <= '0';
-                regfile0_data_a_regsel <= x"0"; regfile0_data_b_regsel <= x"0"; regfile0_data_c_regsel <= x"0";
-                regfile0_we <= '0'; regfile0_data_a_oe <= '0'; regfile0_data_b_oe <= '0';
-                fpu0_en <= '0'; fpu0_opcode <= "00";
+                regfile0_data_a_regsel <= instruction_word(11 downto 8); regfile0_data_b_regsel <= instruction_word(7 downto 4); regfile0_data_c_regsel <= instruction_word(3 downto 0);
+                regfile0_we <= '0'; regfile0_data_a_oe <= '1'; regfile0_data_b_oe <= '1';
+                fpu0_en <= '1'; fpu0_opcode <= instruction_word(13 downto 12);
                 cmp0_en <= '0'; cmp0_opcode  <= x"0";
                 barrel0_en <= '0'; barrel0_dir <= '0'; barrel0_mode <= "00";
                 alu0_en <= '0'; alu0_opcode <= x"0";
                 miso_oe <= '0'; we <= '0'; oe <= '0';
-                arg_oe <= '0'; argument <= x"00000000";
+                arg_oe <= '0'; argument_vect <= x"00000000";
                 int_accept <= '0'; int_completed <= '0';
                 inc_r14 <= '0'; inc_r15 <= '0'; dec_r14 <= '0'; dec_r15 <= '0';
                 address_alu_oe <= '0'; address_alu_opcode <= '0'; flag_sel <= x"0";
 
             when fdiv_w2=>
                 instruction_we <= '0';
-                regfile0_data_a_regsel <= x"0"; regfile0_data_b_regsel <= x"0"; regfile0_data_c_regsel <= x"0";
-                regfile0_we <= '0'; regfile0_data_a_oe <= '0'; regfile0_data_b_oe <= '0';
-                fpu0_en <= '0'; fpu0_opcode <= "00";
+                regfile0_data_a_regsel <= instruction_word(11 downto 8); regfile0_data_b_regsel <= instruction_word(7 downto 4); regfile0_data_c_regsel <= instruction_word(3 downto 0);
+                regfile0_we <= '0'; regfile0_data_a_oe <= '1'; regfile0_data_b_oe <= '1';
+                fpu0_en <= '1'; fpu0_opcode <= instruction_word(13 downto 12);
                 cmp0_en <= '0'; cmp0_opcode  <= x"0";
                 barrel0_en <= '0'; barrel0_dir <= '0'; barrel0_mode <= "00";
                 alu0_en <= '0'; alu0_opcode <= x"0";
                 miso_oe <= '0'; we <= '0'; oe <= '0';
-                arg_oe <= '0'; argument <= x"00000000";
+                arg_oe <= '0'; argument_vect <= x"00000000";
                 int_accept <= '0'; int_completed <= '0';
                 inc_r14 <= '0'; inc_r15 <= '0'; dec_r14 <= '0'; dec_r15 <= '0';
                 address_alu_oe <= '0'; address_alu_opcode <= '0'; flag_sel <= x"0";
 
             when fdiv_w3=>
                 instruction_we <= '0';
-                regfile0_data_a_regsel <= x"0"; regfile0_data_b_regsel <= x"0"; regfile0_data_c_regsel <= x"0";
-                regfile0_we <= '0'; regfile0_data_a_oe <= '0'; regfile0_data_b_oe <= '0';
-                fpu0_en <= '0'; fpu0_opcode <= "00";
+                regfile0_data_a_regsel <= instruction_word(11 downto 8); regfile0_data_b_regsel <= instruction_word(7 downto 4); regfile0_data_c_regsel <= instruction_word(3 downto 0);
+                regfile0_we <= '0'; regfile0_data_a_oe <= '1'; regfile0_data_b_oe <= '1';
+                fpu0_en <= '1'; fpu0_opcode <= instruction_word(13 downto 12);
                 cmp0_en <= '0'; cmp0_opcode  <= x"0";
                 barrel0_en <= '0'; barrel0_dir <= '0'; barrel0_mode <= "00";
                 alu0_en <= '0'; alu0_opcode <= x"0";
                 miso_oe <= '0'; we <= '0'; oe <= '0';
-                arg_oe <= '0'; argument <= x"00000000";
+                arg_oe <= '0'; argument_vect <= x"00000000";
                 int_accept <= '0'; int_completed <= '0';
                 inc_r14 <= '0'; inc_r15 <= '0'; dec_r14 <= '0'; dec_r15 <= '0';
                 address_alu_oe <= '0'; address_alu_opcode <= '0'; flag_sel <= x"0";
 
             when fdiv_w4=>
                 instruction_we <= '0';
-                regfile0_data_a_regsel <= x"0"; regfile0_data_b_regsel <= x"0"; regfile0_data_c_regsel <= x"0";
-                regfile0_we <= '0'; regfile0_data_a_oe <= '0'; regfile0_data_b_oe <= '0';
-                fpu0_en <= '0'; fpu0_opcode <= "00";
+                regfile0_data_a_regsel <= instruction_word(11 downto 8); regfile0_data_b_regsel <= instruction_word(7 downto 4); regfile0_data_c_regsel <= instruction_word(3 downto 0);
+                regfile0_we <= '0'; regfile0_data_a_oe <= '1'; regfile0_data_b_oe <= '1';
+                fpu0_en <= '1'; fpu0_opcode <= instruction_word(13 downto 12);
                 cmp0_en <= '0'; cmp0_opcode  <= x"0";
                 barrel0_en <= '0'; barrel0_dir <= '0'; barrel0_mode <= "00";
                 alu0_en <= '0'; alu0_opcode <= x"0";
                 miso_oe <= '0'; we <= '0'; oe <= '0';
-                arg_oe <= '0'; argument <= x"00000000";
+                arg_oe <= '0'; argument_vect <= x"00000000";
                 int_accept <= '0'; int_completed <= '0';
                 inc_r14 <= '0'; inc_r15 <= '0'; dec_r14 <= '0'; dec_r15 <= '0';
                 address_alu_oe <= '0'; address_alu_opcode <= '0'; flag_sel <= x"0";
 
             when fdiv_done=>
                 instruction_we <= '0';
-                regfile0_data_a_regsel <= x"0"; regfile0_data_b_regsel <= x"0"; regfile0_data_c_regsel <= x"0";
-                regfile0_we <= '0'; regfile0_data_a_oe <= '0'; regfile0_data_b_oe <= '0';
-                fpu0_en <= '0'; fpu0_opcode <= "00";
+                regfile0_data_a_regsel <= instruction_word(11 downto 8); regfile0_data_b_regsel <= instruction_word(7 downto 4); regfile0_data_c_regsel <= instruction_word(3 downto 0);
+                regfile0_we <= '1'; regfile0_data_a_oe <= '1'; regfile0_data_b_oe <= '1';
+                fpu0_en <= '1'; fpu0_opcode <= instruction_word(13 downto 12);
                 cmp0_en <= '0'; cmp0_opcode  <= x"0";
                 barrel0_en <= '0'; barrel0_dir <= '0'; barrel0_mode <= "00";
                 alu0_en <= '0'; alu0_opcode <= x"0";
                 miso_oe <= '0'; we <= '0'; oe <= '0';
-                arg_oe <= '0'; argument <= x"00000000";
+                arg_oe <= '0'; argument_vect <= x"00000000";
                 int_accept <= '0'; int_completed <= '0';
                 inc_r14 <= '0'; inc_r15 <= '0'; dec_r14 <= '0'; dec_r15 <= '0';
                 address_alu_oe <= '0'; address_alu_opcode <= '0'; flag_sel <= x"0";
 
             when fmul=>
                 instruction_we <= '0';
-                regfile0_data_a_regsel <= x"0"; regfile0_data_b_regsel <= x"0"; regfile0_data_c_regsel <= x"0";
-                regfile0_we <= '0'; regfile0_data_a_oe <= '0'; regfile0_data_b_oe <= '0';
-                fpu0_en <= '0'; fpu0_opcode <= "00";
+                regfile0_data_a_regsel <= instruction_word(11 downto 8); regfile0_data_b_regsel <= instruction_word(7 downto 4); regfile0_data_c_regsel <= instruction_word(3 downto 0);
+                regfile0_we <= '0'; regfile0_data_a_oe <= '1'; regfile0_data_b_oe <= '1';
+                fpu0_en <= '1'; fpu0_opcode <= instruction_word(13 downto 12);
                 cmp0_en <= '0'; cmp0_opcode  <= x"0";
                 barrel0_en <= '0'; barrel0_dir <= '0'; barrel0_mode <= "00";
                 alu0_en <= '0'; alu0_opcode <= x"0";
                 miso_oe <= '0'; we <= '0'; oe <= '0';
-                arg_oe <= '0'; argument <= x"00000000";
+                arg_oe <= '0'; argument_vect <= x"00000000";
                 int_accept <= '0'; int_completed <= '0';
                 inc_r14 <= '0'; inc_r15 <= '0'; dec_r14 <= '0'; dec_r15 <= '0';
                 address_alu_oe <= '0'; address_alu_opcode <= '0'; flag_sel <= x"0";
 
             when fmul_w0=>
                 instruction_we <= '0';
-                regfile0_data_a_regsel <= x"0"; regfile0_data_b_regsel <= x"0"; regfile0_data_c_regsel <= x"0";
-                regfile0_we <= '0'; regfile0_data_a_oe <= '0'; regfile0_data_b_oe <= '0';
-                fpu0_en <= '0'; fpu0_opcode <= "00";
+                regfile0_data_a_regsel <= instruction_word(11 downto 8); regfile0_data_b_regsel <= instruction_word(7 downto 4); regfile0_data_c_regsel <= instruction_word(3 downto 0);
+                regfile0_we <= '0'; regfile0_data_a_oe <= '1'; regfile0_data_b_oe <= '1';
+                fpu0_en <= '1'; fpu0_opcode <= instruction_word(13 downto 12);
                 cmp0_en <= '0'; cmp0_opcode  <= x"0";
                 barrel0_en <= '0'; barrel0_dir <= '0'; barrel0_mode <= "00";
                 alu0_en <= '0'; alu0_opcode <= x"0";
                 miso_oe <= '0'; we <= '0'; oe <= '0';
-                arg_oe <= '0'; argument <= x"00000000";
+                arg_oe <= '0'; argument_vect <= x"00000000";
                 int_accept <= '0'; int_completed <= '0';
                 inc_r14 <= '0'; inc_r15 <= '0'; dec_r14 <= '0'; dec_r15 <= '0';
                 address_alu_oe <= '0'; address_alu_opcode <= '0'; flag_sel <= x"0";
 
             when fmul_w1=>
                 instruction_we <= '0';
-                regfile0_data_a_regsel <= x"0"; regfile0_data_b_regsel <= x"0"; regfile0_data_c_regsel <= x"0";
-                regfile0_we <= '0'; regfile0_data_a_oe <= '0'; regfile0_data_b_oe <= '0';
-                fpu0_en <= '0'; fpu0_opcode <= "00";
+                regfile0_data_a_regsel <= instruction_word(11 downto 8); regfile0_data_b_regsel <= instruction_word(7 downto 4); regfile0_data_c_regsel <= instruction_word(3 downto 0);
+                regfile0_we <= '0'; regfile0_data_a_oe <= '1'; regfile0_data_b_oe <= '1';
+                fpu0_en <= '1'; fpu0_opcode <= instruction_word(13 downto 12);
                 cmp0_en <= '0'; cmp0_opcode  <= x"0";
                 barrel0_en <= '0'; barrel0_dir <= '0'; barrel0_mode <= "00";
                 alu0_en <= '0'; alu0_opcode <= x"0";
                 miso_oe <= '0'; we <= '0'; oe <= '0';
-                arg_oe <= '0'; argument <= x"00000000";
+                arg_oe <= '0'; argument_vect <= x"00000000";
                 int_accept <= '0'; int_completed <= '0';
                 inc_r14 <= '0'; inc_r15 <= '0'; dec_r14 <= '0'; dec_r15 <= '0';
                 address_alu_oe <= '0'; address_alu_opcode <= '0'; flag_sel <= x"0";
 
             when fmul_w2=>
                 instruction_we <= '0';
-                regfile0_data_a_regsel <= x"0"; regfile0_data_b_regsel <= x"0"; regfile0_data_c_regsel <= x"0";
-                regfile0_we <= '0'; regfile0_data_a_oe <= '0'; regfile0_data_b_oe <= '0';
-                fpu0_en <= '0'; fpu0_opcode <= "00";
+                regfile0_data_a_regsel <= instruction_word(11 downto 8); regfile0_data_b_regsel <= instruction_word(7 downto 4); regfile0_data_c_regsel <= instruction_word(3 downto 0);
+                regfile0_we <= '0'; regfile0_data_a_oe <= '1'; regfile0_data_b_oe <= '1';
+                fpu0_en <= '1'; fpu0_opcode <= instruction_word(13 downto 12);
                 cmp0_en <= '0'; cmp0_opcode  <= x"0";
                 barrel0_en <= '0'; barrel0_dir <= '0'; barrel0_mode <= "00";
                 alu0_en <= '0'; alu0_opcode <= x"0";
                 miso_oe <= '0'; we <= '0'; oe <= '0';
-                arg_oe <= '0'; argument <= x"00000000";
+                arg_oe <= '0'; argument_vect <= x"00000000";
                 int_accept <= '0'; int_completed <= '0';
                 inc_r14 <= '0'; inc_r15 <= '0'; dec_r14 <= '0'; dec_r15 <= '0';
                 address_alu_oe <= '0'; address_alu_opcode <= '0'; flag_sel <= x"0";
 
             when fmul_w3=>
                 instruction_we <= '0';
-                regfile0_data_a_regsel <= x"0"; regfile0_data_b_regsel <= x"0"; regfile0_data_c_regsel <= x"0";
-                regfile0_we <= '0'; regfile0_data_a_oe <= '0'; regfile0_data_b_oe <= '0';
-                fpu0_en <= '0'; fpu0_opcode <= "00";
+                regfile0_data_a_regsel <= instruction_word(11 downto 8); regfile0_data_b_regsel <= instruction_word(7 downto 4); regfile0_data_c_regsel <= instruction_word(3 downto 0);
+                regfile0_we <= '0'; regfile0_data_a_oe <= '1'; regfile0_data_b_oe <= '1';
+                fpu0_en <= '1'; fpu0_opcode <= instruction_word(13 downto 12);
                 cmp0_en <= '0'; cmp0_opcode  <= x"0";
                 barrel0_en <= '0'; barrel0_dir <= '0'; barrel0_mode <= "00";
                 alu0_en <= '0'; alu0_opcode <= x"0";
                 miso_oe <= '0'; we <= '0'; oe <= '0';
-                arg_oe <= '0'; argument <= x"00000000";
+                arg_oe <= '0'; argument_vect <= x"00000000";
                 int_accept <= '0'; int_completed <= '0';
                 inc_r14 <= '0'; inc_r15 <= '0'; dec_r14 <= '0'; dec_r15 <= '0';
                 address_alu_oe <= '0'; address_alu_opcode <= '0'; flag_sel <= x"0";
 
             when fmul_done=>
                 instruction_we <= '0';
-                regfile0_data_a_regsel <= x"0"; regfile0_data_b_regsel <= x"0"; regfile0_data_c_regsel <= x"0";
-                regfile0_we <= '0'; regfile0_data_a_oe <= '0'; regfile0_data_b_oe <= '0';
-                fpu0_en <= '0'; fpu0_opcode <= "00";
+                regfile0_data_a_regsel <= instruction_word(11 downto 8); regfile0_data_b_regsel <= instruction_word(7 downto 4); regfile0_data_c_regsel <= instruction_word(3 downto 0);
+                regfile0_we <= '1'; regfile0_data_a_oe <= '1'; regfile0_data_b_oe <= '1';
+                fpu0_en <= '1'; fpu0_opcode <= instruction_word(13 downto 12);
                 cmp0_en <= '0'; cmp0_opcode  <= x"0";
                 barrel0_en <= '0'; barrel0_dir <= '0'; barrel0_mode <= "00";
                 alu0_en <= '0'; alu0_opcode <= x"0";
                 miso_oe <= '0'; we <= '0'; oe <= '0';
-                arg_oe <= '0'; argument <= x"00000000";
+                arg_oe <= '0'; argument_vect <= x"00000000";
                 int_accept <= '0'; int_completed <= '0';
                 inc_r14 <= '0'; inc_r15 <= '0'; dec_r14 <= '0'; dec_r15 <= '0';
                 address_alu_oe <= '0'; address_alu_opcode <= '0'; flag_sel <= x"0";

@@ -32,14 +32,11 @@ architecture barrel_arch of barrel is
 
     component lpm_clshift
         generic (
-            lpm_pipeline  : natural;
             lpm_shifttype : string;
             lpm_width     : natural;
             lpm_widthdist : natural
         );
         port(
-            aclr      : in std_logic ;
-            clock     : in std_logic ;
             data      : in std_logic_vector (31 downto 0);
             direction : in std_logic ;
             distance  : in std_logic_vector (4 downto 0);
@@ -57,16 +54,16 @@ begin
     data_b_vect <= std_logic_vector(datab);
 
     shift_log_0: lpm_clshift
-        generic map (0, "logical", 32, 5)
-        port map (res_s, clk, data_a_vect, dir, data_b_vect(4 downto 0), result_log);
+        generic map ("logical", 32, 5)
+        port map (data_a_vect, dir, data_b_vect(4 downto 0), result_log);
 
     shift_rot_0: lpm_clshift
-        generic map (0, "rotate", 32, 5)
-        port map (res_s, clk, data_a_vect, dir, data_b_vect(4 downto 0), result_rot);
+        generic map ("rotate", 32, 5)
+        port map (data_a_vect, dir, data_b_vect(4 downto 0), result_rot);
 
     shift_ari_0: lpm_clshift
-        generic map (0, "arithmetic", 32, 5)
-        port map (res_s, clk, data_a_vect, dir, data_b_vect(4 downto 0), result_ari);
+        generic map ("arithmetic", 32, 5)
+        port map (data_a_vect, dir, data_b_vect(4 downto 0), result_ari);
 
     process(clk) is
         variable res_v: std_logic;

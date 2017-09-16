@@ -109,7 +109,8 @@ architecture MARK_II_arch of MARK_II is
             oe: out std_logic;
             ack: in std_logic;
             --interrupts
-            int: in std_logic_vector(31 downto 0);
+            int: in std_logic;
+            int_address: in unsigned(23 downto 0);
             int_accept: out std_logic;
             int_completed: out std_logic
         );
@@ -333,7 +334,7 @@ begin
         port map(clk_sys, resi, enclk2, enclk4, enclk8);
 
     cpu0: cpu
-        port map(clk_sys, resi, bus_address, bus_data_mosi, bus_data_miso, bus_WR, bus_RD, bus_ack, intCPUReq, intAccepted, intCompleted);
+        port map(clk_sys, resi, bus_address, bus_data_mosi, bus_data_miso, bus_WR, bus_RD, bus_ack, '0', x"000000", intAccepted, intCompleted);
 
     int0: intController
         generic map(x"000108")

@@ -40,15 +40,12 @@ architecture alu_arch of alu is
     component lpm_mult
     generic (
         lpm_hint           : string;
-        lpm_pipeline       : natural;
         lpm_representation : string;
         lpm_widtha         : natural;
         lpm_widthb         : natural;
         lpm_widthp         : natural
     );
     port (
-        aclr    : in std_logic ;
-        clock   : in std_logic ;
         datab   : in std_logic_vector (31 downto 0);
         dataa   : in std_logic_vector (31 downto 0);
         result  : out std_logic_vector (31 downto 0)
@@ -105,12 +102,12 @@ begin
     end process;
 
     mul_unsigned_0 : lpm_mult
-        generic map ("maximize_speed=9", 0, "unsigned", 32, 32, 32)
-        port map (res_s, clk, data_b_vect, data_a_vect, mulu_res);
+        generic map ("maximize_speed=9", "unsigned", 32, 32, 32)
+        port map (data_b_vect, data_a_vect, mulu_res);
 
     mul_signed_0 : lpm_mult
-        generic map ("maximize_speed=9", 0, "signed", 32, 32, 32)
-        port map (res_s, clk, data_b_vect, data_a_vect, muls_res);
+        generic map ("maximize_speed=9", "signed", 32, 32, 32)
+        port map (data_b_vect, data_a_vect, muls_res);
 
     div_unsigned_0: lpm_divide
         generic map ("unsigned", "maximize_speed=9,lpm_remainderpositive=true", "unsigned", 32, 32, 32)
@@ -145,10 +142,10 @@ begin
     not_res <= std_logic_vector(not(dataa));
 
     --mvil
-    mvil_res <= std_logic_vector(dataa(31 downto 16) & datab(15 downto 0));
+    mvil_res <= std_logic_vector(datab(31 downto 16) & dataa(15 downto 0));
 
     --mvih
-    mvih_res <= std_logic_vector(datab(15 downto 0) & dataa(15 downto 0));
+    mvih_res <= std_logic_vector(dataa(15 downto 0) & datab(15 downto 0));
 
     --select result
     result_raw <=

@@ -168,7 +168,8 @@ begin
     regfile0: regfile
         port map(clk, res, data_a, data_b, data_c, regfile0_data_a_regsel,
                  regfile0_data_b_regsel, regfile0_data_c_regsel, regfile0_we,
-                 regfile0_data_a_oe, regfile0_data_b_oe, zero_flags, reg15_q);
+                 regfile0_data_a_oe, regfile0_data_b_oe, zero_flags,inc_r14,
+                 inc_r15, dec_r14, dec_r15, reg15_q);
 
     fpu0: fpu
         port map(clk, res, fpu0_en, fpu0_opcode, data_a, data_b, data_c);
@@ -208,7 +209,7 @@ begin
     id0: id
         port map(clk, res, instruction_word, instruction_we, regfile0_data_a_regsel,
                  regfile0_data_b_regsel, regfile0_data_c_regsel, regfile0_we,
-                 regfile0_data_a_oe, regfile0_data_b_oe, fpu0_en, fpu0_opcode,
+                 regfile0_data_a_oe, regfile0_data_b_oe,zero_flags, fpu0_en, fpu0_opcode,
                  cmp0_en, cmp0_opcode, barrel0_en, barrel0_dir, barrel0_mode,
                  alu0_en, alu0_opcode, miso_oe, arg_oe, argument, we, oe, ack,
                  int, int_address, int_accept, int_completed, inc_r14, inc_r15,
