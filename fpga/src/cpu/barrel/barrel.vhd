@@ -65,19 +65,6 @@ begin
         generic map ("arithmetic", 32, 5)
         port map (data_a_vect, dir, data_b_vect(4 downto 0), result_ari);
 
-    process(clk) is
-        variable res_v: std_logic;
-    begin
-        if rising_edge(clk) then
-            if res = '1' then
-                res_v := '1';
-            else
-                res_v := '0';
-            end if;
-        end if;
-        res_s <= res_v;
-    end process;
-
     result <=
         unsigned(result_log) when ((mode = "00") and (en = '1')) else
         unsigned(result_rot) when ((mode = "01") and (en = '1')) else
