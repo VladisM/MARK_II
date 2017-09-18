@@ -17,9 +17,9 @@ entity uart is
     port(
         clk: in std_logic;
         res: in std_logic;
-        address: in std_logic_vector((23 downto 0);
-        data_mosi: in std_logic_vector((31 downto 0);
-        data_miso: out std_logic_vector((31 downto 0);
+        address: in std_logic_vector(23 downto 0);
+        data_mosi: in std_logic_vector(31 downto 0);
+        data_miso: out std_logic_vector(31 downto 0);
         WR: in std_logic;
         RD: in std_logic;
         ack: out std_logic;
@@ -295,8 +295,8 @@ begin
             when read0=>
                 case reg_sel is
                     when "0001" => data_miso <= (others => 'Z');
-                    when "0100" => data_miso <= x"00" & "000000" & status_reg);
-                    when "1000" => data_miso <= "0000000" & control_reg);
+                    when "0100" => data_miso <= x"00" & "000000" & status_reg;
+                    when "1000" => data_miso <= "0000000" & control_reg;
                     when others => data_miso <= (others => 'Z');
                 end case;
                 ack <= '1';
@@ -318,7 +318,7 @@ begin
         end case;
     end process;
 
-    tx_data_input <= data_mosi(7 downto 0);
+    tx_data_input <= unsigned(data_mosi(7 downto 0));
 
 end architecture uart_arch;
 
