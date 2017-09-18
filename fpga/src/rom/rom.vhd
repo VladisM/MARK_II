@@ -17,9 +17,9 @@ entity rom is
     );
     port(
         clk: in std_logic;
-        address: in unsigned(23 downto 0);
-        data_mosi: in unsigned(31 downto 0);
-        data_miso: out unsigned(31 downto 0);
+        address: in std_logic_vector(23 downto 0);
+        data_mosi: in std_logic_vector(31 downto 0);
+        data_miso: out std_logic_vector(31 downto 0);
         WR: in std_logic;
         RD: in std_logic;
         ack: out std_logic
@@ -42,7 +42,7 @@ begin
         )
         port map(
             inclock=>clk,
-            address=>std_logic_vector(address(7 downto 0)),
+            address=>address(7 downto 0),
             q=>data_for_read
         );
 
@@ -56,7 +56,7 @@ begin
     end process;
 
     --tri state outputs
-    data_miso <= unsigned(data_for_read) when (cs = '1' and RD = '1') else (others => 'Z');
+    data_miso <= data_for_read when (cs = '1' and RD = '1') else (others => 'Z');
 
     ack <= '1' when (cs = '1' and RD = '1') else '0';
 

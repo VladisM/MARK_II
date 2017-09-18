@@ -17,9 +17,9 @@ entity ram is
     );
     port(
         clk: in std_logic;
-        address: in unsigned(23 downto 0);
-        data_mosi: in unsigned(31 downto 0);
-        data_miso: out unsigned(31 downto 0);
+        address: in std_logic_vector(23 downto 0);
+        data_mosi: in std_logic_vector(31 downto 0);
+        data_miso: out std_logic_vector(31 downto 0);
         WR: in std_logic;
         RD: in std_logic;
         ack: out std_logic
@@ -41,7 +41,7 @@ architecture ram_arch of ram is
     signal cs: std_logic;
 begin
     process(address) is begin
-        if (address >= BASE_ADDRESS and address <= (BASE_ADDRESS + (2**ADDRESS_WIDE)-1)) then
+        if (unsigned(address) >= BASE_ADDRESS and unsigned(address) <= (BASE_ADDRESS + (2**ADDRESS_WIDE)-1)) then
             cs <= '1';
         else
             cs <= '0';
@@ -51,14 +51,14 @@ begin
     process(clk, WR, address, data_mosi, cs) begin
         if(rising_edge(clk)) then
             if(WR = '1' and cs = '1') then
-                ram(to_integer(address)) <= data_mosi;
+                ram(to_integer(unsigned(address))) <= unsigned(data_mosi);
             end if;
-            reg_address <= address(ADDRESS_WIDE-1 downto 0);
+            reg_address <= unsigned(address(ADDRESS_WIDE-1 downto 0));
         end if;
     end process;
 
     --output from ram
-    data_miso <= ram(to_integer(reg_address)) when ((RD = '1') and (cs = '1')) else (others => 'Z');
+    data_miso <= std_logic_vector(ram(to_integer(reg_address))) when ((RD = '1') and (cs = '1')) else (others => 'Z');
 
     ack <= '1' when ((WR = '1' and cs = '1') or (RD = '1' and cs = '1')) else '0';
 

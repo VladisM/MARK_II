@@ -18,9 +18,9 @@ entity intController is
         --bus
         clk: in std_logic;
         res: in std_logic;
-        address: in unsigned(23 downto 0);
-        data_mosi: in unsigned(31 downto 0);
-        data_miso: out unsigned(31 downto 0);
+        address: in std_logic_vector(23 downto 0);
+        data_mosi: in std_logic_vector(31 downto 0);
+        data_miso: out std_logic_vector(31 downto 0);
         WR: in std_logic;
         RD: in std_logic;
         ack: out std_logic;
@@ -85,13 +85,13 @@ begin
             if(res = '1') then
                 interrupt_mask_reg <= (others => '0');
             elsif (WR = '1' and reg_sel = '1') then
-                interrupt_mask_reg <= std_logic_vector(data_mosi);
+                interrupt_mask_reg <= data_mosi;
             end if;
         end if;
     end process;
 
     --output from register
-    data_miso <= unsigned(interrupt_mask_reg) when (RD = '1' and reg_sel = '1') else (others => 'Z');
+    data_miso <= interrupt_mask_reg when (RD = '1' and reg_sel = '1') else (others => 'Z');
 
     ack <= '1' when (WR = '1' and reg_sel = '1') or (RD = '1' and reg_sel = '1') else '0';
 

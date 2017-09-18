@@ -18,9 +18,9 @@ entity systim is
         --bus
         clk: in std_logic;
         res: in std_logic;
-        address: in unsigned(23 downto 0);
-        data_mosi: in unsigned(31 downto 0);
-        data_miso: out unsigned(31 downto 0);
+        address: in std_logic_vector(23 downto 0);
+        data_mosi: in std_logic_vector(31 downto 0);
+        data_miso: out std_logic_vector(31 downto 0);
         WR: in std_logic;
         RD: in std_logic;
         ack: out std_logic;
@@ -81,9 +81,9 @@ begin
 
     --chip select
     process(address) is begin
-        if    (address = BASE_ADDRESS) then
+        if    (unsigned(address) = BASE_ADDRESS) then
             reg_sel <= "01"; -- control register
-        elsif (address = (BASE_ADDRESS + 1)) then
+        elsif (unsigned(address) = (BASE_ADDRESS + 1)) then
             reg_sel <= "10"; -- counter
         else
             reg_sel <= "00";
@@ -96,14 +96,14 @@ begin
             if res = '1' then
                 control_reg <= (others => '0');
             elsif (reg_sel = "01" and WR = '1') then
-                control_reg <= data_mosi(24 downto 0);
+                control_reg <= unsigned(data_mosi(24 downto 0));
             end if;
         end if;
     end process;
 
     --output from registers
-    data_miso <= "0000000" & control_reg when (RD = '1' and reg_sel = "01") else
-                 x"00"     & counter     when (RD = '1' and reg_sel = "10") else (others => 'Z');
+    data_miso <= "0000000" & std_logic_vector(control_reg) when (RD = '1' and reg_sel = "01") else
+                 x"00"     & std_logic_vector(counter)     when (RD = '1' and reg_sel = "10") else (others => 'Z');
 
     --generate signal when there is write acces to counter
     process(WR, reg_sel) is begin

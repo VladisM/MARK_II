@@ -18,8 +18,8 @@ entity ps2 is
     port(
         clk: in std_logic;
         res: in std_logic;
-        address: in unsigned(23 downto 0);
-        data_miso: out unsigned(31 downto 0);
+        address: in std_logic_vector(23 downto 0);
+        data_miso: out std_logic_vector(31 downto 0);
         RD: in std_logic;
         ack: out std_logic;
         --device
@@ -53,14 +53,14 @@ begin
 
     process(address) is
     begin
-        if address = BASE_ADDRESS then
+        if unsigned(address) = BASE_ADDRESS then
             cs <= '1';
         else
             cs <= '0';
         end if;
     end process;
 
-    data_miso <= ( x"000000" & byte ) when (RD = '1' and cs = '1') else (others => 'Z');
+    data_miso <= std_logic_vector( x"000000" & byte ) when (RD = '1' and cs = '1') else (others => 'Z');
 
     ack <= '1' when (RD = '1' and cs = '1') else '0';
 

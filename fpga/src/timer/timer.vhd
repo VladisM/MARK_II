@@ -18,9 +18,9 @@ entity timer is
         --bus
         clk: in std_logic;
         res: in std_logic;
-        address: in unsigned(23 downto 0);
-        data_mosi: in unsigned(31 downto 0);
-        data_miso: out unsigned(31 downto 0);
+        address: in std_logic_vector(23 downto 0);
+        data_mosi: in std_logic_vector(31 downto 0);
+        data_miso: out std_logic_vector(31 downto 0);
         WR: in std_logic;
         RD: in std_logic;
         ack: out std_logic;
@@ -79,13 +79,13 @@ begin
 
     --chip select
     process(address) is begin
-        if (address = BASE_ADDRESS)then
+        if (unsigned(address) = BASE_ADDRESS)then
             reg_sel <= "0001"; -- TCCR
-        elsif (address = (BASE_ADDRESS + 1)) then
+        elsif (unsigned(address) = (BASE_ADDRESS + 1)) then
             reg_sel <= "0010"; -- OCRA
-        elsif (address = (BASE_ADDRESS + 2)) then
+        elsif (unsigned(address) = (BASE_ADDRESS + 2)) then
             reg_sel <= "0100"; -- OCRB
-        elsif (address = (BASE_ADDRESS + 3)) then
+        elsif (unsigned(address) = (BASE_ADDRESS + 3)) then
             reg_sel <= "1000"; -- TCNR
         else
             reg_sel <= "0000";
@@ -100,20 +100,20 @@ begin
                 OCRBreg <= x"0000";
                 TCCR <= "0000000";
             elsif(reg_sel = "0001" and WR = '1') then
-                TCCR <= std_logic_vector(data_mosi(6 downto 0));
+                TCCR <= data_mosi(6 downto 0);
             elsif(reg_sel = "0010" and WR = '1') then
-                OCRAreg <= data_mosi(15 downto 0);
+                OCRAreg <= unsigned(data_mosi(15 downto 0));
             elsif(reg_sel = "0100" and WR = '1') then
-                OCRBreg <= data_mosi(15 downto 0);
+                OCRBreg <= unsigned(data_mosi(15 downto 0));
             end if;
         end if;
     end process;
 
     --output from registers
-    data_miso <= x"000000" & "0" & unsigned(TCCR) when (RD = '1' and reg_sel = "0001") else
-                 x"0000"         & OCRAreg        when (RD = '1' and reg_sel = "0010") else
-                 x"0000"         & OCRBreg        when (RD = '1' and reg_sel = "0100") else
-                 x"0000"         & timerValue     when (RD = '1' and reg_sel = "1000") else (others => 'Z');
+    data_miso <= x"000000" & "0" & TCCR                             when (RD = '1' and reg_sel = "0001") else
+                 x"0000"         & std_logic_vector(OCRAreg)        when (RD = '1' and reg_sel = "0010") else
+                 x"0000"         & std_logic_vector(OCRBreg)        when (RD = '1' and reg_sel = "0100") else
+                 x"0000"         & std_logic_vector(timerValue)     when (RD = '1' and reg_sel = "1000") else (others => 'Z');
 
     ack <= '1' when ((WR = '1' and reg_sel /= "0000") or (RD = '1' and reg_sel /= "0000")) else '0';
 
