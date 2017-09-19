@@ -38,5 +38,5 @@ derive_clock_uncertainty
 
 # tpd constraints
 
-set_false_path -from [get_clocks {clk}] -to [get_clocks {pll0|altpll_component|auto_generated|pll1|clk[0]}]
-set_false_path -from [get_clocks {pll0|altpll_component|auto_generated|pll1|clk[0]}] -to [get_clocks {clk}]
+set_false_path -from [get_clocks {pll0|altpll_component|auto_generated|pll1|clk[2]}] -to [get_clocks {pll0|altpll_component|auto_generated|pll1|clk[0]}]
+set_false_path -from [get_clocks {pll0|altpll_component|auto_generated|pll1|clk[0]}] -to [get_clocks {pll0|altpll_component|auto_generated|pll1|clk[2]}]

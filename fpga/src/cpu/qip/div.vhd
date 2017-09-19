@@ -33,7 +33,7 @@
 --applicable agreement for further details.
 
 
---altfp_div CBX_AUTO_BLACKBOX="ALL" DENORMAL_SUPPORT="NO" DEVICE_FAMILY="Cyclone IV E" OPTIMIZE="SPEED" PIPELINE=6 REDUCED_FUNCTIONALITY="NO" WIDTH_EXP=8 WIDTH_MAN=23 aclr clk_en clock dataa datab result
+--altfp_div CBX_AUTO_BLACKBOX="ALL" DENORMAL_SUPPORT="NO" DEVICE_FAMILY="Cyclone IV E" OPTIMIZE="SPEED" PIPELINE=6 REDUCED_FUNCTIONALITY="NO" WIDTH_EXP=8 WIDTH_MAN=23 aclr clock dataa datab result
 --VERSION_BEGIN 13.0 cbx_altbarrel_shift 2013:04:24:18:16:57:SJ cbx_altfp_div 2013:04:24:18:16:58:SJ cbx_altsyncram 2013:04:24:18:16:58:SJ cbx_cycloneii 2013:04:24:18:16:58:SJ cbx_lpm_abs 2013:04:24:18:16:58:SJ cbx_lpm_add_sub 2013:04:24:18:16:58:SJ cbx_lpm_compare 2013:04:24:18:16:58:SJ cbx_lpm_decode 2013:04:24:18:16:58:SJ cbx_lpm_divide 2013:04:24:18:16:58:SJ cbx_lpm_mult 2013:04:24:18:16:58:SJ cbx_lpm_mux 2013:04:24:18:16:58:SJ cbx_mgl 2013:04:24:18:18:51:SJ cbx_padd 2013:04:24:18:16:58:SJ cbx_stratix 2013:04:24:18:16:58:SJ cbx_stratixii 2013:04:24:18:16:58:SJ cbx_stratixiii 2013:04:24:18:16:58:SJ cbx_stratixv 2013:04:24:18:16:58:SJ cbx_util_mgl 2013:04:24:18:16:58:SJ  VERSION_END
 
 
@@ -1768,21 +1768,21 @@
  LIBRARY ieee;
  USE ieee.std_logic_1164.all;
 
- ENTITY  div_altfp_div_oei IS 
+ ENTITY  div_altfp_div_cqh IS 
 	 PORT 
 	 ( 
 		 aclr	:	IN  STD_LOGIC := '0';
-		 clk_en	:	IN  STD_LOGIC := '1';
 		 clock	:	IN  STD_LOGIC;
 		 dataa	:	IN  STD_LOGIC_VECTOR (31 DOWNTO 0);
 		 datab	:	IN  STD_LOGIC_VECTOR (31 DOWNTO 0);
 		 result	:	OUT  STD_LOGIC_VECTOR (31 DOWNTO 0)
 	 ); 
- END div_altfp_div_oei;
+ END div_altfp_div_cqh;
 
- ARCHITECTURE RTL OF div_altfp_div_oei IS
+ ARCHITECTURE RTL OF div_altfp_div_cqh IS
 
 	 SIGNAL  wire_altfp_div_pst1_result	:	STD_LOGIC_VECTOR (31 DOWNTO 0);
+	 SIGNAL  clk_en	:	STD_LOGIC;
 	 COMPONENT  div_altfp_div_pst_cje
 	 PORT
 	 ( 
@@ -1796,6 +1796,7 @@
 	 END COMPONENT;
  BEGIN
 
+	clk_en <= '1';
 	result <= wire_altfp_div_pst1_result;
 	altfp_div_pst1 :  div_altfp_div_pst_cje
 	  PORT MAP ( 
@@ -1807,7 +1808,7 @@
 		result => wire_altfp_div_pst1_result
 	  );
 
- END RTL; --div_altfp_div_oei
+ END RTL; --div_altfp_div_cqh
 --VALID FILE
 
 
@@ -1818,7 +1819,6 @@ ENTITY div IS
 	PORT
 	(
 		aclr		: IN STD_LOGIC ;
-		clk_en		: IN STD_LOGIC ;
 		clock		: IN STD_LOGIC ;
 		dataa		: IN STD_LOGIC_VECTOR (31 DOWNTO 0);
 		datab		: IN STD_LOGIC_VECTOR (31 DOWNTO 0);
@@ -1833,10 +1833,9 @@ ARCHITECTURE RTL OF div IS
 
 
 
-	COMPONENT div_altfp_div_oei
+	COMPONENT div_altfp_div_cqh
 	PORT (
 			aclr	: IN STD_LOGIC ;
-			clk_en	: IN STD_LOGIC ;
 			clock	: IN STD_LOGIC ;
 			datab	: IN STD_LOGIC_VECTOR (31 DOWNTO 0);
 			dataa	: IN STD_LOGIC_VECTOR (31 DOWNTO 0);
@@ -1847,10 +1846,9 @@ ARCHITECTURE RTL OF div IS
 BEGIN
 	result    <= sub_wire0(31 DOWNTO 0);
 
-	div_altfp_div_oei_component : div_altfp_div_oei
+	div_altfp_div_cqh_component : div_altfp_div_cqh
 	PORT MAP (
 		aclr => aclr,
-		clk_en => clk_en,
 		clock => clock,
 		datab => datab,
 		dataa => dataa,
@@ -1875,13 +1873,11 @@ END RTL;
 -- Retrieval info: CONSTANT: WIDTH_EXP NUMERIC "8"
 -- Retrieval info: CONSTANT: WIDTH_MAN NUMERIC "23"
 -- Retrieval info: USED_PORT: aclr 0 0 0 0 INPUT NODEFVAL "aclr"
--- Retrieval info: USED_PORT: clk_en 0 0 0 0 INPUT NODEFVAL "clk_en"
 -- Retrieval info: USED_PORT: clock 0 0 0 0 INPUT NODEFVAL "clock"
 -- Retrieval info: USED_PORT: dataa 0 0 32 0 INPUT NODEFVAL "dataa[31..0]"
 -- Retrieval info: USED_PORT: datab 0 0 32 0 INPUT NODEFVAL "datab[31..0]"
 -- Retrieval info: USED_PORT: result 0 0 32 0 OUTPUT NODEFVAL "result[31..0]"
 -- Retrieval info: CONNECT: @aclr 0 0 0 0 aclr 0 0 0 0
--- Retrieval info: CONNECT: @clk_en 0 0 0 0 clk_en 0 0 0 0
 -- Retrieval info: CONNECT: @clock 0 0 0 0 clock 0 0 0 0
 -- Retrieval info: CONNECT: @dataa 0 0 32 0 dataa 0 0 32 0
 -- Retrieval info: CONNECT: @datab 0 0 32 0 datab 0 0 32 0

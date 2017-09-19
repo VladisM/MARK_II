@@ -65,17 +65,8 @@ architecture cpu_arch of cpu is
         data_b: in std_logic_vector(31 downto 0);
         output: out std_logic_vector(31 downto 0) );
     end component comparator;
-    component sub is port(
-        aclr        : in std_logic;
-        clk_en      : in std_logic;
-        clock       : in std_logic;
-        dataa       : in std_logic_vector (31 downto 0);
-        datab       : in std_logic_vector (31 downto 0);
-        result      : out std_logic_vector (31 downto 0) );
-    end component sub;
     component mul is port(
         aclr        : in std_logic;
-        clk_en      : in std_logic;
         clock       : in std_logic;
         dataa       : in std_logic_vector (31 downto 0);
         datab       : in std_logic_vector (31 downto 0);
@@ -83,16 +74,15 @@ architecture cpu_arch of cpu is
     end component mul;
     component div is port(
         aclr        : in std_logic;
-        clk_en      : in std_logic;
         clock       : in std_logic;
         dataa       : in std_logic_vector (31 downto 0);
         datab       : in std_logic_vector (31 downto 0);
         result      : out std_logic_vector (31 downto 0) );
     end component div;
     component add is port(
-        aclr        : in std_logic;
-        clk_en      : in std_logic;
-        clock       : in std_logic;
+        aclr        : in std_logic ;
+        add_sub     : in std_logic ;
+        clock       : in std_logic ;
         dataa       : in std_logic_vector (31 downto 0);
         datab       : in std_logic_vector (31 downto 0);
         result      : out std_logic_vector (31 downto 0) );
@@ -154,6 +144,10 @@ architecture cpu_arch of cpu is
         or_res, xor_res, mvil_res, mvih_res, not_res
     : std_logic_vector(31 downto 0);
 
+    signal
+        fp_addsub
+    : std_logic;
+
     -- register values
     signal
         reg00_q, reg01_q, reg02_q, reg03_q, reg04_q, reg05_q, reg06_q, reg07_q,
@@ -210,16 +204,14 @@ begin
 
     -- Synchronize reset for some MF
     process(clk) is
-        variable res_v: std_logic;
+        variable res_v1: std_logic;
+        variable res_v2: std_logic;
     begin
         if rising_edge(clk) then
-            if res = '1' then
-                res_v := '1';
-            else
-                res_v := '0';
-            end if;
+            res_v2 := res_v1;
+            res_v1 := res;
         end if;
-        res_sync <= res_v;
+        res_sync <= res_v2;
     end process;
 
 
@@ -228,17 +220,18 @@ begin
     --   01 - multiplication - 5 cycles
     --   10 - division       - 6 cycles
     --   11 - addition       - 7 cycles
-    fpsub0: sub
-        port map(res_sync, '1', clk, data_a, data_b, result_fpsub);
-
     fpmul0: mul
-        port map(res_sync, '1', clk, data_a, data_b, result_fpmul);
+        port map(res_sync, clk, data_a, data_b, result_fpmul);
 
     fpdiv0: div
-        port map(res_sync, '1', clk, data_a, data_b, result_fpdiv);
+        port map(res_sync, clk, data_a, data_b, result_fpdiv);
 
     fpadd0: add
-        port map(res_sync, '1', clk, data_a, data_b, result_fpadd);
+        port map(res_sync, fp_addsub, clk, data_a, data_b, result_fpadd);
+
+    result_fpsub <= result_fpadd;
+
+    fp_addsub <= '0' when (instruction_word(21 downto 20) = "00") else '1';
 
     fpu_result <=
         result_fpsub when (instruction_word(21 downto 20) = "00") else

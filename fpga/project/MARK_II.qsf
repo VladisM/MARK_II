@@ -51,7 +51,6 @@ set_global_assignment -name EDA_SIMULATION_TOOL "ModelSim-Altera (VHDL)"
 set_global_assignment -name EDA_OUTPUT_DATA_FORMAT VHDL -section_id eda_simulation
 set_global_assignment -name SDC_FILE MARK_II.sdc
 set_global_assignment -name VHDL_FILE ../src/clkControl/clkControl.vhd
-set_global_assignment -name QIP_FILE ../src/cpu/qip/sub.qip
 set_global_assignment -name QIP_FILE ../src/cpu/qip/mul.qip
 set_global_assignment -name QIP_FILE ../src/cpu/qip/fpcmp.qip
 set_global_assignment -name QIP_FILE ../src/cpu/qip/div.qip

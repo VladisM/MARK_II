@@ -33,7 +33,7 @@
 --applicable agreement for further details.
 
 
---altfp_mult CBX_AUTO_BLACKBOX="ALL" DEDICATED_MULTIPLIER_CIRCUITRY="YES" DENORMAL_SUPPORT="NO" DEVICE_FAMILY="Cyclone IV E" EXCEPTION_HANDLING="NO" PIPELINE=5 REDUCED_FUNCTIONALITY="NO" ROUNDING="TO_NEAREST" WIDTH_EXP=8 WIDTH_MAN=23 aclr clk_en clock dataa datab result
+--altfp_mult CBX_AUTO_BLACKBOX="ALL" DEDICATED_MULTIPLIER_CIRCUITRY="YES" DENORMAL_SUPPORT="NO" DEVICE_FAMILY="Cyclone IV E" EXCEPTION_HANDLING="NO" PIPELINE=5 REDUCED_FUNCTIONALITY="NO" ROUNDING="TO_NEAREST" WIDTH_EXP=8 WIDTH_MAN=23 aclr clock dataa datab result
 --VERSION_BEGIN 13.0 cbx_alt_ded_mult_y 2013:04:24:18:16:57:SJ cbx_altbarrel_shift 2013:04:24:18:16:57:SJ cbx_altera_mult_add 2013:04:24:18:16:57:SJ cbx_altera_mult_add_rtl 2013:04:24:18:16:58:SJ cbx_altfp_mult 2013:04:24:18:16:58:SJ cbx_altmult_add 2013:04:24:18:16:58:SJ cbx_cycloneii 2013:04:24:18:16:58:SJ cbx_lpm_add_sub 2013:04:24:18:16:58:SJ cbx_lpm_compare 2013:04:24:18:16:58:SJ cbx_lpm_mult 2013:04:24:18:16:58:SJ cbx_mgl 2013:04:24:18:18:51:SJ cbx_padd 2013:04:24:18:16:58:SJ cbx_parallel_add 2013:04:24:18:16:58:SJ cbx_stratix 2013:04:24:18:16:58:SJ cbx_stratixii 2013:04:24:18:16:58:SJ cbx_util_mgl 2013:04:24:18:16:58:SJ  VERSION_END
 
  LIBRARY lpm;
@@ -43,19 +43,18 @@
  LIBRARY ieee;
  USE ieee.std_logic_1164.all;
 
- ENTITY  mul_altfp_mult_buo IS 
+ ENTITY  mul_altfp_mult_v9o IS 
 	 PORT 
 	 ( 
 		 aclr	:	IN  STD_LOGIC := '0';
-		 clk_en	:	IN  STD_LOGIC := '1';
 		 clock	:	IN  STD_LOGIC;
 		 dataa	:	IN  STD_LOGIC_VECTOR (31 DOWNTO 0);
 		 datab	:	IN  STD_LOGIC_VECTOR (31 DOWNTO 0);
 		 result	:	OUT  STD_LOGIC_VECTOR (31 DOWNTO 0)
 	 ); 
- END mul_altfp_mult_buo;
+ END mul_altfp_mult_v9o;
 
- ARCHITECTURE RTL OF mul_altfp_mult_buo IS
+ ARCHITECTURE RTL OF mul_altfp_mult_v9o IS
 
 	 SIGNAL	 dataa_exp_all_one_ff_p1	:	STD_LOGIC
 	 -- synopsys translate_off
@@ -429,6 +428,7 @@
 	 SIGNAL  wire_w_lg_w_sticky_bit_range331w333w	:	STD_LOGIC_VECTOR (0 DOWNTO 0);
 	 SIGNAL  wire_w_lg_w_sticky_bit_range334w336w	:	STD_LOGIC_VECTOR (0 DOWNTO 0);
 	 SIGNAL  bias :	STD_LOGIC_VECTOR (9 DOWNTO 0);
+	 SIGNAL  clk_en	:	STD_LOGIC;
 	 SIGNAL  dataa_exp_all_one :	STD_LOGIC_VECTOR (7 DOWNTO 0);
 	 SIGNAL  dataa_exp_not_zero :	STD_LOGIC_VECTOR (7 DOWNTO 0);
 	 SIGNAL  dataa_man_not_zero :	STD_LOGIC_VECTOR (22 DOWNTO 0);
@@ -804,6 +804,7 @@
 	wire_w_lg_w_sticky_bit_range331w333w(0) <= wire_w_sticky_bit_range331w(0) OR wire_man_product2_mult_w_result_range332w(0);
 	wire_w_lg_w_sticky_bit_range334w336w(0) <= wire_w_sticky_bit_range334w(0) OR wire_man_product2_mult_w_result_range335w(0);
 	bias <= ( "0" & "0" & "0" & "1" & "1" & "1" & "1" & "1" & "1" & "1");
+	clk_en <= '1';
 	dataa_exp_all_one <= ( wire_w_lg_w_dataa_range141w147w & wire_w_lg_w_dataa_range131w137w & wire_w_lg_w_dataa_range121w127w & wire_w_lg_w_dataa_range111w117w & wire_w_lg_w_dataa_range101w107w & wire_w_lg_w_dataa_range91w97w & wire_w_lg_w_dataa_range81w87w & dataa(23));
 	dataa_exp_not_zero <= ( wire_w_lg_w_dataa_range141w142w & wire_w_lg_w_dataa_range131w132w & wire_w_lg_w_dataa_range121w122w & wire_w_lg_w_dataa_range111w112w & wire_w_lg_w_dataa_range101w102w & wire_w_lg_w_dataa_range91w92w & wire_w_lg_w_dataa_range81w82w & dataa(23));
 	dataa_man_not_zero <= ( wire_w_lg_w_dataa_range281w282w & wire_w_lg_w_dataa_range275w276w & wire_w_lg_w_dataa_range269w270w & wire_w_lg_w_dataa_range263w264w & wire_w_lg_w_dataa_range257w258w & wire_w_lg_w_dataa_range251w252w & wire_w_lg_w_dataa_range245w246w & wire_w_lg_w_dataa_range239w240w & wire_w_lg_w_dataa_range233w234w & wire_w_lg_w_dataa_range227w228w & wire_w_lg_w_dataa_range221w222w & dataa(11) & wire_w_lg_w_dataa_range211w212w & wire_w_lg_w_dataa_range205w206w & wire_w_lg_w_dataa_range199w200w & wire_w_lg_w_dataa_range193w194w & wire_w_lg_w_dataa_range187w188w & wire_w_lg_w_dataa_range181w182w & wire_w_lg_w_dataa_range175w176w & wire_w_lg_w_dataa_range169w170w & wire_w_lg_w_dataa_range163w164w & wire_w_lg_w_dataa_range157w158w & dataa(0));
@@ -1409,7 +1410,7 @@
 		result => wire_man_product2_mult_result
 	  );
 
- END RTL; --mul_altfp_mult_buo
+ END RTL; --mul_altfp_mult_v9o
 --VALID FILE
 
 
@@ -1420,7 +1421,6 @@ ENTITY mul IS
 	PORT
 	(
 		aclr		: IN STD_LOGIC ;
-		clk_en		: IN STD_LOGIC ;
 		clock		: IN STD_LOGIC ;
 		dataa		: IN STD_LOGIC_VECTOR (31 DOWNTO 0);
 		datab		: IN STD_LOGIC_VECTOR (31 DOWNTO 0);
@@ -1435,10 +1435,9 @@ ARCHITECTURE RTL OF mul IS
 
 
 
-	COMPONENT mul_altfp_mult_buo
+	COMPONENT mul_altfp_mult_v9o
 	PORT (
 			aclr	: IN STD_LOGIC ;
-			clk_en	: IN STD_LOGIC ;
 			clock	: IN STD_LOGIC ;
 			datab	: IN STD_LOGIC_VECTOR (31 DOWNTO 0);
 			dataa	: IN STD_LOGIC_VECTOR (31 DOWNTO 0);
@@ -1449,10 +1448,9 @@ ARCHITECTURE RTL OF mul IS
 BEGIN
 	result    <= sub_wire0(31 DOWNTO 0);
 
-	mul_altfp_mult_buo_component : mul_altfp_mult_buo
+	mul_altfp_mult_v9o_component : mul_altfp_mult_v9o
 	PORT MAP (
 		aclr => aclr,
-		clk_en => clk_en,
 		clock => clock,
 		datab => datab,
 		dataa => dataa,
@@ -1482,8 +1480,6 @@ END RTL;
 -- Retrieval info: CONSTANT: WIDTH_MAN NUMERIC "23"
 -- Retrieval info: USED_PORT: aclr 0 0 0 0 INPUT NODEFVAL "aclr"
 -- Retrieval info: CONNECT: @aclr 0 0 0 0 aclr 0 0 0 0
--- Retrieval info: USED_PORT: clk_en 0 0 0 0 INPUT NODEFVAL "clk_en"
--- Retrieval info: CONNECT: @clk_en 0 0 0 0 clk_en 0 0 0 0
 -- Retrieval info: USED_PORT: clock 0 0 0 0 INPUT NODEFVAL "clock"
 -- Retrieval info: CONNECT: @clock 0 0 0 0 clock 0 0 0 0
 -- Retrieval info: USED_PORT: dataa 0 0 32 0 INPUT NODEFVAL "dataa[31..0]"
