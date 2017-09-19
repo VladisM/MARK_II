@@ -1,3 +1,6 @@
 hw/* linguist-vendored=true
 toolchain/vbcc/* linguist-vendored=true
 toolchain/vbcc/machines/mark/* linguist-vendored=false
+fpga/src/cpu/qip/* linguist-vendored=true
+fpga/src/pll/* linguist-vendored=true
+doc/* linguist-vendored=false
