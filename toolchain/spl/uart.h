@@ -7,9 +7,9 @@
 #ifndef SPL_UART_included
 #define SPL_UART_included
 
-#define UART0_BASE 0x000120 /**< @brief Base address of uart0 */
-#define UART1_BASE 0x000124 /**< @brief Base address of uart1 */
-#define UART2_BASE 0x000128 /**< @brief Base address of uart2 */
+#define UART0_BASE 0x000130 /**< @brief Base address of uart0 */
+#define UART1_BASE 0x000134 /**< @brief Base address of uart1 */
+#define UART2_BASE 0x000138 /**< @brief Base address of uart2 */
 
 #define UTDR0 (*(unsigned int *)(UART0_BASE + 0)) /**< @brief Register UTDR0 */
 #define URDR0 (*(unsigned int *)(UART0_BASE + 1)) /**< @brief Register URDR0 */

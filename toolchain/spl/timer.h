@@ -7,10 +7,10 @@
 #ifndef SPL_TIMER_included
 #define SPL_TIMER_included
 
-#define TIMER0_BASE 0x000110 /**< @brief Base address of timer0 */
-#define TIMER1_BASE 0x000114 /**< @brief Base address of timer1 */
-#define TIMER2_BASE 0x000118 /**< @brief Base address of timer2 */
-#define TIMER3_BASE 0x00011C /**< @brief Base address of timer3 */
+#define TIMER0_BASE 0x000120 /**< @brief Base address of timer0 */
+#define TIMER1_BASE 0x000124 /**< @brief Base address of timer1 */
+#define TIMER2_BASE 0x000128 /**< @brief Base address of timer2 */
+#define TIMER3_BASE 0x00012C /**< @brief Base address of timer3 */
 
 #define TCCR0 (*(unsigned int *)(TIMER0_BASE + 0)) /**< @brief Register TCCR0 */
 #define OCRA0 (*(unsigned int *)(TIMER0_BASE + 1)) /**< @brief Register OCRA0 */
