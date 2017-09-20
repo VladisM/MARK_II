@@ -21,12 +21,13 @@
 ; R11 - mode variable
 ;
 
-.CONS INTMR 0x000108
+.CONS INTMR   0x00010F
+.CONS INTVEC8 0x000118
 
-.CONS UTDR0 0x120
-.CONS URDR0 0x121
-.CONS USR0  0x122
-.CONS UCR0  0x123
+.CONS UTDR0 0x130
+.CONS URDR0 0x131
+.CONS USR0  0x132
+.CONS UCR0  0x133
 
 .CONS MODE_SYNC  0x01
 .CONS MODE_BASE  0x02
@@ -37,7 +38,6 @@
 
 ;---------------------------------------
 ; init system
-.ORG 0x00000000
 start:
     ;init stack
     MVIL SP 0x07FF
@@ -55,31 +55,32 @@ start:
     ST R1 UCR0
 
     ;enable interrupt
-    MVIL R1 0x0100
+    MVIA R1 UART_ISR
+    ST R1 INTVEC8
+    .MVI R1 0x0100
     ST R1 INTMR
 
     ;goto main program
     BZ R0 main
 
-.ORG 0x00000020 ;UART0 RX ISR
-
+UART_ISR:
     LD USR0 R2
 
     ;decide what code branch to execute - this is something like FSM
     .MVI R2 MODE_SYNC
-    CMP EQ R2 R11 R2
+    CMPI EQ R2 R11 R2
     BNZ R2 mode_sync_code
 
     .MVI R2 MODE_BASE
-    CMP EQ R2 R11 R2
+    CMPI EQ R2 R11 R2
     BNZ R2 mode_base_code
 
     .MVI R2 MODE_COUNT
-    CMP EQ R2 R11 R2
+    CMPI EQ R2 R11 R2
     BNZ R2 mode_count_code
 
     .MVI R2 MODE_DATA
-    CMP EQ R2 R11 R2
+    CMPI EQ R2 R11 R2
     BNZ R2 mode_data_code
 
     ;something is wrong if we are there :(
@@ -91,7 +92,7 @@ mode_sync_code:
     ;if UDR0 != 0x55 then goto mode_sync_code_error
     LD URDR0 R2
     .MVI R3 0x55
-    CMP EQ R2 R3 R2
+    CMPI EQ R2 R3 R2
     BZ R2 mode_sync_code_error
 
     ;send 0xAA responde for loader
@@ -112,7 +113,8 @@ mode_sync_code_error:
 mode_base_code:
 
     ;tmp << 8
-    LSL 8 R6 R6
+    .MVI R4 8
+    LSL R6 R4 R6
 
     ;tmp |= udr0
     LD URDR0 R2
@@ -123,7 +125,7 @@ mode_base_code:
 
     ;if bytenum == 3 then goto mode_base_code_wordcomplete else RETI
     .MVI R2 0x03
-    CMP EQ R2 R7 R2
+    CMPI EQ R2 R7 R2
     BNZ R2 mode_base_code_wordcomplete
 
     BZ R0 signalize_and_reti
@@ -141,7 +143,8 @@ mode_base_code_wordcomplete:
 mode_count_code:
 
     ;tmp << 8
-    LSL 8 R6 R6
+    .MVI R4 8
+    LSL R6 R4 R6
 
     ;tmp |= udr0
     LD URDR0 R2
@@ -152,7 +155,7 @@ mode_count_code:
 
     ;if bytenum == 3 then goto mode_count_code_wordcomplete else RETI
     .MVI R2 0x03
-    CMP EQ R2 R7 R2
+    CMPI EQ R2 R7 R2
     BNZ R2 mode_count_code_wordcomplete
 
     BZ R0 signalize_and_reti
@@ -170,7 +173,8 @@ mode_count_code_wordcomplete:
 mode_data_code:
 
     ;tmp << 8
-    LSL 8 R6 R6
+    .MVI R4 8
+    LSL R6 R4 R6
 
     ;tmp |= udr0
     LD URDR0 R2
@@ -181,7 +185,7 @@ mode_data_code:
 
     ;if bytenum == 4 then goto mode_data_code_wordcomplete else RETI
     .MVI R2 0x04
-    CMP EQ R2 R7 R2
+    CMPI EQ R2 R7 R2
     BNZ R2 mode_data_code_wordcomplete
 
     BZ R0 signalize_and_reti
@@ -198,7 +202,7 @@ mode_data_code_wordcomplete:
     INC R8 R8
 
     ;if wordnum == count then goto mode_data_code_complete else RETI
-    CMP EQ R8 R9 R2
+    CMPI EQ R8 R9 R2
     BNZ R2 mode_data_code_complete
 
     BZ R0 signalize_and_reti
@@ -218,12 +222,12 @@ signalize_and_reti:
 main:
     ; if mode == MODE_DONE then goto base
     .MVI R1 MODE_DONE
-    CMP EQ R1 R11 R1
+    CMPI EQ R1 R11 R1
     BNZ R1 start_loaded
 
     ; if mode == MODE_ERROR make horrible things!
     .MVI R1 MODE_ERROR
-    CMP EQ R1 R11 R1
+    CMPI EQ R1 R11 R1
     BNZ R1 error_sig
 
     BZ R0 main
