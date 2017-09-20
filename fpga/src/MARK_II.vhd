@@ -322,11 +322,11 @@ begin
         port map(clk_sys, resi, bus_address, bus_data_mosi, bus_data_miso, bus_WR, bus_RD, bus_ack, int_req(0), intCPUReq, intAddress, intAccepted, intCompleted);
 
     int0: intController
-        generic map(x"000108")
+        generic map(x"00010F")
         port map(clk_sys, resi, bus_address, bus_data_mosi, bus_data_miso, bus_WR, bus_RD, int_ack, int_req, intAccepted, intCompleted, intAddress, intCPUReq);
 
     systim0: systim
-        generic map(x"000109")
+        generic map(x"000104")
         port map(clk_sys, resi, bus_address, bus_data_mosi, bus_data_miso, bus_WR, bus_RD, systim_ack, int_req(1));
 
     gpio0: gpio
@@ -374,7 +374,7 @@ begin
         port map(clk_sys, bus_address, bus_data_mosi, bus_data_miso, bus_WR, bus_RD, vga_ack, clk_31M5, h_sync, v_sync, red, green, blue);
 
     ps2keyboard0: ps2
-        generic map(x"000108")
+        generic map(x"000106")
         port map(clk_sys, resi, bus_address, bus_data_miso, bus_RD, ps2_ack, ps2clk, ps2dat, int_req(11));
 
     ram1: ram
