@@ -12,7 +12,7 @@ use ieee.numeric_std.all;
 
 entity MARK_II is
     port(
-        --constrol signals
+        --control signals
         clk: in std_logic;
         res: in std_logic;
 
