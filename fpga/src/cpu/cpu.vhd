@@ -14,6 +14,7 @@ entity cpu is
         we: out std_logic;
         oe: out std_logic;
         ack: in std_logic;
+        swirq: out std_logic;
         --interrupts
         int: in std_logic;
         int_address: in std_logic_vector(23 downto 0);
@@ -33,6 +34,7 @@ architecture cpu_arch of cpu is
             ack: in std_logic;
             int: in std_logic;
 
+            swirq: out std_logic;
             we: out std_logic;
             oe: out std_logic;
             int_accept: out std_logic;
@@ -489,7 +491,7 @@ begin
 
     id0: id
         port map(
-            clk, res, instruction_word(31 downto 24), flag, ack, int, we, oe,
+            clk, res, instruction_word(31 downto 24), flag, ack, int, swirq, we, oe,
             int_accept, int_completed, data_c_sel, data_a_sel, data_b_sel,
             force_we_reg_14, inc_r14, inc_r15, dec_r15, instruction_we,
             regfile_c_we

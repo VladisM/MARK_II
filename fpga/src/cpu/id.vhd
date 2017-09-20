@@ -12,6 +12,7 @@ entity id is
         ack: in std_logic;
         int: in std_logic;
 
+        swirq: out std_logic;
         we: out std_logic;
         oe: out std_logic;
         int_accept: out std_logic;
@@ -35,7 +36,7 @@ architecture id_arch of id is
         start, start_inc, start_inc_intcmp, start_dec, start_wait, start_decode, start_calli, start_call,
         intrq, intrq_set, intrq_inc, intrq_inc_set, intrq_dec, intrq_dec_set, intrq_calli, intrq_call,
 
-        ret, reti,
+        ret, reti, swi,
         call, calli,
         pop, push,
         ld, ldi, st, sti,
@@ -194,6 +195,7 @@ begin
                                     when "10001" => id_state <= fdiv;
                                     when "10010" => id_state <= mvil;
                                     when "10011" => id_state <= mvih;
+                                    when "10100" => id_state <= swi;
                                     when others => id_state <= start;
                                 end case;
                         end case;
@@ -432,7 +434,11 @@ begin
                             when '1' => id_state <= intrq;
                             when others => id_state <= start;
                         end case;
-
+                    when swi =>
+                        case int is
+                            when '1' => id_state <= intrq;
+                            when others => id_state <= start;
+                        end case;
                 end case;
             end if;
         end if;
@@ -445,7 +451,7 @@ begin
 
             when start =>
                 we <= '0'; oe <= '0'; int_accept <= '0'; int_completed <= '0';
-                instruction_we <= '1'; force_we_reg_14 <= '0';
+                swirq <= '0'; instruction_we <= '1'; force_we_reg_14 <= '0';
                 inc_r14 <= '0'; inc_r15 <= '0'; dec_r15 <= '0';
                 data_a_sel <= data_a_pc;
                 data_b_sel <= data_b_dontcare;
@@ -454,7 +460,7 @@ begin
 
             when start_inc =>
                 we <= '0'; oe <= '1'; int_accept <= '0'; int_completed <= '0';
-                instruction_we <= '1'; force_we_reg_14 <= '0';
+                swirq <= '0'; instruction_we <= '1'; force_we_reg_14 <= '0';
                 inc_r14 <= '0'; inc_r15 <= '1'; dec_r15 <= '0';
                 data_a_sel <= data_a_pc;
                 data_b_sel <= data_b_dontcare;
@@ -463,7 +469,7 @@ begin
 
             when start_inc_intcmp =>
                 we <= '0'; oe <= '1'; int_accept <= '0'; int_completed <= '1';
-                instruction_we <= '1'; force_we_reg_14 <= '0';
+                swirq <= '0'; instruction_we <= '1'; force_we_reg_14 <= '0';
                 inc_r14 <= '0'; inc_r15 <= '1'; dec_r15 <= '0';
                 data_a_sel <= data_a_pc;
                 data_b_sel <= data_b_dontcare;
@@ -472,7 +478,7 @@ begin
 
             when start_dec =>
                 we <= '0'; oe <= '1'; int_accept <= '0'; int_completed <= '0';
-                instruction_we <= '1'; force_we_reg_14 <= '0';
+                swirq <= '0'; instruction_we <= '1'; force_we_reg_14 <= '0';
                 inc_r14 <= '0'; inc_r15 <= '0'; dec_r15 <= '1';
                 data_a_sel <= data_a_pc;
                 data_b_sel <= data_b_dontcare;
@@ -481,7 +487,7 @@ begin
 
             when start_wait =>
                 we <= '0'; oe <= '1'; int_accept <= '0'; int_completed <= '0';
-                instruction_we <= '1'; force_we_reg_14 <= '0';
+                swirq <= '0'; instruction_we <= '1'; force_we_reg_14 <= '0';
                 inc_r14 <= '0'; inc_r15 <= '0'; dec_r15 <= '0';
                 data_a_sel <= data_a_pc;
                 data_b_sel <= data_b_dontcare;
@@ -490,7 +496,7 @@ begin
 
             when start_decode =>
                 we <= '0'; oe <= '0'; int_accept <= '0'; int_completed <= '0';
-                instruction_we <= '0'; force_we_reg_14 <= '0';
+                swirq <= '0'; instruction_we <= '0'; force_we_reg_14 <= '0';
                 inc_r14 <= '1'; inc_r15 <= '0'; dec_r15 <= '0';
                 data_a_sel <= data_a_dontcare;
                 data_b_sel <= data_b_dontcare;
@@ -499,7 +505,7 @@ begin
 
             when start_calli =>
                 we <= '0'; oe <= '1'; int_accept <= '0'; int_completed <= '0';
-                instruction_we <= '1'; force_we_reg_14 <= '1';
+                swirq <= '0'; instruction_we <= '1'; force_we_reg_14 <= '1';
                 inc_r14 <= '0'; inc_r15 <= '0'; dec_r15 <= '1';
                 data_a_sel <= data_a_regfile;
                 data_b_sel <= data_b_reg0;
@@ -508,7 +514,7 @@ begin
 
             when start_call =>
                 we <= '0'; oe <= '1'; int_accept <= '0'; int_completed <= '0';
-                instruction_we <= '1'; force_we_reg_14 <= '1';
+                swirq <= '0'; instruction_we <= '1'; force_we_reg_14 <= '1';
                 inc_r14 <= '0'; inc_r15 <= '0'; dec_r15 <= '1';
                 data_a_sel <= data_a_arg_mvia;
                 data_b_sel <= data_b_reg0;
@@ -517,7 +523,7 @@ begin
 
             when ret =>
                 we <= '0'; oe <= '1'; int_accept <= '0'; int_completed <= '0';
-                instruction_we <= '0'; force_we_reg_14 <= '1';
+                swirq <= '0'; instruction_we <= '0'; force_we_reg_14 <= '1';
                 inc_r14 <= '0'; inc_r15 <= '0'; dec_r15 <= '0';
                 data_a_sel <= data_a_sp_plus;
                 data_b_sel <= data_b_dontcare;
@@ -526,7 +532,7 @@ begin
 
             when reti =>
                 we <= '0'; oe <= '1'; int_accept <= '0'; int_completed <= '0';
-                instruction_we <= '0'; force_we_reg_14 <= '1';
+                swirq <= '0'; instruction_we <= '0'; force_we_reg_14 <= '1';
                 inc_r14 <= '0'; inc_r15 <= '0'; dec_r15 <= '0';
                 data_a_sel <= data_a_sp_plus;
                 data_b_sel <= data_b_dontcare;
@@ -535,7 +541,7 @@ begin
 
             when call =>
                 we <= '1'; oe <= '0'; int_accept <= '0'; int_completed <= '0';
-                instruction_we <= '0'; force_we_reg_14 <= '0';
+                swirq <= '0'; instruction_we <= '0'; force_we_reg_14 <= '0';
                 inc_r14 <= '0'; inc_r15 <= '0'; dec_r15 <= '0';
                 data_a_sel <= data_a_sp;
                 data_b_sel <= data_b_pc;
@@ -544,7 +550,7 @@ begin
 
             when calli =>
                 we <= '1'; oe <= '0'; int_accept <= '0'; int_completed <= '0';
-                instruction_we <= '0'; force_we_reg_14 <= '0';
+                swirq <= '0'; instruction_we <= '0'; force_we_reg_14 <= '0';
                 inc_r14 <= '0'; inc_r15 <= '0'; dec_r15 <= '0';
                 data_a_sel <= data_a_sp;
                 data_b_sel <= data_b_pc;
@@ -553,7 +559,7 @@ begin
 
             when pop =>
                 we <= '0'; oe <= '1'; int_accept <= '0'; int_completed <= '0';
-                instruction_we <= '0'; force_we_reg_14 <= '0';
+                swirq <= '0'; instruction_we <= '0'; force_we_reg_14 <= '0';
                 inc_r14 <= '0'; inc_r15 <= '0'; dec_r15 <= '0';
                 data_a_sel <= data_a_sp_plus;
                 data_b_sel <= data_b_dontcare;
@@ -562,7 +568,7 @@ begin
 
             when push =>
                 we <= '1'; oe <= '0'; int_accept <= '0'; int_completed <= '0';
-                instruction_we <= '0'; force_we_reg_14 <= '0';
+                swirq <= '0'; instruction_we <= '0'; force_we_reg_14 <= '0';
                 inc_r14 <= '0'; inc_r15 <= '0'; dec_r15 <= '0';
                 data_a_sel <= data_a_sp;
                 data_b_sel <= data_b_regfile;
@@ -571,7 +577,7 @@ begin
 
             when ld =>
                 we <= '0'; oe <= '1'; int_accept <= '0'; int_completed <= '0';
-                instruction_we <= '0'; force_we_reg_14 <= '0';
+                swirq <= '0'; instruction_we <= '0'; force_we_reg_14 <= '0';
                 inc_r14 <= '0'; inc_r15 <= '0'; dec_r15 <= '0';
                 data_a_sel <= data_a_arg_mvia;
                 data_b_sel <= data_b_dontcare;
@@ -580,7 +586,7 @@ begin
 
             when ldi =>
                 we <= '0'; oe <= '1'; int_accept <= '0'; int_completed <= '0';
-                instruction_we <= '0'; force_we_reg_14 <= '0';
+                swirq <= '0'; instruction_we <= '0'; force_we_reg_14 <= '0';
                 inc_r14 <= '0'; inc_r15 <= '0'; dec_r15 <= '0';
                 data_a_sel <= data_a_regfile;
                 data_b_sel <= data_b_dontcare;
@@ -589,7 +595,7 @@ begin
 
             when st =>
                 we <= '1'; oe <= '0'; int_accept <= '0'; int_completed <= '0';
-                instruction_we <= '0'; force_we_reg_14 <= '0';
+                swirq <= '0'; instruction_we <= '0'; force_we_reg_14 <= '0';
                 inc_r14 <= '0'; inc_r15 <= '0'; dec_r15 <= '0';
                 data_a_sel <= data_a_arg_st;
                 data_b_sel <= data_b_regfile;
@@ -598,7 +604,7 @@ begin
 
             when sti =>
                 we <= '1'; oe <= '0'; int_accept <= '0'; int_completed <= '0';
-                instruction_we <= '0'; force_we_reg_14 <= '0';
+                swirq <= '0'; instruction_we <= '0'; force_we_reg_14 <= '0';
                 inc_r14 <= '0'; inc_r15 <= '0'; dec_r15 <= '0';
                 data_a_sel <= data_a_regfile;
                 data_b_sel <= data_b_regfile;
@@ -607,7 +613,7 @@ begin
 
             when bz_bnz_set =>
                 we <= '0'; oe <= '0'; int_accept <= '0'; int_completed <= '0';
-                instruction_we <= '0'; force_we_reg_14 <= '1';
+                swirq <= '0'; instruction_we <= '0'; force_we_reg_14 <= '1';
                 inc_r14 <= '0'; inc_r15 <= '0'; dec_r15 <= '0';
                 data_a_sel <= data_a_arg_branch;
                 data_b_sel <= data_b_reg0;
@@ -616,7 +622,7 @@ begin
 
             when bzi_bnzi_set =>
                 we <= '0'; oe <= '0'; int_accept <= '0'; int_completed <= '0';
-                instruction_we <= '0'; force_we_reg_14 <= '1';
+                swirq <= '0'; instruction_we <= '0'; force_we_reg_14 <= '1';
                 inc_r14 <= '0'; inc_r15 <= '0'; dec_r15 <= '0';
                 data_a_sel <= data_a_regfile;
                 data_b_sel <= data_b_reg0;
@@ -625,7 +631,7 @@ begin
 
             when mvil =>
                 we <= '0'; oe <= '0'; int_accept <= '0'; int_completed <= '0';
-                instruction_we <= '0'; force_we_reg_14 <= '0';
+                swirq <= '0'; instruction_we <= '0'; force_we_reg_14 <= '0';
                 inc_r14 <= '0'; inc_r15 <= '0'; dec_r15 <= '0';
                 data_a_sel <= data_a_arg_mvi;
                 data_b_sel <= data_b_regfile;
@@ -634,7 +640,7 @@ begin
 
             when mvih =>
                 we <= '0'; oe <= '0'; int_accept <= '0'; int_completed <= '0';
-                instruction_we <= '0'; force_we_reg_14 <= '0';
+                swirq <= '0'; instruction_we <= '0'; force_we_reg_14 <= '0';
                 inc_r14 <= '0'; inc_r15 <= '0'; dec_r15 <= '0';
                 data_a_sel <= data_a_arg_mvi;
                 data_b_sel <= data_b_regfile;
@@ -643,7 +649,7 @@ begin
 
             when mvia =>
                 we <= '0'; oe <= '0'; int_accept <= '0'; int_completed <= '0';
-                instruction_we <= '0'; force_we_reg_14 <= '0';
+                swirq <= '0'; instruction_we <= '0'; force_we_reg_14 <= '0';
                 inc_r14 <= '0'; inc_r15 <= '0'; dec_r15 <= '0';
                 data_a_sel <= data_a_arg_mvia;
                 data_b_sel <= data_b_reg0;
@@ -652,7 +658,7 @@ begin
 
             when barrel =>
                 we <= '0'; oe <= '0'; int_accept <= '0'; int_completed <= '0';
-                instruction_we <= '0'; force_we_reg_14 <= '0';
+                swirq <= '0'; instruction_we <= '0'; force_we_reg_14 <= '0';
                 inc_r14 <= '0'; inc_r15 <= '0'; dec_r15 <= '0';
                 data_a_sel <= data_a_regfile;
                 data_b_sel <= data_b_regfile;
@@ -661,7 +667,7 @@ begin
 
             when alu =>
                 we <= '0'; oe <= '0'; int_accept <= '0'; int_completed <= '0';
-                instruction_we <= '0'; force_we_reg_14 <= '0';
+                swirq <= '0'; instruction_we <= '0'; force_we_reg_14 <= '0';
                 inc_r14 <= '0'; inc_r15 <= '0'; dec_r15 <= '0';
                 data_a_sel <= data_a_regfile;
                 data_b_sel <= data_b_regfile;
@@ -670,7 +676,7 @@ begin
 
             when cmpi =>
                 we <= '0'; oe <= '0'; int_accept <= '0'; int_completed <= '0';
-                instruction_we <= '0'; force_we_reg_14 <= '0';
+                swirq <= '0'; instruction_we <= '0'; force_we_reg_14 <= '0';
                 inc_r14 <= '0'; inc_r15 <= '0'; dec_r15 <= '0';
                 data_a_sel <= data_a_regfile;
                 data_b_sel <= data_b_regfile;
@@ -679,7 +685,7 @@ begin
 
             when cmpf =>
                 we <= '0'; oe <= '0'; int_accept <= '0'; int_completed <= '0';
-                instruction_we <= '0'; force_we_reg_14 <= '0';
+                swirq <= '0'; instruction_we <= '0'; force_we_reg_14 <= '0';
                 inc_r14 <= '0'; inc_r15 <= '0'; dec_r15 <= '0';
                 data_a_sel <= data_a_regfile;
                 data_b_sel <= data_b_regfile;
@@ -688,7 +694,7 @@ begin
 
             when cmpf_2 =>
                 we <= '0'; oe <= '0'; int_accept <= '0'; int_completed <= '0';
-                instruction_we <= '0'; force_we_reg_14 <= '0';
+                swirq <= '0'; instruction_we <= '0'; force_we_reg_14 <= '0';
                 inc_r14 <= '0'; inc_r15 <= '0'; dec_r15 <= '0';
                 data_a_sel <= data_a_regfile;
                 data_b_sel <= data_b_regfile;
@@ -697,7 +703,7 @@ begin
 
             when div =>
                 we <= '0'; oe <= '0'; int_accept <= '0'; int_completed <= '0';
-                instruction_we <= '0'; force_we_reg_14 <= '0';
+                swirq <= '0'; instruction_we <= '0'; force_we_reg_14 <= '0';
                 inc_r14 <= '0'; inc_r15 <= '0'; dec_r15 <= '0';
                 data_a_sel <= data_a_regfile;
                 data_b_sel <= data_b_regfile;
@@ -706,7 +712,7 @@ begin
 
             when div_w0 =>
                 we <= '0'; oe <= '0'; int_accept <= '0'; int_completed <= '0';
-                instruction_we <= '0'; force_we_reg_14 <= '0';
+                swirq <= '0'; instruction_we <= '0'; force_we_reg_14 <= '0';
                 inc_r14 <= '0'; inc_r15 <= '0'; dec_r15 <= '0';
                 data_a_sel <= data_a_regfile;
                 data_b_sel <= data_b_regfile;
@@ -715,7 +721,7 @@ begin
 
             when div_w1 =>
                 we <= '0'; oe <= '0'; int_accept <= '0'; int_completed <= '0';
-                instruction_we <= '0'; force_we_reg_14 <= '0';
+                swirq <= '0'; instruction_we <= '0'; force_we_reg_14 <= '0';
                 inc_r14 <= '0'; inc_r15 <= '0'; dec_r15 <= '0';
                 data_a_sel <= data_a_regfile;
                 data_b_sel <= data_b_regfile;
@@ -724,7 +730,7 @@ begin
 
             when div_w2 =>
                 we <= '0'; oe <= '0'; int_accept <= '0'; int_completed <= '0';
-                instruction_we <= '0'; force_we_reg_14 <= '0';
+                swirq <= '0'; instruction_we <= '0'; force_we_reg_14 <= '0';
                 inc_r14 <= '0'; inc_r15 <= '0'; dec_r15 <= '0';
                 data_a_sel <= data_a_regfile;
                 data_b_sel <= data_b_regfile;
@@ -733,7 +739,7 @@ begin
 
             when div_w3 =>
                 we <= '0'; oe <= '0'; int_accept <= '0'; int_completed <= '0';
-                instruction_we <= '0'; force_we_reg_14 <= '0';
+                swirq <= '0'; instruction_we <= '0'; force_we_reg_14 <= '0';
                 inc_r14 <= '0'; inc_r15 <= '0'; dec_r15 <= '0';
                 data_a_sel <= data_a_regfile;
                 data_b_sel <= data_b_regfile;
@@ -742,7 +748,7 @@ begin
 
             when div_w4 =>
                 we <= '0'; oe <= '0'; int_accept <= '0'; int_completed <= '0';
-                instruction_we <= '0'; force_we_reg_14 <= '0';
+                swirq <= '0'; instruction_we <= '0'; force_we_reg_14 <= '0';
                 inc_r14 <= '0'; inc_r15 <= '0'; dec_r15 <= '0';
                 data_a_sel <= data_a_regfile;
                 data_b_sel <= data_b_regfile;
@@ -751,7 +757,7 @@ begin
 
             when div_w5 =>
                 we <= '0'; oe <= '0'; int_accept <= '0'; int_completed <= '0';
-                instruction_we <= '0'; force_we_reg_14 <= '0';
+                swirq <= '0'; instruction_we <= '0'; force_we_reg_14 <= '0';
                 inc_r14 <= '0'; inc_r15 <= '0'; dec_r15 <= '0';
                 data_a_sel <= data_a_regfile;
                 data_b_sel <= data_b_regfile;
@@ -760,7 +766,7 @@ begin
 
             when div_w6 =>
                 we <= '0'; oe <= '0'; int_accept <= '0'; int_completed <= '0';
-                instruction_we <= '0'; force_we_reg_14 <= '0';
+                swirq <= '0'; instruction_we <= '0'; force_we_reg_14 <= '0';
                 inc_r14 <= '0'; inc_r15 <= '0'; dec_r15 <= '0';
                 data_a_sel <= data_a_regfile;
                 data_b_sel <= data_b_regfile;
@@ -769,7 +775,7 @@ begin
 
             when div_w7 =>
                 we <= '0'; oe <= '0'; int_accept <= '0'; int_completed <= '0';
-                instruction_we <= '0'; force_we_reg_14 <= '0';
+                swirq <= '0'; instruction_we <= '0'; force_we_reg_14 <= '0';
                 inc_r14 <= '0'; inc_r15 <= '0'; dec_r15 <= '0';
                 data_a_sel <= data_a_regfile;
                 data_b_sel <= data_b_regfile;
@@ -778,7 +784,7 @@ begin
 
             when div_w8 =>
                 we <= '0'; oe <= '0'; int_accept <= '0'; int_completed <= '0';
-                instruction_we <= '0'; force_we_reg_14 <= '0';
+                swirq <= '0'; instruction_we <= '0'; force_we_reg_14 <= '0';
                 inc_r14 <= '0'; inc_r15 <= '0'; dec_r15 <= '0';
                 data_a_sel <= data_a_regfile;
                 data_b_sel <= data_b_regfile;
@@ -787,7 +793,7 @@ begin
 
             when div_w9 =>
                 we <= '0'; oe <= '0'; int_accept <= '0'; int_completed <= '0';
-                instruction_we <= '0'; force_we_reg_14 <= '0';
+                swirq <= '0'; instruction_we <= '0'; force_we_reg_14 <= '0';
                 inc_r14 <= '0'; inc_r15 <= '0'; dec_r15 <= '0';
                 data_a_sel <= data_a_regfile;
                 data_b_sel <= data_b_regfile;
@@ -796,7 +802,7 @@ begin
 
             when div_w10 =>
                 we <= '0'; oe <= '0'; int_accept <= '0'; int_completed <= '0';
-                instruction_we <= '0'; force_we_reg_14 <= '0';
+                swirq <= '0'; instruction_we <= '0'; force_we_reg_14 <= '0';
                 inc_r14 <= '0'; inc_r15 <= '0'; dec_r15 <= '0';
                 data_a_sel <= data_a_regfile;
                 data_b_sel <= data_b_regfile;
@@ -805,7 +811,7 @@ begin
 
             when div_w11 =>
                 we <= '0'; oe <= '0'; int_accept <= '0'; int_completed <= '0';
-                instruction_we <= '0'; force_we_reg_14 <= '0';
+                swirq <= '0'; instruction_we <= '0'; force_we_reg_14 <= '0';
                 inc_r14 <= '0'; inc_r15 <= '0'; dec_r15 <= '0';
                 data_a_sel <= data_a_regfile;
                 data_b_sel <= data_b_regfile;
@@ -814,7 +820,7 @@ begin
 
             when div_w12 =>
                 we <= '0'; oe <= '0'; int_accept <= '0'; int_completed <= '0';
-                instruction_we <= '0'; force_we_reg_14 <= '0';
+                swirq <= '0'; instruction_we <= '0'; force_we_reg_14 <= '0';
                 inc_r14 <= '0'; inc_r15 <= '0'; dec_r15 <= '0';
                 data_a_sel <= data_a_regfile;
                 data_b_sel <= data_b_regfile;
@@ -823,7 +829,7 @@ begin
 
             when div_w13 =>
                 we <= '0'; oe <= '0'; int_accept <= '0'; int_completed <= '0';
-                instruction_we <= '0'; force_we_reg_14 <= '0';
+                swirq <= '0'; instruction_we <= '0'; force_we_reg_14 <= '0';
                 inc_r14 <= '0'; inc_r15 <= '0'; dec_r15 <= '0';
                 data_a_sel <= data_a_regfile;
                 data_b_sel <= data_b_regfile;
@@ -832,7 +838,7 @@ begin
 
             when div_w14 =>
                 we <= '0'; oe <= '0'; int_accept <= '0'; int_completed <= '0';
-                instruction_we <= '0'; force_we_reg_14 <= '0';
+                swirq <= '0'; instruction_we <= '0'; force_we_reg_14 <= '0';
                 inc_r14 <= '0'; inc_r15 <= '0'; dec_r15 <= '0';
                 data_a_sel <= data_a_regfile;
                 data_b_sel <= data_b_regfile;
@@ -841,7 +847,7 @@ begin
 
             when div_done =>
                 we <= '0'; oe <= '0'; int_accept <= '0'; int_completed <= '0';
-                instruction_we <= '0'; force_we_reg_14 <= '0';
+                swirq <= '0'; instruction_we <= '0'; force_we_reg_14 <= '0';
                 inc_r14 <= '0'; inc_r15 <= '0'; dec_r15 <= '0';
                 data_a_sel <= data_a_regfile;
                 data_b_sel <= data_b_regfile;
@@ -850,7 +856,7 @@ begin
 
             when faddsub =>
                 we <= '0'; oe <= '0'; int_accept <= '0'; int_completed <= '0';
-                instruction_we <= '0'; force_we_reg_14 <= '0';
+                swirq <= '0'; instruction_we <= '0'; force_we_reg_14 <= '0';
                 inc_r14 <= '0'; inc_r15 <= '0'; dec_r15 <= '0';
                 data_a_sel <= data_a_regfile;
                 data_b_sel <= data_b_regfile;
@@ -859,7 +865,7 @@ begin
 
             when faddsub_w0 =>
                 we <= '0'; oe <= '0'; int_accept <= '0'; int_completed <= '0';
-                instruction_we <= '0'; force_we_reg_14 <= '0';
+                swirq <= '0'; instruction_we <= '0'; force_we_reg_14 <= '0';
                 inc_r14 <= '0'; inc_r15 <= '0'; dec_r15 <= '0';
                 data_a_sel <= data_a_regfile;
                 data_b_sel <= data_b_regfile;
@@ -868,7 +874,7 @@ begin
 
             when faddsub_w1 =>
                 we <= '0'; oe <= '0'; int_accept <= '0'; int_completed <= '0';
-                instruction_we <= '0'; force_we_reg_14 <= '0';
+                swirq <= '0'; instruction_we <= '0'; force_we_reg_14 <= '0';
                 inc_r14 <= '0'; inc_r15 <= '0'; dec_r15 <= '0';
                 data_a_sel <= data_a_regfile;
                 data_b_sel <= data_b_regfile;
@@ -877,7 +883,7 @@ begin
 
             when faddsub_w2 =>
                 we <= '0'; oe <= '0'; int_accept <= '0'; int_completed <= '0';
-                instruction_we <= '0'; force_we_reg_14 <= '0';
+                swirq <= '0'; instruction_we <= '0'; force_we_reg_14 <= '0';
                 inc_r14 <= '0'; inc_r15 <= '0'; dec_r15 <= '0';
                 data_a_sel <= data_a_regfile;
                 data_b_sel <= data_b_regfile;
@@ -886,7 +892,7 @@ begin
 
             when faddsub_w3 =>
                 we <= '0'; oe <= '0'; int_accept <= '0'; int_completed <= '0';
-                instruction_we <= '0'; force_we_reg_14 <= '0';
+                swirq <= '0'; instruction_we <= '0'; force_we_reg_14 <= '0';
                 inc_r14 <= '0'; inc_r15 <= '0'; dec_r15 <= '0';
                 data_a_sel <= data_a_regfile;
                 data_b_sel <= data_b_regfile;
@@ -895,7 +901,7 @@ begin
 
             when faddsub_w4 =>
                 we <= '0'; oe <= '0'; int_accept <= '0'; int_completed <= '0';
-                instruction_we <= '0'; force_we_reg_14 <= '0';
+                swirq <= '0'; instruction_we <= '0'; force_we_reg_14 <= '0';
                 inc_r14 <= '0'; inc_r15 <= '0'; dec_r15 <= '0';
                 data_a_sel <= data_a_regfile;
                 data_b_sel <= data_b_regfile;
@@ -904,7 +910,7 @@ begin
 
             when faddsub_w5 =>
                 we <= '0'; oe <= '0'; int_accept <= '0'; int_completed <= '0';
-                instruction_we <= '0'; force_we_reg_14 <= '0';
+                swirq <= '0'; instruction_we <= '0'; force_we_reg_14 <= '0';
                 inc_r14 <= '0'; inc_r15 <= '0'; dec_r15 <= '0';
                 data_a_sel <= data_a_regfile;
                 data_b_sel <= data_b_regfile;
@@ -913,7 +919,7 @@ begin
 
             when faddsub_done =>
                 we <= '0'; oe <= '0'; int_accept <= '0'; int_completed <= '0';
-                instruction_we <= '0'; force_we_reg_14 <= '0';
+                swirq <= '0'; instruction_we <= '0'; force_we_reg_14 <= '0';
                 inc_r14 <= '0'; inc_r15 <= '0'; dec_r15 <= '0';
                 data_a_sel <= data_a_regfile;
                 data_b_sel <= data_b_regfile;
@@ -922,7 +928,7 @@ begin
 
             when fdiv =>
                 we <= '0'; oe <= '0'; int_accept <= '0'; int_completed <= '0';
-                instruction_we <= '0'; force_we_reg_14 <= '0';
+                swirq <= '0'; instruction_we <= '0'; force_we_reg_14 <= '0';
                 inc_r14 <= '0'; inc_r15 <= '0'; dec_r15 <= '0';
                 data_a_sel <= data_a_regfile;
                 data_b_sel <= data_b_regfile;
@@ -931,7 +937,7 @@ begin
 
             when fdiv_w0 =>
                 we <= '0'; oe <= '0'; int_accept <= '0'; int_completed <= '0';
-                instruction_we <= '0'; force_we_reg_14 <= '0';
+                swirq <= '0'; instruction_we <= '0'; force_we_reg_14 <= '0';
                 inc_r14 <= '0'; inc_r15 <= '0'; dec_r15 <= '0';
                 data_a_sel <= data_a_regfile;
                 data_b_sel <= data_b_regfile;
@@ -940,7 +946,7 @@ begin
 
             when fdiv_w1 =>
                 we <= '0'; oe <= '0'; int_accept <= '0'; int_completed <= '0';
-                instruction_we <= '0'; force_we_reg_14 <= '0';
+                swirq <= '0'; instruction_we <= '0'; force_we_reg_14 <= '0';
                 inc_r14 <= '0'; inc_r15 <= '0'; dec_r15 <= '0';
                 data_a_sel <= data_a_regfile;
                 data_b_sel <= data_b_regfile;
@@ -949,7 +955,7 @@ begin
 
             when fdiv_w2 =>
                 we <= '0'; oe <= '0'; int_accept <= '0'; int_completed <= '0';
-                instruction_we <= '0'; force_we_reg_14 <= '0';
+                swirq <= '0'; instruction_we <= '0'; force_we_reg_14 <= '0';
                 inc_r14 <= '0'; inc_r15 <= '0'; dec_r15 <= '0';
                 data_a_sel <= data_a_regfile;
                 data_b_sel <= data_b_regfile;
@@ -958,7 +964,7 @@ begin
 
             when fdiv_w3 =>
                 we <= '0'; oe <= '0'; int_accept <= '0'; int_completed <= '0';
-                instruction_we <= '0'; force_we_reg_14 <= '0';
+                swirq <= '0'; instruction_we <= '0'; force_we_reg_14 <= '0';
                 inc_r14 <= '0'; inc_r15 <= '0'; dec_r15 <= '0';
                 data_a_sel <= data_a_regfile;
                 data_b_sel <= data_b_regfile;
@@ -967,7 +973,7 @@ begin
 
             when fdiv_w4 =>
                 we <= '0'; oe <= '0'; int_accept <= '0'; int_completed <= '0';
-                instruction_we <= '0'; force_we_reg_14 <= '0';
+                swirq <= '0'; instruction_we <= '0'; force_we_reg_14 <= '0';
                 inc_r14 <= '0'; inc_r15 <= '0'; dec_r15 <= '0';
                 data_a_sel <= data_a_regfile;
                 data_b_sel <= data_b_regfile;
@@ -976,7 +982,7 @@ begin
 
             when fdiv_done =>
                 we <= '0'; oe <= '0'; int_accept <= '0'; int_completed <= '0';
-                instruction_we <= '0'; force_we_reg_14 <= '0';
+                swirq <= '0'; instruction_we <= '0'; force_we_reg_14 <= '0';
                 inc_r14 <= '0'; inc_r15 <= '0'; dec_r15 <= '0';
                 data_a_sel <= data_a_regfile;
                 data_b_sel <= data_b_regfile;
@@ -985,7 +991,7 @@ begin
 
             when fmul =>
                 we <= '0'; oe <= '0'; int_accept <= '0'; int_completed <= '0';
-                instruction_we <= '0'; force_we_reg_14 <= '0';
+                swirq <= '0'; instruction_we <= '0'; force_we_reg_14 <= '0';
                 inc_r14 <= '0'; inc_r15 <= '0'; dec_r15 <= '0';
                 data_a_sel <= data_a_regfile;
                 data_b_sel <= data_b_regfile;
@@ -994,7 +1000,7 @@ begin
 
             when fmul_w0 =>
                 we <= '0'; oe <= '0'; int_accept <= '0'; int_completed <= '0';
-                instruction_we <= '0'; force_we_reg_14 <= '0';
+                swirq <= '0'; instruction_we <= '0'; force_we_reg_14 <= '0';
                 inc_r14 <= '0'; inc_r15 <= '0'; dec_r15 <= '0';
                 data_a_sel <= data_a_regfile;
                 data_b_sel <= data_b_regfile;
@@ -1003,7 +1009,7 @@ begin
 
             when fmul_w1 =>
                 we <= '0'; oe <= '0'; int_accept <= '0'; int_completed <= '0';
-                instruction_we <= '0'; force_we_reg_14 <= '0';
+                swirq <= '0'; instruction_we <= '0'; force_we_reg_14 <= '0';
                 inc_r14 <= '0'; inc_r15 <= '0'; dec_r15 <= '0';
                 data_a_sel <= data_a_regfile;
                 data_b_sel <= data_b_regfile;
@@ -1012,7 +1018,7 @@ begin
 
             when fmul_w2 =>
                 we <= '0'; oe <= '0'; int_accept <= '0'; int_completed <= '0';
-                instruction_we <= '0'; force_we_reg_14 <= '0';
+                swirq <= '0'; instruction_we <= '0'; force_we_reg_14 <= '0';
                 inc_r14 <= '0'; inc_r15 <= '0'; dec_r15 <= '0';
                 data_a_sel <= data_a_regfile;
                 data_b_sel <= data_b_regfile;
@@ -1021,7 +1027,7 @@ begin
 
             when fmul_w3 =>
                 we <= '0'; oe <= '0'; int_accept <= '0'; int_completed <= '0';
-                instruction_we <= '0'; force_we_reg_14 <= '0';
+                swirq <= '0'; instruction_we <= '0'; force_we_reg_14 <= '0';
                 inc_r14 <= '0'; inc_r15 <= '0'; dec_r15 <= '0';
                 data_a_sel <= data_a_regfile;
                 data_b_sel <= data_b_regfile;
@@ -1030,7 +1036,7 @@ begin
 
             when fmul_done =>
                 we <= '0'; oe <= '0'; int_accept <= '0'; int_completed <= '0';
-                instruction_we <= '0'; force_we_reg_14 <= '0';
+                swirq <= '0'; instruction_we <= '0'; force_we_reg_14 <= '0';
                 inc_r14 <= '0'; inc_r15 <= '0'; dec_r15 <= '0';
                 data_a_sel <= data_a_regfile;
                 data_b_sel <= data_b_regfile;
@@ -1039,7 +1045,7 @@ begin
 
             when intrq =>
                 we <= '1'; oe <= '0'; int_accept <= '0'; int_completed <= '0';
-                instruction_we <= '0'; force_we_reg_14 <= '0';
+                swirq <= '0'; instruction_we <= '0'; force_we_reg_14 <= '0';
                 inc_r14 <= '0'; inc_r15 <= '0'; dec_r15 <= '0';
                 data_a_sel <= data_a_sp;
                 data_b_sel <= data_b_pc;
@@ -1048,7 +1054,7 @@ begin
 
             when intrq_set =>
                 we <= '0'; oe <= '0'; int_accept <= '1'; int_completed <= '0';
-                instruction_we <= '0'; force_we_reg_14 <= '1';
+                swirq <= '0'; instruction_we <= '0'; force_we_reg_14 <= '1';
                 inc_r14 <= '0'; inc_r15 <= '0'; dec_r15 <= '1';
                 data_a_sel <= data_a_int_addr;
                 data_b_sel <= data_b_reg0;
@@ -1057,7 +1063,7 @@ begin
 
             when intrq_inc =>
                 we <= '1'; oe <= '0'; int_accept <= '0'; int_completed <= '0';
-                instruction_we <= '0'; force_we_reg_14 <= '0';
+                swirq <= '0'; instruction_we <= '0'; force_we_reg_14 <= '0';
                 inc_r14 <= '0'; inc_r15 <= '0'; dec_r15 <= '0';
                 data_a_sel <= data_a_sp_plus;
                 data_b_sel <= data_b_pc;
@@ -1066,7 +1072,7 @@ begin
 
             when intrq_inc_set =>
                 we <= '0'; oe <= '0'; int_accept <= '1'; int_completed <= '0';
-                instruction_we <= '0'; force_we_reg_14 <= '1';
+                swirq <= '0'; instruction_we <= '0'; force_we_reg_14 <= '1';
                 inc_r14 <= '0'; inc_r15 <= '0'; dec_r15 <= '0';
                 data_a_sel <= data_a_int_addr;
                 data_b_sel <= data_b_reg0;
@@ -1075,7 +1081,7 @@ begin
 
             when intrq_dec =>
                 we <= '1'; oe <= '0'; int_accept <= '0'; int_completed <= '0';
-                instruction_we <= '0'; force_we_reg_14 <= '0';
+                swirq <= '0'; instruction_we <= '0'; force_we_reg_14 <= '0';
                 inc_r14 <= '0'; inc_r15 <= '0'; dec_r15 <= '0';
                 data_a_sel <= data_a_sp_minus;
                 data_b_sel <= data_b_pc;
@@ -1084,7 +1090,7 @@ begin
 
             when intrq_dec_set =>
                 we <= '0'; oe <= '0'; int_accept <= '1'; int_completed <= '0';
-                instruction_we <= '0'; force_we_reg_14 <= '1';
+                swirq <= '0'; instruction_we <= '0'; force_we_reg_14 <= '1';
                 inc_r14 <= '0'; inc_r15 <= '0'; dec_r15 <= '1';
                 data_a_sel <= data_a_int_addr;
                 data_b_sel <= data_b_reg0;
@@ -1093,7 +1099,7 @@ begin
 
             when intrq_call =>
                 we <= '1'; oe <= '0'; int_accept <= '0'; int_completed <= '0';
-                instruction_we <= '0'; force_we_reg_14 <= '0';
+                swirq <= '0'; instruction_we <= '0'; force_we_reg_14 <= '0';
                 inc_r14 <= '0'; inc_r15 <= '0'; dec_r15 <= '0';
                 data_a_sel <= data_a_sp;
                 data_b_sel <= data_b_arg_call;
@@ -1102,10 +1108,19 @@ begin
 
             when intrq_calli =>
                 we <= '1'; oe <= '0'; int_accept <= '0'; int_completed <= '0';
-                instruction_we <= '0'; force_we_reg_14 <= '0';
+                swirq <= '0'; instruction_we <= '0'; force_we_reg_14 <= '0';
                 inc_r14 <= '0'; inc_r15 <= '0'; dec_r15 <= '0';
                 data_a_sel <= data_a_sp;
                 data_b_sel <= data_b_regfile_a;
+                data_c_sel <= data_c_dontcare;
+                regfile_c_we <= '0';
+
+            when swi =>
+                we <= '0'; oe <= '0'; int_accept <= '0'; int_completed <= '0';
+                swirq <= '1'; instruction_we <= '0'; force_we_reg_14 <= '0';
+                inc_r14 <= '0'; inc_r15 <= '0'; dec_r15 <= '0';
+                data_a_sel <= data_a_dontcare;
+                data_b_sel <= data_b_dontcare;
                 data_c_sel <= data_c_dontcare;
                 regfile_c_we <= '0';
 

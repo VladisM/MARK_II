@@ -86,16 +86,6 @@ architecture MARK_II_arch of MARK_II is
     attribute chip_pin of ps2clk        : signal is "L16";
     attribute chip_pin of ps2dat        : signal is "L15";
 
-    component clkControl is
-        port(
-            clk: in std_logic;
-            res: in std_logic;
-            enclk2: out std_logic;
-            enclk4: out std_logic;
-            enclk8: out std_logic
-        );
-    end component clkControl;
-
     component cpu is
         port(
             --system interface
@@ -108,6 +98,7 @@ architecture MARK_II_arch of MARK_II is
             we: out std_logic;
             oe: out std_logic;
             ack: in std_logic;
+            swirq: out std_logic;
             --interrupts
             int: in std_logic;
             int_address: in std_logic_vector(23 downto 0);
@@ -223,9 +214,6 @@ architecture MARK_II_arch of MARK_II is
             WR: in std_logic;
             RD: in std_logic;
             ack: out std_logic;
-            enclk2: in std_logic;
-            enclk4: in std_logic;
-            enclk8: in std_logic;
             --device
             pwma: out std_logic;
             pwmb: out std_logic;
@@ -314,8 +302,6 @@ architecture MARK_II_arch of MARK_II is
     signal intCPUReq: std_logic;
     signal intAddress: std_logic_vector(23 downto 0);
 
-    signal enclk2, enclk4, enclk8: std_logic;
-
     signal clk_31M5: std_logic;     -- 31,5 MHz clk for vga
     signal clk_uart: std_logic;     -- 14,4 MHz clk for uarts
     signal clk_sys: std_logic;      -- 40 MHz clk for CPU
@@ -332,15 +318,16 @@ begin
     pll0: pll
         port map(clk, clk_uart, clk_31M5, clk_sys);
 
-    clk0: clkControl
-        port map(clk_sys, resi, enclk2, enclk4, enclk8);
-
     cpu0: cpu
-        port map(clk_sys, resi, bus_address, bus_data_mosi, bus_data_miso, bus_WR, bus_RD, bus_ack, intCPUReq, intAddress, intAccepted, intCompleted);
+        port map(clk_sys, resi, bus_address, bus_data_mosi, bus_data_miso, bus_WR, bus_RD, bus_ack, int_req(0), intCPUReq, intAddress, intAccepted, intCompleted);
 
     int0: intController
         generic map(x"000108")
         port map(clk_sys, resi, bus_address, bus_data_mosi, bus_data_miso, bus_WR, bus_RD, int_ack, int_req, intAccepted, intCompleted, intAddress, intCPUReq);
+
+    systim0: systim
+        generic map(x"000109")
+        port map(clk_sys, resi, bus_address, bus_data_mosi, bus_data_miso, bus_WR, bus_RD, systim_ack, int_req(1));
 
     gpio0: gpio
         generic map(x"000100", 8)
@@ -354,25 +341,21 @@ begin
         generic map(x"000400", 10)
         port map(clk_sys, bus_address, bus_data_mosi, bus_data_miso, bus_WR, bus_RD, ram_ack);
 
-    systim0: systim
-        generic map(x"000109")
-        port map(clk_sys, resi, bus_address, bus_data_mosi, bus_data_miso, bus_WR, bus_RD, systim_ack, int_req(0));
-
     tim0: timer
         generic map(x"000120")
-        port map(clk_sys, resi, bus_address, bus_data_mosi, bus_data_miso, bus_WR, bus_RD, tim0_ack, enclk2, enclk4, enclk8, tim0_pwma, tim0_pwmb, int_req(12));
+        port map(clk_sys, resi, bus_address, bus_data_mosi, bus_data_miso, bus_WR, bus_RD, tim0_ack, tim0_pwma, tim0_pwmb, int_req(12));
 
     tim1: timer
         generic map(x"000124")
-        port map(clk_sys, resi, bus_address, bus_data_mosi, bus_data_miso, bus_WR, bus_RD, tim1_ack, enclk2, enclk4, enclk8, tim1_pwma, tim1_pwmb, int_req(13));
+        port map(clk_sys, resi, bus_address, bus_data_mosi, bus_data_miso, bus_WR, bus_RD, tim1_ack, tim1_pwma, tim1_pwmb, int_req(13));
 
     tim2: timer
         generic map(x"000128")
-        port map(clk_sys, resi, bus_address, bus_data_mosi, bus_data_miso, bus_WR, bus_RD, tim2_ack, enclk2, enclk4, enclk8, tim2_pwma, tim2_pwmb, int_req(14));
+        port map(clk_sys, resi, bus_address, bus_data_mosi, bus_data_miso, bus_WR, bus_RD, tim2_ack, tim2_pwma, tim2_pwmb, int_req(14));
 
     tim3: timer
         generic map(x"00012C")
-        port map(clk_sys, resi, bus_address, bus_data_mosi, bus_data_miso, bus_WR, bus_RD, tim3_ack, enclk2, enclk4, enclk8, tim3_pwma, tim3_pwmb, int_req(15));
+        port map(clk_sys, resi, bus_address, bus_data_mosi, bus_data_miso, bus_WR, bus_RD, tim3_ack, tim3_pwma, tim3_pwmb, int_req(15));
 
     uart0: uart
         generic map(x"000130")

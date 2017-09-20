@@ -24,9 +24,6 @@ entity timer is
         WR: in std_logic;
         RD: in std_logic;
         ack: out std_logic;
-        enclk2: in std_logic;
-        enclk4: in std_logic;
-        enclk8: in std_logic;
         --device
         pwma: out std_logic;
         pwmb: out std_logic;
@@ -68,7 +65,7 @@ architecture timer_arch of timer is
     signal TCCR: std_logic_vector(6 downto 0);
     signal clear_from_write, int_raw: std_logic;
     signal timerValue: unsigned(15 downto 0);
-
+    signal enclk2, enclk4, enclk8: std_logic;
 begin
 
     core0: core
@@ -126,6 +123,23 @@ begin
             clear_from_write <= '0';
         end if;
     end process;
+
+    --clk en generator
+    process(clk) is
+        variable var: unsigned(2 downto 0);
+    begin
+        if falling_edge(clk) then
+            if res = '1' then
+                var := "000";
+            else
+                var := var + 1;
+            end if;
+        end if;
+        enclk2 <= var(0);
+        enclk4 <= var(0) and var(1);
+        enclk8 <= var(0) and var(1) and var(2);
+    end process;
+
 
 end architecture timer_arch;
 
