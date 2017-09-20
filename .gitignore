@@ -29,14 +29,6 @@ doc/refman/**/*.lof
 doc/refman/**/*.pdf
 doc/refman/**/*.lot
 
-doc/isa/**/*.aux
-doc/isa/**/*.log
-doc/isa/**/*.out
-doc/isa/**/*.toc
-doc/isa/**/*.lof
-doc/isa/**/*.pdf
-doc/isa/**/*.lot
-
 toolchain/vbcc/doc/vbcc.aux
 toolchain/vbcc/doc/vbcc.log
 toolchain/vbcc/doc/vbcc.toc

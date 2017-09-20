@@ -12,12 +12,6 @@ make clean
 mv main.pdf ../../refman.pdf
 cd ../..
 
-cd doc/isa/
-make
-make clean
-mv main.pdf ../../isa.pdf
-cd ../..
-
 cd toolchain/spl/
 doxygen Doxyfile
 cd latex

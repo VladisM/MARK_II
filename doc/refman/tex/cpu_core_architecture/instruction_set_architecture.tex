@@ -97,7 +97,673 @@ instruction is mandatory for branching. With this instruction you can compare
 two register with specified comparison type and store 1 if "expression" is true
 or 0 if false, into specified register.
 
-\subsubsection{More informations}
 
-You can find more informations about instruction format in document called
-MARK-II Instruction Set Architecture.
+\subsubsection{List of instructions}
+
+\begin{itemize}
+
+    \item RET
+    \begin{itemize}
+        \item \textbf{Syntax}
+        \begin{lstlisting}[language={[markII]Assembler}, frame=single]
+    RET
+        \end{lstlisting}
+        \item \textbf{Explanation}
+        \begin{lstlisting}[language=bash, frame=single]
+    SP++; PC <= mem(SP)
+        \end{lstlisting}
+        \item \textbf{Comment} \\
+    Return from subroutine.
+    \end{itemize}
+
+    \item RETI
+    \begin{itemize}
+        \item \textbf{Syntax}
+        \begin{lstlisting}[language={[markII]Assembler}, frame=single]
+    RETI
+        \end{lstlisting}
+        \item \textbf{Explanation}
+        \begin{lstlisting}[language=bash, frame=single]
+    SP++; PC <= mem(SP)
+        \end{lstlisting}
+        \item \textbf{Comment} \\
+    Return from interrupt service routine.
+    \end{itemize}
+
+    \item SWI
+    \begin{itemize}
+        \item \textbf{Syntax}
+        \begin{lstlisting}[language={[markII]Assembler}, frame=single]
+    SWI
+        \end{lstlisting}
+        \item \textbf{Comment} \\
+    Call software interrupt.
+    \end{itemize}
+
+    \item CALLI
+    \begin{itemize}
+        \item \textbf{Syntax}
+        \begin{lstlisting}[language={[markII]Assembler}, frame=single]
+    CALLI rA
+        \end{lstlisting}
+        \item \textbf{Explanation}
+        \begin{lstlisting}[language=bash, frame=single]
+    mem(SP) <= PC; SP--; PC <= reg(rA)
+        \end{lstlisting}
+        \item \textbf{Comment} \\
+    Call subroutine with address in some of register.
+    \end{itemize}
+
+    \item PUSH
+    \begin{itemize}
+        \item \textbf{Syntax}
+        \begin{lstlisting}[language={[markII]Assembler}, frame=single]
+    PUSH rA
+        \end{lstlisting}
+        \item \textbf{Explanation}
+        \begin{lstlisting}[language=bash, frame=single]
+    mem(SP) <= reg(rA); SP--
+        \end{lstlisting}
+        \item \textbf{Comment} \\
+    Store register into stack, then decrement stack pointer.
+    \end{itemize}
+
+    \item POP
+    \begin{itemize}
+        \item \textbf{Syntax}
+        \begin{lstlisting}[language={[markII]Assembler}, frame=single]
+    POP rA
+        \end{lstlisting}
+        \item \textbf{Explanation}
+        \begin{lstlisting}[language=bash, frame=single]
+    SP++ reg(rA) <= mem(SP)
+        \end{lstlisting}
+        \item \textbf{Comment} \\
+    Get data from stack and store them in register, then increment stack pointer.
+    \end{itemize}
+
+    \item LDI
+    \begin{itemize}
+        \item \textbf{Syntax}
+        \begin{lstlisting}[language={[markII]Assembler}, frame=single]
+    LDI rA rB
+        \end{lstlisting}
+        \item \textbf{Explanation}
+        \begin{lstlisting}[language=bash, frame=single]
+    reg(rB) <= mem(reg(rA))
+        \end{lstlisting}
+        \item \textbf{Comment} \\
+    Load from memory. Address is stored in some of register.
+    \end{itemize}
+
+    \item STI
+    \begin{itemize}
+        \item \textbf{Syntax}
+        \begin{lstlisting}[language={[markII]Assembler}, frame=single]
+    STI rA rB
+        \end{lstlisting}
+        \item \textbf{Explanation}
+        \begin{lstlisting}[language=bash, frame=single]
+    mem(reg(rB)) <= reg(rA)
+        \end{lstlisting}
+        \item \textbf{Comment} \\
+    Store data from register into memory. Address is stored in some of register.
+    \end{itemize}
+
+    \item BZI
+    \begin{itemize}
+        \item \textbf{Syntax}
+        \begin{lstlisting}[language={[markII]Assembler}, frame=single]
+    BZI rA rB
+        \end{lstlisting}
+        \item \textbf{Explanation}
+        \begin{lstlisting}[language=bash, frame=single]
+    if reg(rA) = 0 then PC <= reg(rB)
+        \end{lstlisting}
+        \item \textbf{Comment} \\
+    Branch if register is equal to zero. Address for jump is stored in register.
+    \end{itemize}
+
+    \item BNZI
+    \begin{itemize}
+        \item \textbf{Syntax}
+        \begin{lstlisting}[language={[markII]Assembler}, frame=single]
+    BNZI rA rB
+        \end{lstlisting}
+        \item \textbf{Explanation}
+        \begin{lstlisting}[language=bash, frame=single]
+    if reg(rA) != 0 then PC <= reg(rB)
+        \end{lstlisting}
+        \item \textbf{Comment} \\
+    Branch if register isn't equal to zero. Address for jump is stored in register.
+    \end{itemize}
+
+    \item MOV
+    \begin{itemize}
+        \item \textbf{Syntax}
+        \begin{lstlisting}[language={[markII]Assembler}, frame=single]
+    MOV rA rB
+        \end{lstlisting}
+        \item \textbf{Explanation}
+        \begin{lstlisting}[language=bash, frame=single]
+    reg(rB) <= reg(rA)
+        \end{lstlisting}
+        \item \textbf{Comment} \\
+    Move data from one register to the another.
+    \end{itemize}
+
+    \item CMPI
+    \begin{itemize}
+        \item \textbf{Syntax}
+        \begin{lstlisting}[language={[markII]Assembler}, frame=single]
+    CMPI Comp rA rB rC
+        \end{lstlisting}
+        \item \textbf{Explanation}
+        \begin{lstlisting}[language=bash, frame=single]
+    if reg(rA) "Comp" reg(rB) then reg(rC) <= 1
+        \end{lstlisting}
+        \item \textbf{Comment} \\
+    Compare two registers (integers). Condition is "Comp" and can be found in table \ref{tab:cmp_conds_i}.
+
+    \begin{table}[h]
+        \centering
+        \begin{tabular}{|l|l|l|}
+            \hline
+            \textbf{Name}             & \textbf{Symbol} & \textbf{Meaning}      \\ \hline
+            Equal                     & EQ              & $A==B$                \\ \hline
+            Not Equal                 & NQE             & $A!=B$                \\ \hline
+            Lower than                & L               & $A<B$                 \\ \hline
+            Lower than (U)            & LU              & $A<B$ Unsigned        \\ \hline
+            Lower or equal than       & LE              & $A<B | A==B$          \\ \hline
+            Lower or equal than (U)   & LEU             & $A<B | A==B$ Unsigned \\ \hline
+            Greater                   & G               & $A>B$                 \\ \hline
+            Greater (U)               & GU              & $A>B$ Unsigned        \\ \hline
+            Greater or equal than     & GE              & $A>B | A==B$          \\ \hline
+            Greater or equal than (U) & GEU             & $A>B | A==B$ Unsigned \\ \hline
+        \end{tabular}
+        \caption{Conditions for CMPI instruction.}
+        \label{tab:cmp_conds_i}
+    \end{table}
+
+    \end{itemize}
+
+    \item CMPF
+    \begin{itemize}
+        \item \textbf{Syntax}
+        \begin{lstlisting}[language={[markII]Assembler}, frame=single]
+    CMPF Comp rA rB rC
+        \end{lstlisting}
+        \item \textbf{Explanation}
+        \begin{lstlisting}[language=bash, frame=single]
+    if reg(rA) "Comp" reg(rB) then reg(rC) <= 1
+        \end{lstlisting}
+        \item \textbf{Comment} \\
+    Compare two registers (floats). Condition is "Comp" and can be found in table \ref{tab:cmp_conds_f}.
+
+    \begin{table}[h]
+        \centering
+        \begin{tabular}{|l|l|l|}
+            \hline
+            \textbf{Name}             & \textbf{Symbol} & \textbf{Meaning}      \\ \hline
+            Equal                     & EQ              & $A==B$                \\ \hline
+            Not Equal                 & NQE             & $A!=B$                \\ \hline
+            Lower than                & L               & $A<B$                 \\ \hline
+            Lower or equal than       & LE              & $A<B | A==B$          \\ \hline
+            Greater                   & G               & $A>B$                 \\ \hline
+            Greater or equal than     & GE              & $A>B | A==B$          \\ \hline
+        \end{tabular}
+        \caption{Conditions for CMPF instruction.}
+        \label{tab:cmp_conds_f}
+    \end{table}
+
+    \end{itemize}
+
+    \item AND
+    \begin{itemize}
+        \item \textbf{Syntax}
+        \begin{lstlisting}[language={[markII]Assembler}, frame=single]
+    AND rA rB rC
+        \end{lstlisting}
+        \item \textbf{Explanation}
+        \begin{lstlisting}[language=bash, frame=single]
+    reg(rC) <= reg(rA) AND reg(rB)
+        \end{lstlisting}
+        \item \textbf{Comment} \\
+    Bitwise AND between two registers.
+    \end{itemize}
+
+    \item OR
+    \begin{itemize}
+        \item \textbf{Syntax}
+        \begin{lstlisting}[language={[markII]Assembler}, frame=single]
+    OR rA rB rC
+        \end{lstlisting}
+        \item \textbf{Explanation}
+        \begin{lstlisting}[language=bash, frame=single]
+    reg(rC) <= reg(rA) OR reg(rB)
+        \end{lstlisting}
+        \item \textbf{Comment} \\
+    Bitwise OR between two registers.
+    \end{itemize}
+
+    \item XOR
+    \begin{itemize}
+        \item \textbf{Syntax}
+        \begin{lstlisting}[language={[markII]Assembler}, frame=single]
+    XOR rA rB rC
+        \end{lstlisting}
+        \item \textbf{Explanation}
+        \begin{lstlisting}[language=bash, frame=single]
+    reg(rC) <= reg(rA) XOR reg(rB)
+        \end{lstlisting}
+        \item \textbf{Comment} \\
+    Bitwise XOR between two registers.
+    \end{itemize}
+
+    \item NOT
+    \begin{itemize}
+        \item \textbf{Syntax}
+        \begin{lstlisting}[language={[markII]Assembler}, frame=single]
+    NOT rA rB
+        \end{lstlisting}
+        \item \textbf{Explanation}
+        \begin{lstlisting}[language=bash, frame=single]
+    reg(rB) <= ~(reg(rA))
+        \end{lstlisting}
+        \item \textbf{Comment} \\
+    Bitwise negation of register.
+    \end{itemize}
+
+    \item ADD
+    \begin{itemize}
+        \item \textbf{Syntax}
+        \begin{lstlisting}[language={[markII]Assembler}, frame=single]
+    ADD rA rB rC
+        \end{lstlisting}
+        \item \textbf{Explanation}
+        \begin{lstlisting}[language=bash, frame=single]
+    reg(rC) <= reg(rA) + reg(rB)
+        \end{lstlisting}
+        \item \textbf{Comment} \\
+    32 bits wide addition.
+    \end{itemize}
+
+    \item SUB
+    \begin{itemize}
+        \item \textbf{Syntax}
+        \begin{lstlisting}[language={[markII]Assembler}, frame=single]
+    SUB rA rB rC
+        \end{lstlisting}
+        \item \textbf{Explanation}
+        \begin{lstlisting}[language=bash, frame=single]
+    reg(rC) <= reg(rA) - reg(rB)
+        \end{lstlisting}
+        \item \textbf{Comment} \\
+    32 bits wide subtraction.
+    \end{itemize}
+
+    \item INC
+    \begin{itemize}
+        \item \textbf{Syntax}
+        \begin{lstlisting}[language={[markII]Assembler}, frame=single]
+    INC rA rB
+        \end{lstlisting}
+        \item \textbf{Explanation}
+        \begin{lstlisting}[language=bash, frame=single]
+    reg(rB) <= reg(rA) + 1
+        \end{lstlisting}
+        \item \textbf{Comment} \\
+    Increment value from register and store it into another.
+    \end{itemize}
+
+    \item DEC
+    \begin{itemize}
+        \item \textbf{Syntax}
+        \begin{lstlisting}[language={[markII]Assembler}, frame=single]
+    DEC rA rB
+        \end{lstlisting}
+        \item \textbf{Explanation}
+        \begin{lstlisting}[language=bash, frame=single]
+    reg(rB) <= reg(rA) - 1
+        \end{lstlisting}
+        \item \textbf{Comment} \\
+    Decrement value from register and store it into another.
+    \end{itemize}
+
+    \item ASL
+    \begin{itemize}
+        \item \textbf{Syntax}
+        \begin{lstlisting}[language={[markII]Assembler}, frame=single]
+    ASL rA rB rC
+        \end{lstlisting}
+        \item \textbf{Explanation}
+        \begin{lstlisting}[language=bash, frame=single]
+    reg(rC) <= reg(rA) left shift by reg(rB)
+        \end{lstlisting}
+        \item \textbf{Comment} \\
+    Arithmetical shift to left using barrel shifter.
+    \end{itemize}
+
+    \item ASR
+    \begin{itemize}
+        \item \textbf{Syntax}
+        \begin{lstlisting}[language={[markII]Assembler}, frame=single]
+    ASR rA rB rC
+        \end{lstlisting}
+        \item \textbf{Explanation}
+        \begin{lstlisting}[language=bash, frame=single]
+    reg(rC) <= reg(rA) right shift by reg(rB)
+        \end{lstlisting}
+        \item \textbf{Comment} \\
+    Arithmetical shift to right using barrel shifter.
+    \end{itemize}
+
+    \item LSL
+    \begin{itemize}
+        \item \textbf{Syntax}
+        \begin{lstlisting}[language={[markII]Assembler}, frame=single]
+    LSL rA rB rC
+        \end{lstlisting}
+        \item \textbf{Explanation}
+        \begin{lstlisting}[language=bash, frame=single]
+    reg(rC) <= reg(rA) left shift by reg(rB)
+        \end{lstlisting}
+        \item \textbf{Comment} \\
+    Logical shift to left using barrel shifter.
+    \end{itemize}
+
+    \item LSR
+    \begin{itemize}
+        \item \textbf{Syntax}
+        \begin{lstlisting}[language={[markII]Assembler}, frame=single]
+    LSR Dist rA rB
+        \end{lstlisting}
+        \item \textbf{Explanation}
+        \begin{lstlisting}[language=bash, frame=single]
+    reg(rC) <= reg(rA) right shift by reg(rB)
+        \end{lstlisting}
+        \item \textbf{Comment} \\
+    Logical shift to right using barrel shifter.
+    \end{itemize}
+
+    \item ROL
+    \begin{itemize}
+        \item \textbf{Syntax}
+        \begin{lstlisting}[language={[markII]Assembler}, frame=single]
+    ROL rA rB rC
+        \end{lstlisting}
+        \item \textbf{Explanation}
+        \begin{lstlisting}[language=bash, frame=single]
+    reg(rC) <= reg(rA) left rotate by reg(rB)
+        \end{lstlisting}
+        \item \textbf{Comment} \\
+    Rotate to left using barrel shifter.
+    \end{itemize}
+
+    \item ROR
+    \begin{itemize}
+        \item \textbf{Syntax}
+        \begin{lstlisting}[language={[markII]Assembler}, frame=single]
+    ROR rA rB rC
+        \end{lstlisting}
+        \item \textbf{Explanation}
+        \begin{lstlisting}[language=bash, frame=single]
+    reg(rC) <= reg(rA) right rotate by reg(rB)
+        \end{lstlisting}
+        \item \textbf{Comment} \\
+    Rotate to right using barrel shifter.
+    \end{itemize}
+
+    \item MUL
+    \begin{itemize}
+        \item \textbf{Syntax}
+        \begin{lstlisting}[language={[markII]Assembler}, frame=single]
+    MUL rA rB rC
+        \end{lstlisting}
+        \item \textbf{Explanation}
+        \begin{lstlisting}[language=bash, frame=single]
+    reg(rC) <= reg(rA) * reg(rB)
+        \end{lstlisting}
+        \item \textbf{Comment} \\
+        Multiply two registers. Represent them as signed values. Result is 32bit.
+    \end{itemize}
+
+    \item MULU
+    \begin{itemize}
+        \item \textbf{Syntax}
+        \begin{lstlisting}[language={[markII]Assembler}, frame=single]
+    MULU rA rB rC
+        \end{lstlisting}
+        \item \textbf{Explanation}
+        \begin{lstlisting}[language=bash, frame=single]
+    reg(rC) <= reg(rA) * reg(rB)
+        \end{lstlisting}
+        \item \textbf{Comment} \\
+        Multiply two registers. Represent them as unsigned values. Result is 32bit.
+    \end{itemize}
+
+    \item DIV
+    \begin{itemize}
+        \item \textbf{Syntax}
+        \begin{lstlisting}[language={[markII]Assembler}, frame=single]
+    DIV rA rB rC
+        \end{lstlisting}
+        \item \textbf{Explanation}
+        \begin{lstlisting}[language=bash, frame=single]
+    reg(rC) <= reg(rA) / reg(rB)
+        \end{lstlisting}
+        \item \textbf{Comment} \\
+        Divide two registers. Represent them as signed values. Result is 32bit.
+    \end{itemize}
+
+    \item DIV
+    \begin{itemize}
+        \item \textbf{Syntax}
+        \begin{lstlisting}[language={[markII]Assembler}, frame=single]
+    DIVU rA rB rC
+        \end{lstlisting}
+        \item \textbf{Explanation}
+        \begin{lstlisting}[language=bash, frame=single]
+    reg(rC) <= reg(rA) / reg(rB)
+        \end{lstlisting}
+        \item \textbf{Comment} \\
+        Divide two registers. Represent them as unsigned values. Result is 32bit.
+    \end{itemize}
+
+    \item REM
+    \begin{itemize}
+        \item \textbf{Syntax}
+        \begin{lstlisting}[language={[markII]Assembler}, frame=single]
+    REM rA rB rC
+        \end{lstlisting}
+        \item \textbf{Explanation}
+        \begin{lstlisting}[language=bash, frame=single]
+    reg(rC) <= reg(rA) \% reg(rB)
+        \end{lstlisting}
+        \item \textbf{Comment} \\
+        Remainder after integer division of two registers. Represent them as signed values. Result is 32bit.
+    \end{itemize}
+
+    \item REMU
+    \begin{itemize}
+        \item \textbf{Syntax}
+        \begin{lstlisting}[language={[markII]Assembler}, frame=single]
+    REMU rA rB rC
+        \end{lstlisting}
+        \item \textbf{Explanation}
+        \begin{lstlisting}[language=bash, frame=single]
+    reg(rC) <= reg(rA) \% reg(rB)
+        \end{lstlisting}
+        \item \textbf{Comment} \\
+        Remainder after integer division of two registers. Represent them as unsigned values. Result is 32bit.
+    \end{itemize}
+
+    \item MVIL
+    \begin{itemize}
+        \item \textbf{Syntax}
+        \begin{lstlisting}[language={[markII]Assembler}, frame=single]
+    MVIL rA Cons16
+        \end{lstlisting}
+        \item \textbf{Explanation}
+        \begin{lstlisting}[language=bash, frame=single]
+    reg(rA) <= (reg(rA) AND 0xFFFF0000) OR "Cons16"
+        \end{lstlisting}
+        \item \textbf{Comment} \\
+    Move immediate data (stored in instruction word) into lower half of register.
+    \end{itemize}
+
+    \item MVIH
+    \begin{itemize}
+        \item \textbf{Syntax}
+        \begin{lstlisting}[language={[markII]Assembler}, frame=single]
+    MVIH rA cons16
+        \end{lstlisting}
+        \item \textbf{Explanation}
+        \begin{lstlisting}[language=bash, frame=single]
+    reg(rA) <= (reg(rA) AND 0x0000FFFF) OR ("Cons16" << 16)
+        \end{lstlisting}
+        \item \textbf{Comment} \\
+    Move immediate data (stored in instruction word) into higher half of register.
+    \end{itemize}
+
+    \item CALL
+    \begin{itemize}
+        \item \textbf{Syntax}
+        \begin{lstlisting}[language={[markII]Assembler}, frame=single]
+    CALL Addr
+        \end{lstlisting}
+        \item \textbf{Explanation}
+        \begin{lstlisting}[language=bash, frame=single]
+    mem(SP) <= PC; SP--; PC <= Addr
+        \end{lstlisting}
+        \item \textbf{Comment} \\
+    Call subroutine and store PC into SP. Address of subroutine is in instruction.
+    \end{itemize}
+
+    \item LD
+    \begin{itemize}
+        \item \textbf{Syntax}
+        \begin{lstlisting}[language={[markII]Assembler}, frame=single]
+    LD Addr rA
+        \end{lstlisting}
+        \item \textbf{Explanation}
+        \begin{lstlisting}[language=bash, frame=single]
+    reg(rA) <= mem(Addr)
+        \end{lstlisting}
+        \item \textbf{Comment} \\
+    Load data from memory into register. Address is in instruction.
+    \end{itemize}
+
+    \item ST
+    \begin{itemize}
+        \item \textbf{Syntax}
+        \begin{lstlisting}[language={[markII]Assembler}, frame=single]
+    ST rA Addr
+        \end{lstlisting}
+        \item \textbf{Explanation}
+        \begin{lstlisting}[language=bash, frame=single]
+    mem(Addr) <= reg(rA)
+        \end{lstlisting}
+        \item \textbf{Comment} \\
+    Store data from register into memory. Address is in instruction.
+    \end{itemize}
+
+    \item BZ
+    \begin{itemize}
+        \item \textbf{Syntax}
+        \begin{lstlisting}[language={[markII]Assembler}, frame=single]
+    BZ rA Addr
+        \end{lstlisting}
+        \item \textbf{Explanation}
+        \begin{lstlisting}[language=bash, frame=single]
+    if reg(rA) = 0 then PC <= Addr
+        \end{lstlisting}
+        \item \textbf{Comment} \\
+    Branch if register is equal to zero. Address for jump is stored in instruction.
+    \end{itemize}
+
+    \item BNZ
+    \begin{itemize}
+        \item \textbf{Syntax}
+        \begin{lstlisting}[language={[markII]Assembler}, frame=single]
+    BNZ rA Addr
+        \end{lstlisting}
+        \item \textbf{Explanation}
+        \begin{lstlisting}[language=bash, frame=single]
+    if reg(rA) != 0 then PC <= Addr
+        \end{lstlisting}
+        \item \textbf{Comment} \\
+    Branch if register isn't equal to zero. Address for jump is stored in register.
+    \end{itemize}
+
+    \item MVIA
+    \begin{itemize}
+        \item \textbf{Syntax}
+        \begin{lstlisting}[language={[markII]Assembler}, frame=single]
+    MVIA rA Addr
+        \end{lstlisting}
+        \item \textbf{Explanation}
+        \begin{lstlisting}[language=bash, frame=single]
+    reg(rA) <= Addr
+        \end{lstlisting}
+        \item \textbf{Comment} \\
+    Load 24b constant into specified register. This is usefull for loading label addresses.
+    \end{itemize}
+
+    \item FADD
+    \begin{itemize}
+        \item \textbf{Syntax}
+        \begin{lstlisting}[language={[markII]Assembler}, frame=single]
+    FADD rA rB rC
+        \end{lstlisting}
+        \item \textbf{Explanation}
+        \begin{lstlisting}[language=bash, frame=single]
+    reg(rC) <= reg(rA) + reg(rB)
+        \end{lstlisting}
+        \item \textbf{Comment} \\
+        Floating point addition. Registers are represented as single precision.
+    \end{itemize}
+
+    \item FSUB
+    \begin{itemize}
+        \item \textbf{Syntax}
+        \begin{lstlisting}[language={[markII]Assembler}, frame=single]
+    FSUB rA rB rC
+        \end{lstlisting}
+        \item \textbf{Explanation}
+        \begin{lstlisting}[language=bash, frame=single]
+    reg(rC) <= reg(rA) - reg(rB)
+        \end{lstlisting}
+        \item \textbf{Comment} \\
+        Floating point subtraction. Registers are represented as single precision.
+    \end{itemize}
+
+    \item FDIV
+    \begin{itemize}
+        \item \textbf{Syntax}
+        \begin{lstlisting}[language={[markII]Assembler}, frame=single]
+    FDIV rA rB rC
+        \end{lstlisting}
+        \item \textbf{Explanation}
+        \begin{lstlisting}[language=bash, frame=single]
+    reg(rC) <= reg(rA) / reg(rB)
+        \end{lstlisting}
+        \item \textbf{Comment} \\
+        Floating point division. Registers are represented as single precision.
+    \end{itemize}
+
+    \item FMUL
+    \begin{itemize}
+        \item \textbf{Syntax}
+        \begin{lstlisting}[language={[markII]Assembler}, frame=single]
+    FMUL rA rB rC
+        \end{lstlisting}
+        \item \textbf{Explanation}
+        \begin{lstlisting}[language=bash, frame=single]
+    reg(rC) <= reg(rA) * reg(rB)
+        \end{lstlisting}
+        \item \textbf{Comment} \\
+        Floating point multiplication. Registers are represented as single precision.
+    \end{itemize}
+
+\end{itemize}
