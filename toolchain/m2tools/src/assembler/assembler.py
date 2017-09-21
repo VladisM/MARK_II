@@ -232,6 +232,19 @@ class assembler():
                     self.pass1_buffer.append(new_instruction)
                     location_counter = location_counter + 1
 
+                elif token.opcode == "SWI":
+
+                    arguments_count = 0
+                    arguments_given = len(token.operands)
+
+                    if arguments_count != arguments_given:
+                        print "Error in instruction '" + token.opcode + "' at " + token.fileName + "@" + str(token.lineNumber) + ", unexpected arugments. Instruction take " + str(arguments_count) + " arguments but " + str(arguments_given) + " are given."
+                        sys.exit(1)
+
+                    new_instruction = p1o.SWI(token, location_counter)
+                    self.pass1_buffer.append(new_instruction)
+                    location_counter = location_counter + 1
+
                 elif token.opcode == "CALLI":
 
                     arguments_count = 1
@@ -323,20 +336,7 @@ class assembler():
                     self.pass1_buffer.append(new_instruction)
                     location_counter = location_counter + 1
 
-                elif token.opcode == "MOV":
-
-                    arguments_count = 2
-                    arguments_given = len(token.operands)
-
-                    if arguments_count != arguments_given:
-                        print "Error in instruction '" + token.opcode + "' at " + token.fileName + "@" + str(token.lineNumber) + ", unexpected arugments. Instruction take " + str(arguments_count) + " arguments but " + str(arguments_given) + " are given."
-                        sys.exit(1)
-
-                    new_instruction = p1o.MOV(token, location_counter, token.operands[0], token.operands[1])
-                    self.pass1_buffer.append(new_instruction)
-                    location_counter = location_counter + 1
-
-                elif token.opcode == "CMP":
+                elif token.opcode == "CMPI":
 
                     arguments_count = 4
                     arguments_given = len(token.operands)
@@ -345,7 +345,20 @@ class assembler():
                         print "Error in instruction '" + token.opcode + "' at " + token.fileName + "@" + str(token.lineNumber) + ", unexpected arugments. Instruction take " + str(arguments_count) + " arguments but " + str(arguments_given) + " are given."
                         sys.exit(1)
 
-                    new_instruction = p1o.CMP(token, location_counter, token.operands[0], token.operands[1], token.operands[2], token.operands[3])
+                    new_instruction = p1o.CMPI(token, location_counter, token.operands[0], token.operands[1], token.operands[2], token.operands[3])
+                    self.pass1_buffer.append(new_instruction)
+                    location_counter = location_counter + 1
+
+                elif token.opcode == "CMPF":
+
+                    arguments_count = 4
+                    arguments_given = len(token.operands)
+
+                    if arguments_count != arguments_given:
+                        print "Error in instruction '" + token.opcode + "' at " + token.fileName + "@" + str(token.lineNumber) + ", unexpected arugments. Instruction take " + str(arguments_count) + " arguments but " + str(arguments_given) + " are given."
+                        sys.exit(1)
+
+                    new_instruction = p1o.CMPF(token, location_counter, token.operands[0], token.operands[1], token.operands[2], token.operands[3])
                     self.pass1_buffer.append(new_instruction)
                     location_counter = location_counter + 1
 
@@ -385,6 +398,97 @@ class assembler():
                         sys.exit(1)
 
                     new_instruction = p1o.XOR(token, location_counter, token.operands[0], token.operands[1], token.operands[2])
+                    self.pass1_buffer.append(new_instruction)
+                    location_counter = location_counter + 1
+
+                elif token.opcode == "NOT":
+
+                    arguments_count = 2
+                    arguments_given = len(token.operands)
+
+                    if arguments_count != arguments_given:
+                        print "Error in instruction '" + token.opcode + "' at " + token.fileName + "@" + str(token.lineNumber) + ", unexpected arugments. Instruction take " + str(arguments_count) + " arguments but " + str(arguments_given) + " are given."
+                        sys.exit(1)
+
+                    new_instruction = p1o.NOT(token, location_counter, token.operands[0], token.operands[1])
+                    self.pass1_buffer.append(new_instruction)
+                    location_counter = location_counter + 1
+
+                elif token.opcode == "REM":
+
+                    arguments_count = 3
+                    arguments_given = len(token.operands)
+
+                    if arguments_count != arguments_given:
+                        print "Error in instruction '" + token.opcode + "' at " + token.fileName + "@" + str(token.lineNumber) + ", unexpected arugments. Instruction take " + str(arguments_count) + " arguments but " + str(arguments_given) + " are given."
+                        sys.exit(1)
+
+                    new_instruction = p1o.REM(token, location_counter, token.operands[0], token.operands[1], token.operands[2])
+                    self.pass1_buffer.append(new_instruction)
+                    location_counter = location_counter + 1
+
+                elif token.opcode == "REMU":
+
+                    arguments_count = 3
+                    arguments_given = len(token.operands)
+
+                    if arguments_count != arguments_given:
+                        print "Error in instruction '" + token.opcode + "' at " + token.fileName + "@" + str(token.lineNumber) + ", unexpected arugments. Instruction take " + str(arguments_count) + " arguments but " + str(arguments_given) + " are given."
+                        sys.exit(1)
+
+                    new_instruction = p1o.REMU(token, location_counter, token.operands[0], token.operands[1], token.operands[2])
+                    self.pass1_buffer.append(new_instruction)
+                    location_counter = location_counter + 1
+
+                elif token.opcode == "DIVU":
+
+                    arguments_count = 3
+                    arguments_given = len(token.operands)
+
+                    if arguments_count != arguments_given:
+                        print "Error in instruction '" + token.opcode + "' at " + token.fileName + "@" + str(token.lineNumber) + ", unexpected arugments. Instruction take " + str(arguments_count) + " arguments but " + str(arguments_given) + " are given."
+                        sys.exit(1)
+
+                    new_instruction = p1o.DIVU(token, location_counter, token.operands[0], token.operands[1], token.operands[2])
+                    self.pass1_buffer.append(new_instruction)
+                    location_counter = location_counter + 1
+
+                elif token.opcode == "DIV":
+
+                    arguments_count = 3
+                    arguments_given = len(token.operands)
+
+                    if arguments_count != arguments_given:
+                        print "Error in instruction '" + token.opcode + "' at " + token.fileName + "@" + str(token.lineNumber) + ", unexpected arugments. Instruction take " + str(arguments_count) + " arguments but " + str(arguments_given) + " are given."
+                        sys.exit(1)
+
+                    new_instruction = p1o.DIV(token, location_counter, token.operands[0], token.operands[1], token.operands[2])
+                    self.pass1_buffer.append(new_instruction)
+                    location_counter = location_counter + 1
+
+                elif token.opcode == "MULU":
+
+                    arguments_count = 3
+                    arguments_given = len(token.operands)
+
+                    if arguments_count != arguments_given:
+                        print "Error in instruction '" + token.opcode + "' at " + token.fileName + "@" + str(token.lineNumber) + ", unexpected arugments. Instruction take " + str(arguments_count) + " arguments but " + str(arguments_given) + " are given."
+                        sys.exit(1)
+
+                    new_instruction = p1o.MULU(token, location_counter, token.operands[0], token.operands[1], token.operands[2])
+                    self.pass1_buffer.append(new_instruction)
+                    location_counter = location_counter + 1
+
+                elif token.opcode == "MUL":
+
+                    arguments_count = 3
+                    arguments_given = len(token.operands)
+
+                    if arguments_count != arguments_given:
+                        print "Error in instruction '" + token.opcode + "' at " + token.fileName + "@" + str(token.lineNumber) + ", unexpected arugments. Instruction take " + str(arguments_count) + " arguments but " + str(arguments_given) + " are given."
+                        sys.exit(1)
+
+                    new_instruction = p1o.MUL(token, location_counter, token.operands[0], token.operands[1], token.operands[2])
                     self.pass1_buffer.append(new_instruction)
                     location_counter = location_counter + 1
 
@@ -463,6 +567,32 @@ class assembler():
                         sys.exit(1)
 
                     new_instruction = p1o.LSR(token, location_counter, token.operands[0], token.operands[1], token.operands[2])
+                    self.pass1_buffer.append(new_instruction)
+                    location_counter = location_counter + 1
+
+                elif token.opcode == "ASL":
+
+                    arguments_count = 3
+                    arguments_given = len(token.operands)
+
+                    if arguments_count != arguments_given:
+                        print "Error in instruction '" + token.opcode + "' at " + token.fileName + "@" + str(token.lineNumber) + ", unexpected arugments. Instruction take " + str(arguments_count) + " arguments but " + str(arguments_given) + " are given."
+                        sys.exit(1)
+
+                    new_instruction = p1o.ASL(token, location_counter, token.operands[0], token.operands[1], token.operands[2])
+                    self.pass1_buffer.append(new_instruction)
+                    location_counter = location_counter + 1
+
+                elif token.opcode == "ASR":
+
+                    arguments_count = 3
+                    arguments_given = len(token.operands)
+
+                    if arguments_count != arguments_given:
+                        print "Error in instruction '" + token.opcode + "' at " + token.fileName + "@" + str(token.lineNumber) + ", unexpected arugments. Instruction take " + str(arguments_count) + " arguments but " + str(arguments_given) + " are given."
+                        sys.exit(1)
+
+                    new_instruction = p1o.ASR(token, location_counter, token.operands[0], token.operands[1], token.operands[2])
                     self.pass1_buffer.append(new_instruction)
                     location_counter = location_counter + 1
 
@@ -592,6 +722,58 @@ class assembler():
                         sys.exit(1)
 
                     new_instruction = p1o.MVIA(token, location_counter, token.operands[0], token.operands[1])
+                    self.pass1_buffer.append(new_instruction)
+                    location_counter = location_counter + 1
+
+                elif token.opcode == "FADD":
+
+                    arguments_count = 3
+                    arguments_given = len(token.operands)
+
+                    if arguments_count != arguments_given:
+                        print "Error in instruction '" + token.opcode + "' at " + token.fileName + "@" + str(token.lineNumber) + ", unexpected arugments. Instruction take " + str(arguments_count) + " arguments but " + str(arguments_given) + " are given."
+                        sys.exit(1)
+
+                    new_instruction = p1o.FADD(token, location_counter, token.operands[0], token.operands[1], token.operands[2])
+                    self.pass1_buffer.append(new_instruction)
+                    location_counter = location_counter + 1
+
+                elif token.opcode == "FSUB":
+
+                    arguments_count = 3
+                    arguments_given = len(token.operands)
+
+                    if arguments_count != arguments_given:
+                        print "Error in instruction '" + token.opcode + "' at " + token.fileName + "@" + str(token.lineNumber) + ", unexpected arugments. Instruction take " + str(arguments_count) + " arguments but " + str(arguments_given) + " are given."
+                        sys.exit(1)
+
+                    new_instruction = p1o.FSUB(token, location_counter, token.operands[0], token.operands[1], token.operands[2])
+                    self.pass1_buffer.append(new_instruction)
+                    location_counter = location_counter + 1
+
+                elif token.opcode == "FMUL":
+
+                    arguments_count = 3
+                    arguments_given = len(token.operands)
+
+                    if arguments_count != arguments_given:
+                        print "Error in instruction '" + token.opcode + "' at " + token.fileName + "@" + str(token.lineNumber) + ", unexpected arugments. Instruction take " + str(arguments_count) + " arguments but " + str(arguments_given) + " are given."
+                        sys.exit(1)
+
+                    new_instruction = p1o.FMUL(token, location_counter, token.operands[0], token.operands[1], token.operands[2])
+                    self.pass1_buffer.append(new_instruction)
+                    location_counter = location_counter + 1
+
+                elif token.opcode == "FDIV":
+
+                    arguments_count = 3
+                    arguments_given = len(token.operands)
+
+                    if arguments_count != arguments_given:
+                        print "Error in instruction '" + token.opcode + "' at " + token.fileName + "@" + str(token.lineNumber) + ", unexpected arugments. Instruction take " + str(arguments_count) + " arguments but " + str(arguments_given) + " are given."
+                        sys.exit(1)
+
+                    new_instruction = p1o.FDIV(token, location_counter, token.operands[0], token.operands[1], token.operands[2])
                     self.pass1_buffer.append(new_instruction)
                     location_counter = location_counter + 1
 
