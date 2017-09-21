@@ -72,7 +72,8 @@ class instruction():
             return;
 
         instruction_type = (self.value & 0xF0000000) >> 28
-        instruction_argument = self.value & 0x00FFFFFF
+
+        instruction_argument = self.__get_argument()
 
         if instruction_type >= 8:
             instruction_argument = instruction_argument + offset
@@ -86,18 +87,69 @@ class instruction():
             print "Instruction word: " + hex(self.value) + " stored at address: "+ hex(self.address)
             sys.exit(1)
 
-        self.value = (instruction_type <<  28) + (self.value & 0x0F000000) + instruction_argument
+        self.__set_argument(instruction_argument)
+
+    def __set_argument(instruction_argument):
+        if instruction_type == 8:
+            instruction_argument = instruction_argument << 4
+            self.value = instruction_argument | (self.value & 0xF000000F)
+
+        elif instruction_type == 9:
+            instruction_argument = instruction_argument << 4
+            self.value = instruction_argument | (self.value & 0xF000000F)
+
+        elif instruction_type == 10:
+            instruction_argument = ((instruction_argument & 0x00FFFFF0) << 4) | (instruction_argument & 0x0000000F)
+            self.value = instruction_argument | (self.value & 0xF00000F0)
+
+        elif instruction_type == 11:
+            instruction_argument = ((instruction_argument & 0x00F00000) << 4) | (instruction_argument & 0x000FFFFF)
+            self.value = instruction_argument | (self.value & 0xF0F00000)
+
+        elif instruction_type == 12:
+            instruction_argument = ((instruction_argument & 0x00F00000) << 4) | (instruction_argument & 0x000FFFFF)
+            self.value = instruction_argument | (self.value & 0xF0F00000)
+
+        elif instruction_type == 13:
+            instruction_argument = instruction_argument << 4
+            self.value = instruction_argument | (self.value & 0xF000000F)
+
+        else:
+            print "Linker doesn't not able recognize instruction!"
+            print "Instruction word: " + hex(self.value) + " stored at address: "+ hex(self.address)
+            sys.exit(1)
+
+    def __get_argument(self):
+        instruction_type = (self.value & 0xF0000000) >> 28
+        if instruction_type == 8:
+            instruction_argument = (self.value & 0x0FFFFFF0) >> 4
+        elif instruction_type == 9:
+            instruction_argument = (self.value & 0x0FFFFFF0) >> 4
+        elif instruction_type == 10:
+            instruction_argument = ((self.value & 0x0FFFFF00) >> 4) | (self.value & 0x0000000F)
+        elif instruction_type == 11:
+            instruction_argument = ((self.value & 0x0F000000) >> 4) | (self.value & 0x000FFFFF)
+        elif instruction_type == 12:
+            instruction_argument = ((self.value & 0x0F000000) >> 4) | (self.value & 0x000FFFFF)
+        elif instruction_type == 13:
+            instruction_argument = (self.value & 0x0FFFFFF0) >> 4
+        else:
+            print "Linker doesn't not able recognize instruction!"
+            print "Instruction word: " + hex(self.value) + " stored at address: "+ hex(self.address)
+            sys.exit(1)
+        return instruction_argument
+
 
     def retarget(self, import_symbols_table):
         if self.special == False:
             return;
 
         instruction_type = (self.value & 0xF0000000) >> 28
-        instruction_register = self.value & 0x0F000000
-        instruction_argument = self.value & 0x00FFFFFF
+
+        instruction_argument = self.__get_argument()
 
         if instruction_type < 8:
-            print "I read instruction marked as special relocation type, but it does not have address in obcode. Probably broken assembler!"
+            print "I read instruction marked as special relocation type, but it does not have address in opcode. Probably broken assembler!"
             print "Instruction word: " + hex(self.value) + " stored at address: "+ hex(self.address)
             sys.exit(1)
 
@@ -114,7 +166,7 @@ class instruction():
             print "I did not found inported label in import label table."
             sys.exit(1)
 
-        self.value = (instruction_type << 28) + instruction_register + value
+        self.__set_argument(value)
 
 class instruction_table():
     #table of all instruction in object file
