@@ -43,11 +43,11 @@ start:
     MVIL SP 0x07FF
 
     ;init variables
-    MOV R0 R6
-    MOV R0 R7
-    MOV R0 R8
-    MOV R0 R9
-    MOV R0 R10
+    OR R0 R0 R6
+    OR R0 R0 R7
+    OR R0 R0 R8
+    OR R0 R0 R9
+    OR R0 R0 R10
     .MVI R11 MODE_SYNC
 
     ;config uart0 to 1200 baud 8n1
@@ -132,9 +132,9 @@ mode_base_code:
 
 mode_base_code_wordcomplete:
 
-    MOV R6 R10 ;base = tmp
-    MOV R0 R7 ;bytenum = 0
-    MOV R0 R6 ;tmp = 0
+    OR R0 R6 R10 ;base = tmp
+    OR R0 R0 R7 ;bytenum = 0
+    OR R0 R0 R6 ;tmp = 0
     .MVI R11 MODE_COUNT ;mode = MODE_COUNT
 
     BZ R0 signalize_and_reti
@@ -161,9 +161,9 @@ mode_count_code:
     BZ R0 signalize_and_reti
 
 mode_count_code_wordcomplete:
-    MOV R6 R9 ;count = tmp
-    MOV R0 R7 ;bytenum = 0
-    MOV R0 R6 ;tmp = 0
+    OR R0 R6 R9 ;count = tmp
+    OR R0 R0 R7 ;bytenum = 0
+    OR R0 R0 R6 ;tmp = 0
     .MVI R11 MODE_DATA ;mode = MODE_DATA
 
     BZ R0 signalize_and_reti
@@ -191,7 +191,7 @@ mode_data_code:
     BZ R0 signalize_and_reti
 
 mode_data_code_wordcomplete:
-    MOV R0 R7 ;bytenum = 0
+    OR R0 R0 R7 ;bytenum = 0
 
     ;store address in R2
     ADD R8 R10 R2
