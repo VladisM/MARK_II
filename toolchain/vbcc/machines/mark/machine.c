@@ -465,10 +465,7 @@ void gen_code(FILE *f,struct IC *p,struct Var *v,zmax offset){
                 #ifdef DEBUG_MARK
                 printf("\n\tKOMPLEMENT\n");
                 #endif
-
-                load_into_reg(f, R1, &(p->q1), p->typf, R2);
-                emit(f, "\t.MVI \t R2 0xFFFFFFFF\n\tXOR \t R1 R1 R2\n");
-                store_from_reg(f, R1, &(p->z), p->typf, R2, R3);
+                arithmetic(f, p);
                 break;
             case MINUS:
                 #ifdef DEBUG_MARK
@@ -1308,7 +1305,7 @@ void arithmetic(FILE *f, struct IC *p){
     }
 
 
-    if((p->code) == MINUS){
+    if(((p->code) == MINUS) || ((p->code) == KOMPLEMENT)){
         unary = 1;
     }
 
@@ -1404,6 +1401,10 @@ void arithmetic(FILE *f, struct IC *p){
             break;
         case MINUS:
             emit(f, "\tDEC \t ");
+            break;
+        case KOMPLEMENT:
+            emit(f, "\tNOT \t ");
+            break;
         default:
             #ifdef DEBUG_MARK
             printf("\tPassed invalid IC into arithmetic()\n\tp->code: %d\n", p->code);
