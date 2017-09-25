@@ -194,8 +194,8 @@ class disassembler:
 
 
         cons_mvia = instructionWordBinary[4:28]
-        cons_st = instructionWordBinary[8:28] + instructionWordBinary[0:4]
-        cons_branch = instructionWordBinary[24:28] + instructionWordBinary[0:20]
+        cons_st = instructionWordBinary[0:4] + instructionWordBinary[8:28]
+        cons_branch = instructionWordBinary[0:20] + instructionWordBinary[24:28]
 
         consBuff = ["0"]*24
         index = 0

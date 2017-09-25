@@ -20,13 +20,13 @@ from uart import uart
 class MARK():
 
     def __init__(self, rom0mif, uart0_map):
-        self.cpu0 = cpu(self.readFunction, self.writeFunction, self.retiFunction)
+        self.cpu0 = cpu(self.readFunction, self.writeFunction, self.retiFunction, self.interrupt, "cpu0")
         self.rom0 = rom(0x000000, 8, rom0mif, "rom0")
         self.ram0 = ram(0x000400, 10, "ram0")
         self.ram1 = ram(0x100000, 13, "ram1")
         self.systim0 = systim(0x000104, self.interrupt, "systim0")
-        self.intControler0 = intControler(0x000108, self.cpu0, "intControler0")
-        self.uart0 = uart(0x000120, self.interrupt, uart0_map, "uart0")
+        self.intControler0 = intControler(0x00010F, self.cpu0, "intControler0")
+        self.uart0 = uart(0x000130, self.interrupt, uart0_map, "uart0")
 
     def readFunction(self, address):
         """CPU (master on bus) call this function to read data from specified address"""

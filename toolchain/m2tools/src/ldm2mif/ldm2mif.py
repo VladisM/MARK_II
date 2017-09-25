@@ -44,7 +44,8 @@ class buffer_item(mif.buff_item):
 
         self.__set_argument(instruction_argument)
 
-    def __set_argument(instruction_argument):
+    def __set_argument(self, instruction_argument):
+        instruction_type = (self.value & 0xF0000000) >> 28
         if instruction_type == 8:
             instruction_argument = instruction_argument << 4
             self.value = instruction_argument | (self.value & 0xF000000F)
