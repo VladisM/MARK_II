@@ -500,41 +500,48 @@ void gen_code(FILE *f,struct IC *p,struct Var *v,zmax offset){
                 #ifdef DEBUG_MARK
                 printf("\n\tCALL\n\tq1.flags: %d\n", p->q1.flags);
                 #endif
-                if(((p->q1.flags) & (KONST|VAR|REG|DREFOBJ|VARADR)) == VAR){
 
-                    #ifdef DEBUG_MARK
-                    printf("\tq1.v->storage_class: %d\n", p->q1.v->storage_class);
-                    #endif
-
-                    switch((p->q1.v->storage_class) & (AUTO|REGISTER|STATIC|EXTERN)){
-                        case EXTERN:
-                            emit(f, "\tCALL \t %s\n", p->q1.v->identifier);
-                            for(int i = 0; i < (p->q2.val.vmax); i++){
-                                emit(f, "\tPOP \t R0\n");
-                            }
-                            break;
-                        case STATIC:
-                            emit(f, "\tCALL \t L_%ld\n", zm2l(p->q1.v->offset));
-                            for(int i = 0; i < (p->q2.val.vmax); i++){
-                                emit(f, "\tPOP \t R0\n");
-                            }
-                            break;
-                        default:
-                            #ifdef DEBUG_MARK
-                            printf("\tThis is not implemented!\n");
-                            #else
-                            ierror(0);
-                            #endif
-                            break;
-                    }
-
+                if((p->q1.flags & (VAR|DREFOBJ)) == VAR && p->q1.v->fi && p->q1.v->fi->inline_asm){
+                    emit_inline_asm(f,p->q1.v->fi->inline_asm);
                 }
                 else{
-                    #ifdef DEBUG_MARK
-                    printf("\tThis is not implemented!\n");
-                    #else
-                    ierror(0);
-                    #endif
+
+                    if(((p->q1.flags) & (KONST|VAR|REG|DREFOBJ|VARADR)) == VAR){
+
+                        #ifdef DEBUG_MARK
+                        printf("\tq1.v->storage_class: %d\n", p->q1.v->storage_class);
+                        #endif
+
+                        switch((p->q1.v->storage_class) & (AUTO|REGISTER|STATIC|EXTERN)){
+                            case EXTERN:
+                                emit(f, "\tCALL \t %s\n", p->q1.v->identifier);
+                                for(int i = 0; i < (p->q2.val.vmax); i++){
+                                    emit(f, "\tPOP \t R0\n");
+                                }
+                                break;
+                            case STATIC:
+                                emit(f, "\tCALL \t L_%ld\n", zm2l(p->q1.v->offset));
+                                for(int i = 0; i < (p->q2.val.vmax); i++){
+                                    emit(f, "\tPOP \t R0\n");
+                                }
+                                break;
+                            default:
+                                #ifdef DEBUG_MARK
+                                printf("\tThis is not implemented!\n");
+                                #else
+                                ierror(0);
+                                #endif
+                                break;
+                        }
+
+                    }
+                    else{
+                        #ifdef DEBUG_MARK
+                        printf("\tThis is not implemented!\n");
+                        #else
+                        ierror(0);
+                        #endif
+                    }
                 }
                 break;
             case CONVERT:
