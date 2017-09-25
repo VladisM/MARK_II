@@ -11,6 +11,12 @@ union ppi g_flags_val[MAXGF];
 
 struct reg_handle empty_reg_handle={0};
 
+extern int handle_pragma(const char * c){return 0;}
+
+//support for ISR
+char *g_attr_name[] = {"__interrupt", 0};
+#define INTERRUPT 1
+
 /*
  * Define registers codes
  */
@@ -732,7 +738,14 @@ void gen_code(FILE *f,struct IC *p,struct Var *v,zmax offset){
     //emit function epilogue
     emit(f, "\tOR  \t %s %s %s\n",regnames[R0], regnames[FP], regnames[SP]); //restore SP from FP
     emit(f, "\tPOP \t %s\n", regnames[FP]); //restore old FP from stack
-    emit(f, "\tRET\n"); //return
+
+    //return
+    if((v->tattr)&INTERRUPT){
+        emit(f, "\tRETI\n");
+    }
+    else{
+        emit(f, "\tRET\n");
+    }
 }
 
 /*

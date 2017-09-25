@@ -56,8 +56,8 @@ struct reg_handle {
 
 
 // tohle je zatím k hovnu později se to ale může hodit
-#undef HAVE_TARGET_ATTRIBUTES
-#undef HAVE_TARGET_PRAGMAS
+#define HAVE_TARGET_ATTRIBUTES
+#define HAVE_TARGET_PRAGMAS
 
 #undef HAVE_REGS_MODIFIED //nepodporuji interprocedural register allocation
 
