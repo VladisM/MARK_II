@@ -3,7 +3,7 @@
 
 static char FILE_[]=__FILE__;
 
-char cg_copyright[]="MARK-II code generator v0, (c) in 2017 by Vladislav Mlejnecký";
+char cg_copyright[]="MARK-II code generator v1.0 (c) in 2017 by Vladislav Mlejnecký";
 
 int g_flags[MAXGF]={};
 char *g_flags_name[MAXGF]={};
@@ -46,9 +46,6 @@ void store_from_reg(FILE *f, int source_reg, struct obj *o, int type, int tmp_re
 void arithmetic(FILE *f, struct IC *p);
 //load constant into register
 void load_cons(FILE *f, int reg, long int value);
-//emit all macros
-void emit_macros(FILE *f);
-int macros_emited = 0;
 
 /*
  * Data Types
@@ -314,8 +311,6 @@ void gen_code(FILE *f,struct IC *p,struct Var *v,zmax offset){
     #ifdef DEBUG_MARK
     printf("Called gen_code(FILE *f,struct IC *p,struct Var *v,zmax offset)\n");
     #endif
-
-    emit_macros(f);
 
     //emit function head
     if(v->storage_class==EXTERN){
@@ -1307,6 +1302,12 @@ void arithmetic(FILE *f, struct IC *p){
 
     int unary = 0;
 
+    int isunsigned = 0;
+    if (((p->typf) & UNSIGNED) == UNSIGNED){
+        isunsigned = 1;
+    }
+
+
     if((p->code) == MINUS){
         unary = 1;
     }
@@ -1343,7 +1344,7 @@ void arithmetic(FILE *f, struct IC *p){
     //emit instruction opcode
     switch(p->code){
         case OR:
-            emit(f, "\tOR   \t ");
+            emit(f, "\tOR  \t ");
             break;
         case XOR:
             emit(f, "\tXOR \t ");
@@ -1352,10 +1353,15 @@ void arithmetic(FILE *f, struct IC *p){
             emit(f, "\tAND \t ");
             break;
         case LSHIFT:
-            emit(f, "\t$LSHIFT \t ");
+            emit(f, "\tLSL \t ");
             break;
         case RSHIFT:
-            emit(f, "\t$RSHIFT \t ");
+            if(isunsigned == 1) {
+                emit(f, "\tLSR \t ");
+            }
+            else{
+                emit(f, "\tASR \t ");
+            }
             break;
         case ADD:
             emit(f, "\tADD \t ");
@@ -1364,13 +1370,28 @@ void arithmetic(FILE *f, struct IC *p){
             emit(f, "\tSUB \t ");
             break;
         case MULT:
-            emit(f, "\t$MULT \t ");
+            if(isunsigned == 1) {
+                emit(f, "\tMULU \t ");
+            }
+            else{
+                emit(f, "\tMUL \t ");
+            }
             break;
-        case DIV: //FIXME: vylepšit CPU o tuto instrukci
-            emit(f, "\t$DIV \t ");
+        case DIV:
+            if(isunsigned == 1) {
+                emit(f, "\tDIVU \t ");
+            }
+            else{
+                emit(f, "\tDIV \t ");
+            }
             break;
-        case MOD: //FIXME: vylepšit CPU o tuto instrukci
-            emit(f, "\t$MOD \t ");
+        case MOD:
+            if(isunsigned == 1) {
+                emit(f, "\tREMU \t ");
+            }
+            else{
+                emit(f, "\tREM \t ");
+            }
             break;
         case ADDI2P:
             emit(f, "\tADD \t ");
@@ -1415,14 +1436,4 @@ void load_cons(FILE *f, int reg, long int value){
     else{
         emit(f, "\t.MVI \t %s %ld\n", regnames[reg], value);
     }
-}
-
-void emit_macros(FILE *f){
-    if(macros_emited == 1) return;
-
-    emit(f, "#macro MULT RA RB RC\n\tMOV \t R0 RC\n\tPUSH \t RB\n\tBZ   \t RB end\nlabel:\n\tADD \t RC RA RC\n\tDEC \t RB RB\n\tBNZ \t RB label\nend:\n\tPOP \t RB\n#endmacro\n");
-    emit(f, "#macro RSHIFT RA RB RC\n\tPUSH \t RA\n\tPUSH \t RB\n\tBZ   \t RB end\nloop:\n\tLSR \t 1 RA RA\n\tDEC \t RB RB\n\tBNZ \t RB loop\nend:\n\tMOV \t RA RC\n\tPOP \t RB\n\tPOP \t RA\n#endmacro\n");
-    emit(f, "#macro LSHIFT RA RB RC\n\tPUSH \t RA\n\tPUSH \t RB\n\tBZ   \t RB end\nloop:\n\tLSL \t 1 RA RA\n\tDEC \t RB RB\n\tBNZ \t RB loop\nend:\n\tMOV \t RA RC\n\tPOP \t RB\n\tPOP \t RA\n#endmacro\n");
-
-    macros_emited = 1;
 }
