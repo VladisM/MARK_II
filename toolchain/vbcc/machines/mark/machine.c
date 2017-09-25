@@ -1434,7 +1434,10 @@ void load_cons(FILE *f, int reg, long int value){
     else if((16777216 > value) && (value > 0)){
         emit(f, "\tMVIA \t %s %ld\n", regnames[reg], value);
     }
-    else{
+    else if (value > 0){
         emit(f, "\t.MVI \t %s %ld\n", regnames[reg], value);
+    }
+    else{
+        emit(f, "\t.MVI \t %s %x\n", regnames[reg], value);
     }
 }
