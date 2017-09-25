@@ -325,7 +325,7 @@ void gen_code(FILE *f,struct IC *p,struct Var *v,zmax offset){
 
     //emit function prologue
     emit(f, "\tPUSH \t %s\n", regnames[FP]);  //push FP
-    emit(f, "\tMOV \t %s %s\n", regnames[SP], regnames[FP]); //MOVE SP -> FP
+    emit(f, "\tOR   \t %s %s %s\n",regnames[R0], regnames[SP], regnames[FP]); //MOVE SP -> FP
 
     //make space for auto variables at stack
     for(int i = 0; i < zm2l(offset); i++){
@@ -383,7 +383,7 @@ void gen_code(FILE *f,struct IC *p,struct Var *v,zmax offset){
                 //we can simplify assign when both operands are in registers
                 if((((p->q1.flags) & (KONST|VAR|REG|DREFOBJ|VARADR)) == REG) &&
                    (((p->z.flags) & (KONST|VAR|REG|DREFOBJ|VARADR)) == REG) ){
-                    emit(f, "\tMOV \t %s %s", regnames[p->q1.reg], regnames[p->z.reg]);
+                    emit(f, "\tOR   \t %s %s %s",regnames[R0], regnames[p->q1.reg], regnames[p->z.reg]);
                 }
 
                 //this is another optimalization, if have to assign zero; then
@@ -723,7 +723,7 @@ void gen_code(FILE *f,struct IC *p,struct Var *v,zmax offset){
     emit(f, "\tPOP \t R4\n\tPOP \t R3\n\tPOP \t R2\n\tPOP \t R1\n");
 
     //emit function epilogue
-    emit(f, "\tMOV \t %s %s\n", regnames[FP], regnames[SP]); //restore SP from FP
+    emit(f, "\tOR  \t %s %s %s\n",regnames[R0], regnames[FP], regnames[SP]); //restore SP from FP
     emit(f, "\tPOP \t %s\n", regnames[FP]); //restore old FP from stack
     emit(f, "\tRET\n"); //return
 }
@@ -865,7 +865,7 @@ void compare(FILE *f, struct IC *p){
     }
     else{
         q2reg = R2;
-        emit(f, "\tMOV \t %s %s\n", regnames[R0], regnames[R2]);
+        emit(f, "\tOR  \t %s %s %s\n",regnames[R0], regnames[R0], regnames[R2]);
     }
 
     //find branch IC
@@ -947,7 +947,7 @@ void load_into_reg(FILE *f, int dest_reg, struct obj *o, int type, int tmp_reg){
         case REG:
             //move between registers
             if((o->reg) != dest_reg){
-                emit(f, "\tMOV \t %s %s\n", regnames[o->reg], regnames[dest_reg]);
+                emit(f, "\tOR  \t %s %s %s\n",regnames[R0], regnames[o->reg], regnames[dest_reg]);
             }
             break;
         case VAR:
@@ -1014,7 +1014,7 @@ void load_into_reg(FILE *f, int dest_reg, struct obj *o, int type, int tmp_reg){
             break;
         case (VAR|REG):
             if((o->reg) != dest_reg){
-                emit(f, "\tMOV \t %s %s\n", regnames[o->reg], regnames[dest_reg]);
+                emit(f, "\tOR  \t %s %s %s\n", regnames[R0], regnames[o->reg], regnames[dest_reg]);
             }
             break;
         case (REG|DREFOBJ):
@@ -1090,7 +1090,7 @@ void load_into_reg(FILE *f, int dest_reg, struct obj *o, int type, int tmp_reg){
             break;
         case (VAR|REG|DREFOBJ):
             if((o->reg) != dest_reg){
-                emit(f, "\tMOV \t %s %s\n", regnames[o->reg], regnames[dest_reg]);
+                emit(f, "\tOR  \t %s %s %s\n",regnames[R0], regnames[o->reg], regnames[dest_reg]);
             }
             emit(f, "\tLDI \t %s %s\n", regnames[dest_reg], regnames[dest_reg]);
             break;
@@ -1132,7 +1132,7 @@ void store_from_reg(FILE *f, int source_reg, struct obj *o, int type, int tmp_re
         case REG:
             //move from register into register
             if(source_reg != (o->reg)){
-                emit(f, "\tMOV \t %s %s\n",regnames[source_reg], regnames[o->reg]);
+                emit(f, "\tOR  \t %s %s %s\n",regnames[R0], regnames[source_reg], regnames[o->reg]);
             }
             break;
         case VAR:
@@ -1194,7 +1194,7 @@ void store_from_reg(FILE *f, int source_reg, struct obj *o, int type, int tmp_re
             }
             break;
         case (VAR|REG):
-            emit(f, "\tMOV \t %s %s\n", regnames[source_reg], regnames[o->reg]);
+            emit(f, "\tOR   \t %s %s %s\n", regnames[R0], regnames[source_reg], regnames[o->reg]);
             break;
         case (REG|DREFOBJ):
             //use value in register as pointer into memory
@@ -1429,7 +1429,7 @@ void arithmetic(FILE *f, struct IC *p){
 
 void load_cons(FILE *f, int reg, long int value){
     if(value == 0){
-        emit(f, "\tMOV \t R0 %s\n", regnames[reg]);
+        emit(f, "\tOR  \t R0 R0 %s\n", regnames[reg]);
     }
     else if((16777216 > value) && (value > 0)){
         emit(f, "\tMVIA \t %s %ld\n", regnames[reg], value);
