@@ -17,6 +17,7 @@ entity ram is
     );
     port(
         clk: in std_logic;
+        res: in std_logic;
         address: in std_logic_vector(23 downto 0);
         data_mosi: in std_logic_vector(31 downto 0);
         data_miso: out std_logic_vector(31 downto 0);
@@ -39,6 +40,9 @@ architecture ram_arch of ram is
 
     --select this block, from address decoder
     signal cs: std_logic;
+
+    type ack_fsm is (idle, set);
+    signal ack_fsm_state: ack_fsm;
 begin
     process(address) is begin
         if (unsigned(address) >= BASE_ADDRESS and unsigned(address) <= (BASE_ADDRESS + (2**ADDRESS_WIDE)-1)) then
@@ -60,6 +64,35 @@ begin
     --output from ram
     data_miso <= std_logic_vector(ram(to_integer(reg_address))) when ((RD = '1') and (cs = '1')) else (others => 'Z');
 
-    ack <= '1' when ((WR = '1' and cs = '1') or (RD = '1' and cs = '1')) else '0';
+
+    process(clk) is
+    begin
+        if rising_edge(clk) then
+            if res = '1' then
+                ack_fsm_state <= idle;
+            else
+                case ack_fsm_state is
+                    when idle =>
+                        if ((WR = '1' and cs = '1') or (RD = '1' and cs = '1')) then
+                            ack_fsm_state <= set;
+                        else
+                            ack_fsm_state <= idle;
+                        end if;
+                    when set =>
+                        ack_fsm_state <= idle;
+                end case;
+            end if;
+        end if;
+    end process;
+
+    process(ack_fsm_state) is
+    begin
+        case ack_fsm_state is
+            when idle =>
+                ack <= '0';
+            when set =>
+                ack <= '1';
+        end case;
+    end process;
 
 end architecture ram_arch;

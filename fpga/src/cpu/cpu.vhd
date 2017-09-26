@@ -487,7 +487,7 @@ begin
         data_a or data_b;                                                         --alu A or B
 
     address <= data_a(23 downto 0);
-    data_mosi <= regfile_b;
+    data_mosi <= data_b;
 
     id0: id
         port map(

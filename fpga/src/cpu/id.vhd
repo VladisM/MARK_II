@@ -140,8 +140,8 @@ begin
                                             when '1' => id_state <= bz_bnz_set;
                                             when others =>
                                                 case int is
-                                                    when '1' => id_state <= intrq_inc;
-                                                    when others => id_state <= start_inc;
+                                                    when '1' => id_state <= intrq;
+                                                    when others => id_state <= start;
                                                 end case;
                                         end case;
                                     when "100" =>
@@ -149,8 +149,8 @@ begin
                                             when '0' => id_state <= bz_bnz_set;
                                             when others =>
                                                 case int is
-                                                    when '1' => id_state <= intrq_inc;
-                                                    when others => id_state <= start_inc;
+                                                    when '1' => id_state <= intrq;
+                                                    when others => id_state <= start;
                                                 end case;
                                         end case;
                                     when "101" => id_state <= mvia;
@@ -171,8 +171,8 @@ begin
                                             when '0' => id_state <= bzi_bnzi_set;
                                             when others =>
                                                 case int is
-                                                    when '1' => id_state <= intrq_inc;
-                                                    when others => id_state <= start_inc;
+                                                    when '1' => id_state <= intrq;
+                                                    when others => id_state <= start;
                                                 end case;
                                         end case;
                                     when "01001" =>
@@ -180,8 +180,8 @@ begin
                                             when '1' => id_state <= bzi_bnzi_set;
                                             when others =>
                                                 case int is
-                                                    when '1' => id_state <= intrq_inc;
-                                                    when others => id_state <= start_inc;
+                                                    when '1' => id_state <= intrq;
+                                                    when others => id_state <= start;
                                                 end case;
                                         end case;
 
@@ -450,7 +450,7 @@ begin
         case id_state is
 
             when start =>
-                we <= '0'; oe <= '0'; int_accept <= '0'; int_completed <= '0';
+                we <= '0'; oe <= '1'; int_accept <= '0'; int_completed <= '0';
                 swirq <= '0'; instruction_we <= '1'; force_we_reg_14 <= '0';
                 inc_r14 <= '0'; inc_r15 <= '0'; dec_r15 <= '0';
                 data_a_sel <= data_a_pc;
@@ -645,7 +645,7 @@ begin
                 data_a_sel <= data_a_arg_mvi;
                 data_b_sel <= data_b_regfile;
                 data_c_sel <= data_c_mvih;
-                regfile_c_we <= '0';
+                regfile_c_we <= '1';
 
             when mvia =>
                 we <= '0'; oe <= '0'; int_accept <= '0'; int_completed <= '0';
@@ -690,7 +690,7 @@ begin
                 data_a_sel <= data_a_regfile;
                 data_b_sel <= data_b_regfile;
                 data_c_sel <= data_c_cmp;
-                regfile_c_we <= '0';
+                regfile_c_we <= '1';
 
             when cmpf_2 =>
                 we <= '0'; oe <= '0'; int_accept <= '0'; int_completed <= '0';

@@ -156,6 +156,7 @@ architecture MARK_II_arch of MARK_II is
         );
         port(
             clk: in std_logic;
+            res: in std_logic;
             address: in std_logic_vector(23 downto 0);
             data_mosi: in std_logic_vector(31 downto 0);
             data_miso: out std_logic_vector(31 downto 0);
@@ -172,6 +173,7 @@ architecture MARK_II_arch of MARK_II is
         );
         port(
             clk: in std_logic;
+            res: in std_logic;
             address: in std_logic_vector(23 downto 0);
             data_mosi: in std_logic_vector(31 downto 0);
             data_miso: out std_logic_vector(31 downto 0);
@@ -335,11 +337,11 @@ begin
 
     rom0: rom
         generic map(x"000000")
-        port map(clk_sys, bus_address, bus_data_mosi, bus_data_miso, bus_WR, bus_RD, rom_ack);
+        port map(clk_sys, resi, bus_address, bus_data_mosi, bus_data_miso, bus_WR, bus_RD, rom_ack);
 
     ram0: ram
         generic map(x"000400", 10)
-        port map(clk_sys, bus_address, bus_data_mosi, bus_data_miso, bus_WR, bus_RD, ram_ack);
+        port map(clk_sys, resi, bus_address, bus_data_mosi, bus_data_miso, bus_WR, bus_RD, ram_ack);
 
     tim0: timer
         generic map(x"000120")
@@ -379,7 +381,7 @@ begin
 
     ram1: ram
         generic map(x"100000", 13)
-        port map(clk_sys, bus_address, bus_data_mosi, bus_data_miso, bus_WR, bus_RD, ram1_ack);
+        port map(clk_sys, resi, bus_address, bus_data_mosi, bus_data_miso, bus_WR, bus_RD, ram1_ack);
 
     bus_ack <=
         rom_ack or ram_ack or int_ack or gpio_ack or systim_ack or vga_ack or tim0_ack or
