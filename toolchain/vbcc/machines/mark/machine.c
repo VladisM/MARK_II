@@ -335,7 +335,7 @@ void gen_code(FILE *f,struct IC *p,struct Var *v,zmax offset){
 
     //make space for auto variables at stack
     for(int i = 0; i < zm2l(offset); i++){
-        emit(f, "\tPUSH \t R0\n");
+        emit(f, "\tDEC \t %s %s\n", regnames[SP], regnames[SP]);
     }
 
     //store backend registers
@@ -522,13 +522,13 @@ void gen_code(FILE *f,struct IC *p,struct Var *v,zmax offset){
                             case EXTERN:
                                 emit(f, "\tCALL \t %s\n", p->q1.v->identifier);
                                 for(int i = 0; i < (p->q2.val.vmax); i++){
-                                    emit(f, "\tPOP \t R0\n");
+                                    emit(f, "\tINC \t %s %s\n", regnames[SP], regnames[SP]);
                                 }
                                 break;
                             case STATIC:
                                 emit(f, "\tCALL \t L_%ld\n", zm2l(p->q1.v->offset));
                                 for(int i = 0; i < (p->q2.val.vmax); i++){
-                                    emit(f, "\tPOP \t R0\n");
+                                    emit(f, "\tINC \t %s %s\n", regnames[SP], regnames[SP]);
                                 }
                                 break;
                             default:
@@ -812,17 +812,11 @@ void gen_dc(FILE *f,int t,struct const_list *p){
     printf("Called gen_dc(FILE *f,int t,struct const_list *p)\n");
     #endif
 
-    //FIXME: generování DC
-    // tady je blbě to šaškování s floatem, šaškovat se musí to je jasný,  říká to doku ale
-    // formát je úplně blbě, však MARK ještě float vůbec neřešil
-
     if(!p->tree){
         if(ISFLOAT(t)){
-            #ifdef DEBUG_MARK
-            printf("Float numbers are not supported!\n");
-            #else
-            ierror(0);
-            #endif
+            emit(f,"\t.DAT \t ");
+            emit(f,"0x%x", *(unsigned int*)&p->val);
+            emit(f,"\n");
         }
         else{
             emit(f,"\t.DAT \t ");
@@ -896,60 +890,75 @@ void compare(FILE *f, struct IC *p){
     }
 
     //emit compare code
-    switch(branch_ic->code){
-        case BEQ:
-            emit(f, "\tCMP \t EQ %s %s R4\n", regnames[q2reg], regnames[q1reg]);
-            break;
-        case BNE:
-            emit(f, "\tCMP \t NEQ %s %s R4\n", regnames[q2reg], regnames[q1reg]);
-            break;
-        case BLT:
-            if((p->typf & UNSIGNED) == UNSIGNED){
-                emit(f, "\tCMP \t LU %s %s R4\n", regnames[q2reg], regnames[q1reg]);
-            }
-            else{
-                emit(f, "\tCMP \t L %s %s R4\n", regnames[q2reg], regnames[q1reg]);
-            }
-            break;
-        case BGE:
-            if((p->typf & UNSIGNED) == UNSIGNED){
-                emit(f, "\tCMP \t GEU %s %s R4\n", regnames[q2reg], regnames[q1reg]);
-            }
-            else{
-                emit(f, "\tCMP \t GE %s %s R4\n", regnames[q2reg], regnames[q1reg]);
-            }
-            break;
-        case BLE:
-            if((p->typf & UNSIGNED) == UNSIGNED){
-                emit(f, "\tCMP \t LU %s %s R4\n", regnames[q2reg], regnames[q1reg]);
-                emit(f, "\tCMP \t EQ %s %s %s\n", regnames[q2reg], regnames[q1reg], regnames[q2reg]);
-                emit(f, "\tOR  \t %s R4 R4\n", regnames[q2reg]);
-            }
-            else{
-                emit(f, "\tCMP \t L %s %s R4\n", regnames[q2reg], regnames[q1reg]);
-                emit(f, "\tCMP \t EQ %s %s %s\n", regnames[q2reg], regnames[q1reg], regnames[q2reg]);
-                emit(f, "\tOR  \t %s R4 R4\n", regnames[q2reg]);
-            }
-            break;
-        case BGT:
-            if((p->typf & UNSIGNED) == UNSIGNED){
-                emit(f, "\tCMP \t GEU %s %s R4\n", regnames[q2reg], regnames[q1reg]);
-                emit(f, "\tCMP \t NEQ %s %s %s\n", regnames[q2reg], regnames[q1reg], regnames[q2reg]);
-                emit(f, "\tAND \t %s R4 R4\n", regnames[q2reg]);
-            }
-            else{
-                emit(f, "\tCMP \t GE %s %s R4\n", regnames[q2reg], regnames[q1reg]);
-                emit(f, "\tCMP \t NEQ %s %s %s\n", regnames[q2reg], regnames[q1reg], regnames[q2reg]);
-                emit(f, "\tAND \t %s R4 R4\n", regnames[q2reg]);
-            }
-            break;
-        default:
-            #ifdef DEBUG_MARK
-            printf("\tunknown condition!\n");
-            #else
-            ierror(0);
-            #endif
-            break;
+    if (((p->typf) & FLOAT) == FLOAT || ((p->typf) & DOUBLE) == DOUBLE || ((p->typf) & LDOUBLE) == LDOUBLE){
+        switch(branch_ic->code){
+            case BEQ:
+                emit(f, "\tCMPF \t EQ %s %s R4\n", regnames[q2reg], regnames[q1reg]);
+                break;
+            case BNE:
+                emit(f, "\tCMPF \t NEQ %s %s R4\n", regnames[q2reg], regnames[q1reg]);
+                break;
+            case BLT:
+                emit(f, "\tCMPF \t L %s %s R4\n", regnames[q2reg], regnames[q1reg]);
+                break;
+            case BGE:
+                emit(f, "\tCMPF \t GE %s %s R4\n", regnames[q2reg], regnames[q1reg]);
+                break;
+            case BLE:
+                emit(f, "\tCMPF \t LE %s %s R4\n", regnames[q2reg], regnames[q1reg]);
+                break;
+            case BGT:
+                emit(f, "\tCMPF \t G %s %s R4\n", regnames[q2reg], regnames[q1reg]);
+                break;
+            default:
+                ierror(0);
+                break;
+        }
+    }
+    else{
+        switch(branch_ic->code){
+            case BEQ:
+                emit(f, "\tCMPI \t EQ %s %s R4\n", regnames[q2reg], regnames[q1reg]);
+                break;
+            case BNE:
+                emit(f, "\tCMPI \t NEQ %s %s R4\n", regnames[q2reg], regnames[q1reg]);
+                break;
+            case BLT:
+                if((p->typf & UNSIGNED) == UNSIGNED){
+                    emit(f, "\tCMPI \t LU %s %s R4\n", regnames[q2reg], regnames[q1reg]);
+                }
+                else{
+                    emit(f, "\tCMPI \t L %s %s R4\n", regnames[q2reg], regnames[q1reg]);
+                }
+                break;
+            case BGE:
+                if((p->typf & UNSIGNED) == UNSIGNED){
+                    emit(f, "\tCMPI \t GEU %s %s R4\n", regnames[q2reg], regnames[q1reg]);
+                }
+                else{
+                    emit(f, "\tCMPI \t GE %s %s R4\n", regnames[q2reg], regnames[q1reg]);
+                }
+                break;
+            case BLE:
+                if((p->typf & UNSIGNED) == UNSIGNED){
+                    emit(f, "\tCMPI \t LEU %s %s R4\n", regnames[q2reg], regnames[q1reg]);
+                }
+                else{
+                    emit(f, "\tCMPI \t LE %s %s R4\n", regnames[q2reg], regnames[q1reg]);
+                }
+                break;
+            case BGT:
+                if((p->typf & UNSIGNED) == UNSIGNED){
+                    emit(f, "\tCMPI \t GU %s %s R4\n", regnames[q2reg], regnames[q1reg]);
+                }
+                else{
+                    emit(f, "\tCMPI \t G %s %s R4\n", regnames[q2reg], regnames[q1reg]);
+                }
+                break;
+            default:
+                ierror(0);
+                break;
+        }
     }
 }
 
@@ -1324,7 +1333,6 @@ void arithmetic(FILE *f, struct IC *p){
         isunsigned = 1;
     }
 
-
     if(((p->code) == MINUS) || ((p->code) == KOMPLEMENT)){
         unary = 1;
     }
@@ -1358,80 +1366,101 @@ void arithmetic(FILE *f, struct IC *p){
         movez = 1;
     }
 
-    //emit instruction opcode
-    switch(p->code){
-        case OR:
-            emit(f, "\tOR  \t ");
-            break;
-        case XOR:
-            emit(f, "\tXOR \t ");
-            break;
-        case AND:
-            emit(f, "\tAND \t ");
-            break;
-        case LSHIFT:
-            emit(f, "\tLSL \t ");
-            break;
-        case RSHIFT:
-            if(isunsigned == 1) {
-                emit(f, "\tLSR \t ");
-            }
-            else{
-                emit(f, "\tASR \t ");
-            }
-            break;
-        case ADD:
-            emit(f, "\tADD \t ");
-            break;
-        case SUB:
-            emit(f, "\tSUB \t ");
-            break;
-        case MULT:
-            if(isunsigned == 1) {
-                emit(f, "\tMULU \t ");
-            }
-            else{
-                emit(f, "\tMUL \t ");
-            }
-            break;
-        case DIV:
-            if(isunsigned == 1) {
-                emit(f, "\tDIVU \t ");
-            }
-            else{
-                emit(f, "\tDIV \t ");
-            }
-            break;
-        case MOD:
-            if(isunsigned == 1) {
-                emit(f, "\tREMU \t ");
-            }
-            else{
-                emit(f, "\tREM \t ");
-            }
-            break;
-        case ADDI2P:
-            emit(f, "\tADD \t ");
-            break;
-        case SUBIFP:
-            emit(f, "\tSUB \t ");
-            break;
-        case SUBPFP:
-            emit(f, "\tSUB \t ");
-            break;
-        case MINUS:
-            emit(f, "\tDEC \t ");
-            break;
-        case KOMPLEMENT:
-            emit(f, "\tNOT \t ");
-            break;
-        default:
-            #ifdef DEBUG_MARK
-            printf("\tPassed invalid IC into arithmetic()\n\tp->code: %d\n", p->code);
-            #else
-            ierror(0);
-            #endif
-            break;
+    if (((p->typf) & FLOAT) == FLOAT || ((p->typf) & DOUBLE) == DOUBLE || ((p->typf) & LDOUBLE) == LDOUBLE){
+        switch(p->code){
+            case ADD:
+                emit(f, "\tFADD \t ");
+                break;
+            case SUB:
+                emit(f, "\tFSUB \t ");
+                break;
+            case MULT:
+                emit(f, "\tFMUL \t ");
+                break;
+            case DIV:
+                emit(f, "\tFDIV \t ");
+                break;
+            default:
+                ierror(0);
+        }
+    }
+    else{
+
+        //emit instruction opcode
+        switch(p->code){
+            case OR:
+                emit(f, "\tOR  \t ");
+                break;
+            case XOR:
+                emit(f, "\tXOR \t ");
+                break;
+            case AND:
+                emit(f, "\tAND \t ");
+                break;
+            case LSHIFT:
+                emit(f, "\tLSL \t ");
+                break;
+            case RSHIFT:
+                if(isunsigned == 1) {
+                    emit(f, "\tLSR \t ");
+                }
+                else{
+                    emit(f, "\tASR \t ");
+                }
+                break;
+            case ADD:
+                emit(f, "\tADD \t ");
+                break;
+            case SUB:
+                emit(f, "\tSUB \t ");
+                break;
+            case MULT:
+                if(isunsigned == 1) {
+                    emit(f, "\tMULU \t ");
+                }
+                else{
+                    emit(f, "\tMUL \t ");
+                }
+                break;
+            case DIV:
+                if(isunsigned == 1) {
+                    emit(f, "\tDIVU \t ");
+                }
+                else{
+                    emit(f, "\tDIV \t ");
+                }
+                break;
+            case MOD:
+                if(isunsigned == 1) {
+                    emit(f, "\tREMU \t ");
+                }
+                else{
+                    emit(f, "\tREM \t ");
+                }
+                break;
+            case ADDI2P:
+                emit(f, "\tADD \t ");
+                break;
+            case SUBIFP:
+                emit(f, "\tSUB \t ");
+                break;
+            case SUBPFP:
+                emit(f, "\tSUB \t ");
+                break;
+            case MINUS:
+                emit(f, "\tDEC \t ");
+                break;
+            case KOMPLEMENT:
+                emit(f, "\tNOT \t ");
+                break;
+            default:
+                #ifdef DEBUG_MARK
+                printf("\tPassed invalid IC into arithmetic()\n\tp->code: %d\n", p->code);
+                #else
+                ierror(0);
+                #endif
+                break;
+        }
     }
 
     //emit instruction arguments
@@ -1458,6 +1487,6 @@ void load_cons(FILE *f, int reg, long int value){
         emit(f, "\t.MVI \t %s %ld\n", regnames[reg], value);
     }
     else{
-        emit(f, "\t.MVI \t %s %x\n", regnames[reg], value);
+        emit(f, "\t.MVI \t %s 0x%x\n", regnames[reg], value);
     }
 }
