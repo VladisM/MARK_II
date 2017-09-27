@@ -227,78 +227,78 @@ class disassembler:
         elif opcode == "RETI":
             return "RETI"
         elif opcode == "CALLI":
-            return "CALLI\t" + rega
+            return "CALLI \t" + rega
         elif opcode == "PUSH":
-            return "PUSH\t" + regb
+            return "PUSH \t" + regb
         elif opcode == "POP":
-            return "POP\t" + regc
+            return "POP  \t" + regc
         elif opcode == "LDI":
-            return "LDI\t" + rega + " " + regc
+            return "LDI  \t" + rega + " " + regc
         elif opcode == "STI":
-            return "STI\t" + regb + " " + rega
+            return "STI  \t" + regb + " " + rega
         elif opcode == "BNZI":
-            return "BNZI\t" + regf + " " + rega
+            return "BNZI \t" + regf + " " + rega
         elif opcode == "BZI":
-            return "BZI\t" + regf + " " + rega
+            return "BZI  \t" + regf + " " + rega
         elif opcode == "CMPI":
-            return "CMPI\t" + cond + " " + rega + " " + regb + " " + regc
+            return "CMPI \t" + cond + " " + rega + " " + regb + " " + regc
         elif opcode == "CMPF":
-            return "CMPF\t" + cond + " " + rega + " " + regb + " " + regc
+            return "CMPF \t" + cond + " " + rega + " " + regb + " " + regc
         elif opcode == "ALU":
 
             if   aluop == "MULU":
-                return aluop + "\t" + rega + " " + regb + " " + regc
+                return aluop + " \t" + rega + " " + regb + " " + regc
             elif aluop == "MUL":
-                return aluop + "\t" + rega + " " + regb + " " + regc
+                return aluop + "  \t" + rega + " " + regb + " " + regc
             elif aluop == "DIVU":
-                return aluop + "\t" + rega + " " + regb + " " + regc
+                return aluop + " \t" + rega + " " + regb + " " + regc
             elif aluop == "DIV":
-                return aluop + "\t" + rega + " " + regb + " " + regc
+                return aluop + "  \t" + rega + " " + regb + " " + regc
             elif aluop == "REMU":
-                return aluop + "\t" + rega + " " + regb + " " + regc
+                return aluop + " \t" + rega + " " + regb + " " + regc
             elif aluop == "REM":
-                return aluop + "\t" + rega + " " + regb + " " + regc
+                return aluop + "  \t" + rega + " " + regb + " " + regc
             elif aluop == "ADD":
-                return aluop + "\t" + rega + " " + regb + " " + regc
+                return aluop + "  \t" + rega + " " + regb + " " + regc
             elif aluop == "SUB":
-                return aluop + "\t" + rega + " " + regb + " " + regc
+                return aluop + "  \t" + rega + " " + regb + " " + regc
             elif aluop == "INC":
-                return aluop + "\t" + rega + " " + regb + " " + regc
+                return aluop + "  \t" + rega + " " + regc
             elif aluop == "DEC":
-                return aluop + "\t" + rega + " " + regb + " " + regc
+                return aluop + "  \t" + rega + " " + regc
             elif aluop == "AND":
-                return aluop + "\t" + rega + " " + regb + " " + regc
+                return aluop + "  \t" + rega + " " + regb + " " + regc
             elif aluop == "OR":
-                return aluop + "\t" + rega + " " + regb + " " + regc
+                return aluop + "   \t" + rega + " " + regb + " " + regc
             elif aluop == "XOR":
-                return aluop + "\t" + rega + " " + regb + " " + regc
+                return aluop + "  \t" + rega + " " + regb + " " + regc
             elif aluop == "NOT":
-                return aluop + "\t" + rega + " " + regb + " " + regc
+                return aluop + "  \t" + rega + " " + regb + " " + regc
             else:
                 return None
 
         elif opcode == "BARREL":
-            return bar_type + bar_dir + "\t" + rega + " " + regb + " " + regc
+            return bar_type + bar_dir + "  \t" + rega + " " + regb + " " + regc
         elif opcode == "FPU":
-            return fpuop + "\t" + rega + " " + regb + " " + regc
+            return fpuop + " \t" + rega + " " + regb + " " + regc
         elif opcode == "MVIL":
-            return "MVIL\t" + regc + " " + hex(cons_mvil)
+            return "MVIL \t" + regc + " " + hex(cons_mvil)
         elif opcode == "MVIH":
-            return "MVIH\t" + regc + " " + hex(cons_mvil)
+            return "MVIH \t" + regc + " " + hex(cons_mvil)
         elif opcode == "SWI":
             return "SWI"
         elif opcode == "CALL":
-            return "CALL\t" + hex(cons_mvia)
+            return "CALL \t" + hex(cons_mvia)
         elif opcode == "LD":
-            return "LD\t" + hex(cons_mvia) + " " + regc
+            return "LD   \t" + hex(cons_mvia) + " " + regc
         elif opcode == "ST":
-            return "ST\t" + regb + " " + hex(cons_st)
+            return "ST   \t" + regb + " " + hex(cons_st)
         elif opcode == "BZ":
-            return "BZ\t" + regf + " " + hex(cons_branch)
+            return "BZ   \t" + regf + " " + hex(cons_branch)
         elif opcode == "BNZ":
-            return "BNZ\t" + regf + " " + hex(cons_branch)
+            return "BNZ  \t" + regf + " " + hex(cons_branch)
         elif opcode == "MVIA":
-            return "MVIA\t" + regc + " " + hex(cons_mvia)
+            return "MVIA \t" + regc + " " + hex(cons_mvia)
         else:
             return None
 
@@ -315,7 +315,7 @@ class disassembler:
             if result == None:  #if translate fail - store value in hex form
                 self.disassembled.append("0x" + ((hex(instruction).split("0x"))[1]).zfill(8))
             else:
-                self.disassembled.append("0x" + ((hex(instruction).split("0x"))[1]).zfill(8) + "\t" + result)
+                self.disassembled.append("0x" + ((hex(instruction).split("0x"))[1]).zfill(8) + " \t " + result)
 
     def createOutput(self, filename):
 
