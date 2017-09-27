@@ -893,22 +893,22 @@ void compare(FILE *f, struct IC *p){
     if (((p->typf) & FLOAT) == FLOAT || ((p->typf) & DOUBLE) == DOUBLE || ((p->typf) & LDOUBLE) == LDOUBLE){
         switch(branch_ic->code){
             case BEQ:
-                emit(f, "\tCMPF \t EQ %s %s R4\n", regnames[q2reg], regnames[q1reg]);
+                emit(f, "\tCMPF \t EQ %s %s R4\n", regnames[q1reg], regnames[q2reg]);
                 break;
             case BNE:
-                emit(f, "\tCMPF \t NEQ %s %s R4\n", regnames[q2reg], regnames[q1reg]);
+                emit(f, "\tCMPF \t NEQ %s %s R4\n", regnames[q1reg], regnames[q2reg]);
                 break;
             case BLT:
-                emit(f, "\tCMPF \t L %s %s R4\n", regnames[q2reg], regnames[q1reg]);
+                emit(f, "\tCMPF \t L %s %s R4\n", regnames[q1reg], regnames[q2reg]);
                 break;
             case BGE:
-                emit(f, "\tCMPF \t GE %s %s R4\n", regnames[q2reg], regnames[q1reg]);
+                emit(f, "\tCMPF \t GE %s %s R4\n", regnames[q1reg], regnames[q2reg]);
                 break;
             case BLE:
-                emit(f, "\tCMPF \t LE %s %s R4\n", regnames[q2reg], regnames[q1reg]);
+                emit(f, "\tCMPF \t LE %s %s R4\n", regnames[q1reg], regnames[q2reg]);
                 break;
             case BGT:
-                emit(f, "\tCMPF \t G %s %s R4\n", regnames[q2reg], regnames[q1reg]);
+                emit(f, "\tCMPF \t G %s %s R4\n", regnames[q1reg], regnames[q2reg]);
                 break;
             default:
                 ierror(0);
@@ -918,41 +918,41 @@ void compare(FILE *f, struct IC *p){
     else{
         switch(branch_ic->code){
             case BEQ:
-                emit(f, "\tCMPI \t EQ %s %s R4\n", regnames[q2reg], regnames[q1reg]);
+                emit(f, "\tCMPI \t EQ %s %s R4\n", regnames[q1reg], regnames[q2reg]);
                 break;
             case BNE:
-                emit(f, "\tCMPI \t NEQ %s %s R4\n", regnames[q2reg], regnames[q1reg]);
+                emit(f, "\tCMPI \t NEQ %s %s R4\n", regnames[q1reg], regnames[q2reg]);
                 break;
             case BLT:
                 if((p->typf & UNSIGNED) == UNSIGNED){
-                    emit(f, "\tCMPI \t LU %s %s R4\n", regnames[q2reg], regnames[q1reg]);
+                    emit(f, "\tCMPI \t LU %s %s R4\n", regnames[q1reg], regnames[q2reg]);
                 }
                 else{
-                    emit(f, "\tCMPI \t L %s %s R4\n", regnames[q2reg], regnames[q1reg]);
+                    emit(f, "\tCMPI \t L %s %s R4\n", regnames[q1reg], regnames[q2reg]);
                 }
                 break;
             case BGE:
                 if((p->typf & UNSIGNED) == UNSIGNED){
-                    emit(f, "\tCMPI \t GEU %s %s R4\n", regnames[q2reg], regnames[q1reg]);
+                    emit(f, "\tCMPI \t GEU %s %s R4\n", regnames[q1reg], regnames[q2reg]);
                 }
                 else{
-                    emit(f, "\tCMPI \t GE %s %s R4\n", regnames[q2reg], regnames[q1reg]);
+                    emit(f, "\tCMPI \t GE %s %s R4\n", regnames[q1reg], regnames[q2reg]);
                 }
                 break;
             case BLE:
                 if((p->typf & UNSIGNED) == UNSIGNED){
-                    emit(f, "\tCMPI \t LEU %s %s R4\n", regnames[q2reg], regnames[q1reg]);
+                    emit(f, "\tCMPI \t LEU %s %s R4\n", regnames[q1reg], regnames[q2reg]);
                 }
                 else{
-                    emit(f, "\tCMPI \t LE %s %s R4\n", regnames[q2reg], regnames[q1reg]);
+                    emit(f, "\tCMPI \t LE %s %s R4\n", regnames[q1reg], regnames[q2reg]);
                 }
                 break;
             case BGT:
                 if((p->typf & UNSIGNED) == UNSIGNED){
-                    emit(f, "\tCMPI \t GU %s %s R4\n", regnames[q2reg], regnames[q1reg]);
+                    emit(f, "\tCMPI \t GU %s %s R4\n", regnames[q1reg], regnames[q2reg]);
                 }
                 else{
-                    emit(f, "\tCMPI \t G %s %s R4\n", regnames[q2reg], regnames[q1reg]);
+                    emit(f, "\tCMPI \t G %s %s R4\n", regnames[q1reg], regnames[q2reg]);
                 }
                 break;
             default:
