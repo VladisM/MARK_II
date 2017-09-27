@@ -987,8 +987,8 @@ void load_into_reg(FILE *f, int dest_reg, struct obj *o, int type, int tmp_reg){
                     if(zm2l(o->val.vmax) != 0){
                         emit(f, "\tMVIA \t %s L_%ld\n", regnames[dest_reg], zm2l(o->v->offset));
                         load_cons(f, tmp_reg, zm2l(o->val.vmax));
-                        emit(f, "\tADD \t %s %s %s\n", regnames[dest_reg], regnames[tmp_reg], regnames[dest_reg]);
-                        emit(f, "\tLDI \t %s %s\n", regnames[dest_reg], regnames[dest_reg]);
+                        emit(f, "\tADD \t %s %s %s\n", regnames[dest_reg], regnames[tmp_reg], regnames[tmp_reg]);
+                        emit(f, "\tLDI \t %s %s\n", regnames[tmp_reg], regnames[dest_reg]);
                     }
                     else{
                         emit(f, "\tLD \t L_%ld %s\n", zm2l(o->v->offset), regnames[dest_reg]);
@@ -998,8 +998,8 @@ void load_into_reg(FILE *f, int dest_reg, struct obj *o, int type, int tmp_reg){
                     if(zm2l(o->val.vmax) != 0){
                         emit(f, "\tMVIA \t %s %s\n", regnames[dest_reg], o->v->identifier);
                         load_cons(f, tmp_reg, zm2l(o->val.vmax));
-                        emit(f, "\tADD \t %s %s %s\n", regnames[dest_reg], regnames[tmp_reg], regnames[dest_reg]);
-                        emit(f, "\tLDI \t %s %s\n", regnames[dest_reg], regnames[dest_reg]);
+                        emit(f, "\tADD \t %s %s %s\n", regnames[dest_reg], regnames[tmp_reg], regnames[tmp_reg]);
+                        emit(f, "\tLDI \t %s %s\n", regnames[tmp_reg], regnames[dest_reg]);
                     }
                     else{
                         emit(f, "\tLD \t %s %s\n", o->v->identifier , regnames[dest_reg]);
@@ -1009,8 +1009,8 @@ void load_into_reg(FILE *f, int dest_reg, struct obj *o, int type, int tmp_reg){
                     if((o->v->offset) < 0){
                         //this is argument
                         load_cons(f, dest_reg, (zm2l(o->v->offset)/(-1L))+2+zm2l(o->val.vmax));
-                        emit(f, "\tADD \t %s %s %s\n", regnames[dest_reg],regnames[FP], regnames[dest_reg]);
-                        emit(f, "\tLDI \t %s %s\n", regnames[dest_reg], regnames[dest_reg]);
+                        emit(f, "\tADD \t %s %s %s\n", regnames[dest_reg],regnames[FP], regnames[tmp_reg]);
+                        emit(f, "\tLDI \t %s %s\n", regnames[tmp_reg], regnames[dest_reg]);
                     }
                     else{
                         //this is auto variable
@@ -1020,13 +1020,13 @@ void load_into_reg(FILE *f, int dest_reg, struct obj *o, int type, int tmp_reg){
                             emit(f, "\tLDI \t %s %s\n", regnames[FP], regnames[dest_reg]);
                         }
                         else if(offset == 1){
-                            emit(f, "\tDEC \t %s %s\n", regnames[FP], regnames[dest_reg]);
-                            emit(f, "\tLDI \t %s %s\n", regnames[dest_reg], regnames[dest_reg]);
+                            emit(f, "\tDEC \t %s %s\n", regnames[FP], regnames[tmp_reg]);
+                            emit(f, "\tLDI \t %s %s\n", regnames[tmp_reg], regnames[dest_reg]);
                         }
                         else{
                             load_cons(f, dest_reg, offset);
-                            emit(f, "\tSUB \t %s %s %s\n", regnames[FP],regnames[dest_reg], regnames[dest_reg]);
-                            emit(f, "\tLDI \t %s %s\n", regnames[dest_reg], regnames[dest_reg]);
+                            emit(f, "\tSUB \t %s %s %s\n", regnames[FP],regnames[dest_reg], regnames[tmp_reg]);
+                            emit(f, "\tLDI \t %s %s\n", regnames[tmp_reg], regnames[dest_reg]);
                         }
 
                     }
@@ -1060,31 +1060,31 @@ void load_into_reg(FILE *f, int dest_reg, struct obj *o, int type, int tmp_reg){
                         emit(f, "\tMVIA \t %s L_%ld\n", regnames[dest_reg], zm2l(o->v->offset));
                         load_cons(f, tmp_reg, zm2l(o->val.vmax));
                         emit(f, "\tADD \t %s %s %s\n", regnames[dest_reg], regnames[tmp_reg], regnames[dest_reg]);
-                        emit(f, "\tLDI \t %s %s\n", regnames[dest_reg], regnames[dest_reg]);
+                        emit(f, "\tLDI \t %s %s\n", regnames[dest_reg], regnames[tmp_reg]);
                     }
                     else{
-                        emit(f, "\tLD  \t L_%ld %s\n", zm2l(o->v->offset), regnames[dest_reg]);
+                        emit(f, "\tLD  \t L_%ld %s\n", zm2l(o->v->offset), regnames[tmp_reg]);
                     }
-                    emit(f, "\tLDI \t %s %s\n", regnames[dest_reg], regnames[dest_reg]);
+                    emit(f, "\tLDI \t %s %s\n", regnames[tmp_reg], regnames[dest_reg]);
                     break;
                 case EXTERN:
                     if(zm2l(o->val.vmax) != 0){
                         emit(f, "\tMVIA \t %s %s\n", regnames[dest_reg], o->v->identifier);
                         load_cons(f, tmp_reg, zm2l(o->val.vmax));
                         emit(f, "\tADD \t %s %s %s\n", regnames[dest_reg], regnames[tmp_reg], regnames[dest_reg]);
-                        emit(f, "\tLDI \t %s %s\n", regnames[dest_reg], regnames[dest_reg]);
+                        emit(f, "\tLDI \t %s %s\n", regnames[dest_reg], regnames[tmp_reg]);
                     }
                     else{
-                        emit(f, "\tLD \t %s %s\n", o->v->identifier , regnames[dest_reg]);
+                        emit(f, "\tLD \t %s %s\n", o->v->identifier , regnames[tmp_reg]);
                     }
-                    emit(f, "\tLDI \t %s %s\n", regnames[dest_reg], regnames[dest_reg]);
+                    emit(f, "\tLDI \t %s %s\n", regnames[tmp_reg], regnames[dest_reg]);
                     break;
                 case AUTO:
                     if((o->v->offset) < 0){
                         //this is argument
                         load_cons(f, dest_reg, (zm2l(o->v->offset)/(-1L))+2+zm2l(o->val.vmax));
-                        emit(f, "\tADD \t %s %s %s\n", regnames[dest_reg],regnames[FP], regnames[dest_reg]);
-                        emit(f, "\tLDI \t %s %s\n", regnames[dest_reg], regnames[dest_reg]);
+                        emit(f, "\tADD \t %s %s %s\n", regnames[dest_reg],regnames[FP], regnames[tmp_reg]);
+                        emit(f, "\tLDI \t %s %s\n", regnames[tmp_reg], regnames[dest_reg]);
                     }
                     else{
                         //this is auto variable
@@ -1094,13 +1094,13 @@ void load_into_reg(FILE *f, int dest_reg, struct obj *o, int type, int tmp_reg){
                             emit(f, "\tLDI \t %s %s\n", regnames[FP], regnames[dest_reg]);
                         }
                         else if(offset == 1){
-                            emit(f, "\tDEC \t %s %s\n", regnames[FP], regnames[dest_reg]);
-                            emit(f, "\tLDI \t %s %s\n", regnames[dest_reg], regnames[dest_reg]);
+                            emit(f, "\tDEC \t %s %s\n", regnames[FP], regnames[tmp_reg]);
+                            emit(f, "\tLDI \t %s %s\n", regnames[tmp_reg], regnames[dest_reg]);
                         }
                         else{
                             load_cons(f, dest_reg, offset);
-                            emit(f, "\tSUB \t %s %s %s\n", regnames[FP],regnames[dest_reg], regnames[dest_reg]);
-                            emit(f, "\tLDI \t %s %s\n", regnames[dest_reg], regnames[dest_reg]);
+                            emit(f, "\tSUB \t %s %s %s\n", regnames[FP],regnames[dest_reg], regnames[tmp_reg]);
+                            emit(f, "\tLDI \t %s %s\n", regnames[tmp_reg], regnames[dest_reg]);
                         }
 
                     }
@@ -1114,14 +1114,15 @@ void load_into_reg(FILE *f, int dest_reg, struct obj *o, int type, int tmp_reg){
                     break;
             }
 
-            emit(f, "\tLDI \t %s %s\n", regnames[dest_reg], regnames[dest_reg]);
+            emit(f, "\tLDI \t %s %s\n", regnames[dest_reg], regnames[tmp_reg]);
+            emit(f, "\tOR  \t R0 %s %s\n", regnames[tmp_reg], regnames[dest_reg]);
 
             break;
         case (VAR|REG|DREFOBJ):
             if((o->reg) != dest_reg){
-                emit(f, "\tOR  \t %s %s %s\n",regnames[R0], regnames[o->reg], regnames[dest_reg]);
+                emit(f, "\tOR  \t %s %s %s\n",regnames[R0], regnames[o->reg], regnames[tmp_reg]);
             }
-            emit(f, "\tLDI \t %s %s\n", regnames[dest_reg], regnames[dest_reg]);
+            emit(f, "\tLDI \t %s %s\n", regnames[tmp_reg], regnames[dest_reg]);
             break;
         case (VAR|VARADR):
             //into dest_reg store address of variable
@@ -1236,8 +1237,8 @@ void store_from_reg(FILE *f, int source_reg, struct obj *o, int type, int tmp_re
                     if(zm2l(o->val.vmax) != 0){
                         emit(f, "\tMVIA \t %s L_%ld\n", regnames[tmp_reg], zm2l(o->v->offset));
                         load_cons(f, tmp_reg_b, zm2l(o->val.vmax));
-                        emit(f, "\tADD \t %s %s %s\n", regnames[tmp_reg], regnames[tmp_reg_b], regnames[tmp_reg]);
-                        emit(f, "\tLDI \t %s %s\n", regnames[tmp_reg], regnames[tmp_reg]);
+                        emit(f, "\tADD \t %s %s %s\n", regnames[tmp_reg], regnames[tmp_reg_b], regnames[tmp_reg_b]);
+                        emit(f, "\tLDI \t %s %s\n", regnames[tmp_reg_b], regnames[tmp_reg]);
                     }
                     else{
                         emit(f, "\tLD  \t L_%ld %s\n", zm2l(o->v->offset), regnames[tmp_reg]);
@@ -1248,8 +1249,8 @@ void store_from_reg(FILE *f, int source_reg, struct obj *o, int type, int tmp_re
                     if(zm2l(o->val.vmax) != 0){
                         emit(f, "\tMVIA \t %s %s\n", regnames[tmp_reg], o->v->identifier);
                         load_cons(f, tmp_reg_b, zm2l(o->val.vmax));
-                        emit(f, "\tADD \t %s %s %s\n", regnames[tmp_reg], regnames[tmp_reg_b], regnames[tmp_reg]);
-                        emit(f, "\tLDI \t %s %s\n", regnames[tmp_reg], regnames[tmp_reg]);
+                        emit(f, "\tADD \t %s %s %s\n", regnames[tmp_reg], regnames[tmp_reg_b], regnames[tmp_reg_b]);
+                        emit(f, "\tLDI \t %s %s\n", regnames[tmp_reg_b], regnames[tmp_reg]);
                     }
                     else{
                         emit(f, "\tLD  \t %s %s\n", o->v->identifier, regnames[tmp_reg] );
@@ -1260,8 +1261,8 @@ void store_from_reg(FILE *f, int source_reg, struct obj *o, int type, int tmp_re
                     if((o->v->offset) < 0){
                         //function argument
                         load_cons(f, tmp_reg, (zm2l(o->v->offset)/(-1L))+2+zm2l(o->val.vmax));
-                        emit(f, "\tADD \t %s %s %s\n", regnames[tmp_reg],regnames[FP], regnames[tmp_reg]);
-                        emit(f, "\tLDI \t %s %s\n", regnames[tmp_reg], regnames[tmp_reg]);
+                        emit(f, "\tADD \t %s %s %s\n", regnames[tmp_reg],regnames[FP], regnames[tmp_reg_b]);
+                        emit(f, "\tLDI \t %s %s\n", regnames[tmp_reg_b], regnames[tmp_reg]);
                         emit(f, "\tSTI \t %s %s\n", regnames[source_reg], regnames[tmp_reg]);
                     }
                     else{
@@ -1271,15 +1272,15 @@ void store_from_reg(FILE *f, int source_reg, struct obj *o, int type, int tmp_re
                             emit(f, "\tLDI \t %s %s\n", regnames[FP], regnames[tmp_reg]);
                         }
                         else if(offset == 1){
-                            emit(f, "\tDEC \t %s %s\n", regnames[FP], regnames[tmp_reg]);
-                            emit(f, "\tLDI \t %s %s\n", regnames[tmp_reg], regnames[tmp_reg]);
+                            emit(f, "\tDEC \t %s %s\n", regnames[FP], regnames[tmp_reg_b]);
+                            emit(f, "\tLDI \t %s %s\n", regnames[tmp_reg_b], regnames[tmp_reg]);
                         }
                         else{
                             load_cons(f, tmp_reg, offset);
                             emit(f, "\tSUB \t %s %s %s\n", regnames[FP],regnames[tmp_reg], regnames[tmp_reg]);
-                            emit(f, "\tLDI \t %s %s\n", regnames[tmp_reg], regnames[tmp_reg]);
+                            emit(f, "\tLDI \t %s %s\n", regnames[tmp_reg], regnames[tmp_reg_b]);
                         }
-                        emit(f, "\tSTI \t %s %s\n", regnames[source_reg], regnames[tmp_reg]);
+                        emit(f, "\tSTI \t %s %s\n", regnames[source_reg], regnames[tmp_reg_b]);
                     }
                     break;
                 default:

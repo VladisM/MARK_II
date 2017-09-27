@@ -293,6 +293,10 @@ class assembler():
                         print "Error in instruction '" + token.opcode + "' at " + token.fileName + "@" + str(token.lineNumber) + ", unexpected arugments. Instruction take " + str(arguments_count) + " arguments but " + str(arguments_given) + " are given."
                         sys.exit(1)
 
+                    if token.operands[0] == token.operands[1]:
+                        print "Error in instruction '" + token.opcode + "' at " + token.fileName + "@" + str(token.lineNumber) + ", incorrect arguments. LDI instruction cannot take two same registers."
+                        sys.exit(1)
+
                     new_instruction = p1o.LDI(token, location_counter, token.operands[0], token.operands[1])
                     self.pass1_buffer.append(new_instruction)
                     location_counter = location_counter + 1
