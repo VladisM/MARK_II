@@ -42,4 +42,4 @@ spl_ref.pdf
 sw/**/*.o
 sw/**/*.ldm
 sw/**/*.asm
-!sw/**/startup.asm
+sw/**/*.mif
