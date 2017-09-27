@@ -43,3 +43,4 @@ sw/**/*.o
 sw/**/*.ldm
 sw/**/*.asm
 sw/**/*.mif
+sw/**/*disasm
