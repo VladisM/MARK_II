@@ -113,7 +113,7 @@ architecture cpu_arch of cpu is
         port (
             datab   : in std_logic_vector (31 downto 0);
             dataa   : in std_logic_vector (31 downto 0);
-            result  : out std_logic_vector (31 downto 0)
+            result  : out std_logic_vector (63 downto 0)
         );
     end component;
     component lpm_divide
@@ -141,10 +141,13 @@ architecture cpu_arch of cpu is
     -- partial results
     signal
         result_fpsub, result_fpmul, result_fpdiv, result_fpadd, result_log,
-        result_rot, result_ari, mulu_res, muls_res, divu_res, divs_res,
+        result_rot, result_ari, divu_res, divs_res,
         divu_remain, divs_remain, add_res, sub_res, inc_res, dec_res, and_res,
         or_res, xor_res, mvil_res, mvih_res, not_res
     : std_logic_vector(31 downto 0);
+    signal
+        mulu_res, muls_res
+    : std_logic_vector(63 downto 0);
 
     signal
         fp_addsub
@@ -262,11 +265,11 @@ begin
 
     -- ALU
     mul_unsigned_0 : lpm_mult
-        generic map ("maximize_speed=9", "unsigned", 32, 32, 32)
+        generic map ("maximize_speed=9", "unsigned", 32, 32, 64)
         port map (data_b, data_a, mulu_res);
 
     mul_signed_0 : lpm_mult
-        generic map ("maximize_speed=9", "signed", 32, 32, 32)
+        generic map ("maximize_speed=9", "signed", 32, 32, 64)
         port map (data_b, data_a, muls_res);
 
     div_unsigned_0: lpm_divide
@@ -303,19 +306,19 @@ begin
 
     -- alu select result
     alu_result <=
-        mulu_res    when (instruction_word(23 downto 20) = x"0") else
-        muls_res    when (instruction_word(23 downto 20) = x"1") else
-        divu_res    when (instruction_word(23 downto 20) = x"2") else
-        divs_res    when (instruction_word(23 downto 20) = x"3") else
-        divu_remain when (instruction_word(23 downto 20) = x"4") else
-        divs_remain when (instruction_word(23 downto 20) = x"5") else
-        add_res     when (instruction_word(23 downto 20) = x"6") else
-        sub_res     when (instruction_word(23 downto 20) = x"7") else
-        inc_res     when (instruction_word(23 downto 20) = x"8") else
-        dec_res     when (instruction_word(23 downto 20) = x"9") else
-        and_res     when (instruction_word(23 downto 20) = x"a") else
-        or_res      when (instruction_word(23 downto 20) = x"b") else
-        xor_res     when (instruction_word(23 downto 20) = x"c") else
+        mulu_res(31 downto 0)    when (instruction_word(23 downto 20) = x"0") else
+        muls_res(31 downto 0)    when (instruction_word(23 downto 20) = x"1") else
+        divu_res                 when (instruction_word(23 downto 20) = x"2") else
+        divs_res                 when (instruction_word(23 downto 20) = x"3") else
+        divu_remain              when (instruction_word(23 downto 20) = x"4") else
+        divs_remain              when (instruction_word(23 downto 20) = x"5") else
+        add_res                  when (instruction_word(23 downto 20) = x"6") else
+        sub_res                  when (instruction_word(23 downto 20) = x"7") else
+        inc_res                  when (instruction_word(23 downto 20) = x"8") else
+        dec_res                  when (instruction_word(23 downto 20) = x"9") else
+        and_res                  when (instruction_word(23 downto 20) = x"a") else
+        or_res                   when (instruction_word(23 downto 20) = x"b") else
+        xor_res                  when (instruction_word(23 downto 20) = x"c") else
         not_res;
 
     -- FP and INT comparator
