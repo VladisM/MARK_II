@@ -225,7 +225,7 @@ begin
             else
                 case fsm_state is
                     when idle =>
-                        if ((RD = '1') and (reg_sel /= "0000")) then
+                        if    ((RD = '1') and (reg_sel /= "0000")) then
                             case reg_sel is
                                 when "0010" => fsm_state <= read1;
                                 when others => fsm_state <= read0;
@@ -238,28 +238,12 @@ begin
                         else
                             fsm_state <= idle;
                         end if;
-                    when write0 =>
-                        case WR is
-                            when '1' => fsm_state <= write0;
-                            when others => fsm_state <= idle;
-                        end case;
+                    when write0 => fsm_state <= idle;
                     when write1 => fsm_state <= write2;
-                    when write2 =>
-                        case WR is
-                            when '1' => fsm_state <= write2;
-                            when others => fsm_state <= idle;
-                        end case;
-                    when read0 =>
-                        case RD is
-                            when '1' => fsm_state <= read0;
-                            when others => fsm_state <= idle;
-                        end case;
+                    when write2 => fsm_state <= idle;
+                    when read0 => fsm_state <= idle;
                     when read1 => fsm_state <= read2;
-                    when read2 =>
-                        case RD is
-                            when '1' => fsm_state <= read2;
-                            when others => fsm_state <= idle;
-                        end case;
+                    when read2 => fsm_state <= idle;
                 end case;
             end if;
         end if;
