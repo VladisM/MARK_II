@@ -46,15 +46,16 @@ LK = m2-linker
 AS = m2-assembler
 LD = m2-loader
 L2M = m2-ldm2mif
+DAS = m2-disassembler
 
 #---------------
 # common rules
 
-.PHONY: clean load
+.PHONY: clean load disasm install
 
 all: $(PRG).ldm
 
-mif: $(PRG).ldm
+$(PRG).mif: $(PRG).ldm
 	$(L2M) -s $(MIF_SIZE) -r $(MIF_REL) $(PRG).ldm
 
 $(PRG).ldm: $(OBJS)
@@ -65,7 +66,13 @@ $(PRG).ldm: $(OBJS)
 	$(AS) -o $@ $(<:.c=.asm)
 
 clean:
-	rm -rf *.asm *.o *.ldm
+	rm -rf *.asm *.o *.ldm *.mif *.disasm
 
 load: $(PRG).ldm
 	$(LD) -b $(BASE_ADDRESS) -p $(LOADER_PORT) $(PRG).ldm
+
+install: $(PRG).mif
+	cp $(PRG).mif ../../fpga/src/rom/rom.mif
+
+disasm: $(PRG).mif
+	$(DAS) -o $(PRG).disasm $(PRG).mif

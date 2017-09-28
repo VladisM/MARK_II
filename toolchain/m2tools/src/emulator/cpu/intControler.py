@@ -16,23 +16,52 @@ import numpy, sys
 
 class intControler(memitem):
     def __init__(self, baseAddress, cpuObject, name):
-        memitem.__init__(self, baseAddress, 0, name)
         self.cpu = cpuObject
         self.intActive = False
         self.stack = []
+
+        self.__name__ = name
+
+        self.startAddress = baseAddress
+        self.endAddress = baseAddress + (2**4)
+        self.size = 2**4 + 1
+        self.mem = [0] * ((2**4) + 1)
+
+
+    def read(self, address):
+        if address >= self.startAddress and address <= self.endAddress:
+            return self.mem[address - self.startAddress]
+        else:
+            return None
+
+    def write(self, address, value):
+        if address >= self.startAddress and address <= self.endAddress:
+            self.mem[address - self.startAddress] = value
+
+    def reset(self):
+        self.mem = [0] * ((2**4) + 1)
+
 
     def interrupt(self, sourceName):
 
         if self.intActive == False:
 
-            if sourceName == "systim0":
-                if numpy.uint32(self.mem[0]) & 0x00000001 == 0x00000001:
-                    self.cpu.intVector = 1
+            if sourceName == "cpu0":
+                if numpy.uint32(self.mem[0]) & 0x0001 == 0x0001:
+                    self.cpu.intVector = self.mem[1]
+                    self.cpu.intrq = True
+                    self.intActive = True
+
+            elif sourceName == "systim0":
+                if numpy.uint32(self.mem[0]) & 0x0002 == 0x0002:
+                    self.cpu.intVector = self.mem[2]
+                    self.cpu.intrq = True
                     self.intActive = True
 
             elif sourceName == "uart0":
-                if numpy.uint32(self.mem[0]) & 0x00000100 == 0x00000100:
-                    self.cpu.intVector = 9
+                if numpy.uint32(self.mem[0]) & 0x0100 == 0x0100:
+                    self.cpu.intVector = self.mem[9]
+                    self.cpu.intrq = True
                     self.intActive = True
 
             else:

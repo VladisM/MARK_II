@@ -65,10 +65,10 @@
 \lstdefinelanguage[markII]{Assembler}
 {
     alsoletter={.\#},
-    morekeywords={[1]RET, RETI, CALLI, PUSH, POP, LDI, STI, BZI, BNZI, MOV, CMP, AND, OR, XOR, ADD, SUB, INC, DEC, LSL, LSR, ROL, ROR, MVIL, MVIH, CALL, LD, ST, BZ, BNZ, MVIA},
+    morekeywords={[1]RET, SWI, CMPF, CMPI, DIV, DIVU, REM, REMU, MUL, MULU, FADD, FSUB, FDIV, FMUL, RETI, CALLI, PUSH, POP, LDI, STI, BZI, BNZI, MOV, AND, OR, XOR, ADD, SUB, INC, DEC, LSL, LSR, ROL, ROR, MVIL, MVIH, CALL, LD, ST, BZ, BNZ, MVIA},
     morekeywords={[2]\#define, \#ifdef, \#ifndef, \#endif, \#include, \#macro, \#endmacro, .CONS, .ORG, .DAT, .DS, .EXPORT, .IMPORT, .MVI},
     morekeywords={[3]R0, R1, R2, R3, R4, R5, R6, R7, R8, R9, R10, R11, R12, R13, R14, R15, SP, PC},
-    morekeywords={[4]EQ, NEQ, L, LU, GE, GEU},
+    morekeywords={[4]EQ, NEQ, L, LU, GE, GEU, LE, LEU, G, GU},
     sensitive=false,
     morecomment=[l]{;},
 }[comments,keywords]

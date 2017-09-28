@@ -11,44 +11,26 @@ one is then put into queue.
 
 \begin{table}[h]
     \centering
-    \begin{tabular}{|l|l|l|l|}
+    \begin{tabular}{|l|l|l|}
         \hline
-        \textbf{Int number} & \textbf{Peripheral} & \textbf{Vector} & \textbf{Purpose}               \\ \hline
-        0                   & System Timer        & 0x000010        & Timer compare match / overflow \\ \hline
-        1                   & -                   & 0x000012        & -                              \\ \hline
-        2                   & -                   & 0x000014        & -                              \\ \hline
-        3                   & -                   & 0x000016        & -                              \\ \hline
-        4                   & -                   & 0x000018        & -                              \\ \hline
-        5                   & -                   & 0x00001A        & -                              \\ \hline
-        6                   & -                   & 0x00001C        & -                              \\ \hline
-        7                   & -                   & 0x00001E        & -                              \\ \hline
-        8                   & UART0               & 0x000020        & Serial port 0                  \\ \hline
-        9                   & UART1               & 0x000022        & Serial port 1                  \\ \hline
-        10                  & UART2               & 0x000024        & Serial port 2                  \\ \hline
-        11                  &                     & 0x000026        &                                \\ \hline
-        12                  &                     & 0x000028        &                                \\ \hline
-        13                  &                     & 0x00002A        &                                \\ \hline
-        14                  & Timer 0             & 0x00002C        & Timer compare match / overflow \\ \hline
-        15                  & Timer 1             & 0x00002E        & Timer compare match / overflow \\ \hline
-        16                  & Timer 2             & 0x000030        & Timer compare match / overflow \\ \hline
-        17                  & Timer 3             & 0x000032        & Timer compare match / overflow \\ \hline
-        18                  & PS2 Keyboard        & 0x000034        & Byte received                  \\ \hline
-        19                  & -                   & 0x000036        & -                              \\ \hline
-        20                  & -                   & 0x000038        & -                              \\ \hline
-        21                  & -                   & 0x00003A        & -                              \\ \hline
-        22                  & -                   & 0x00003C        & -                              \\ \hline
-        23                  & -                   & 0x00003E        & -                              \\ \hline
-        24                  & -                   & 0x000040        & -                              \\ \hline
-        25                  & -                   & 0x000042        & -                              \\ \hline
-        26                  & -                   & 0x000044        & -                              \\ \hline
-        27                  & -                   & 0x000046        & -                              \\ \hline
-        28                  & -                   & 0x000048        & -                              \\ \hline
-        29                  & -                   & 0x00004A        & -                              \\ \hline
-        30                  & -                   & 0x00004C        & -                              \\ \hline
-        31                  & -                   & 0x00004E        & -                              \\ \hline
+        \textbf{Int number} & \textbf{Peripheral} & \textbf{Purpose}                \\ \hline
+        0                   & SWI                 & Software interrupt              \\ \hline
+        1                   & System Timer        & SysTim compare match / overflow \\ \hline
+        2                   & -                   & -                               \\ \hline
+        3                   & -                   & -                               \\ \hline
+        4                   & -                   & -                               \\ \hline
+        5                   & -                   & -                               \\ \hline
+        6                   & -                   & -                               \\ \hline
+        7                   & -                   & -                               \\ \hline
+        8                   & UART0               & Serial port 0                   \\ \hline
+        9                   & UART1               & Serial port 1                   \\ \hline
+        10                  & UART2               & Serial port 2                   \\ \hline
+        11                  & PS2 Keyboard        & Byte received                   \\ \hline
+        12                  & Timer 0             & Timer compare match / overflow  \\ \hline
+        13                  & Timer 1             & Timer compare match / overflow  \\ \hline
+        14                  & Timer 2             & Timer compare match / overflow  \\ \hline
+        15                  & Timer 3             & Timer compare match / overflow  \\ \hline
     \end{tabular}
     \caption{List of all interrupt sources}
     \label{tab:intsources}
 \end{table}
-
-

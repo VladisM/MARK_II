@@ -3,13 +3,19 @@
 
 static char FILE_[]=__FILE__;
 
-char cg_copyright[]="MARK-II code generator v0, (c) in 2017 by Vladislav Mlejnecký";
+char cg_copyright[]="MARK-II code generator v1.0 (c) in 2017 by Vladislav Mlejnecký";
 
 int g_flags[MAXGF]={};
 char *g_flags_name[MAXGF]={};
 union ppi g_flags_val[MAXGF];
 
 struct reg_handle empty_reg_handle={0};
+
+extern int handle_pragma(const char * c){return 0;}
+
+//support for ISR
+char *g_attr_name[] = {"__interrupt", 0};
+#define INTERRUPT 1
 
 /*
  * Define registers codes
@@ -46,9 +52,6 @@ void store_from_reg(FILE *f, int source_reg, struct obj *o, int type, int tmp_re
 void arithmetic(FILE *f, struct IC *p);
 //load constant into register
 void load_cons(FILE *f, int reg, long int value);
-//emit all macros
-void emit_macros(FILE *f);
-int macros_emited = 0;
 
 /*
  * Data Types
@@ -315,8 +318,6 @@ void gen_code(FILE *f,struct IC *p,struct Var *v,zmax offset){
     printf("Called gen_code(FILE *f,struct IC *p,struct Var *v,zmax offset)\n");
     #endif
 
-    emit_macros(f);
-
     //emit function head
     if(v->storage_class==EXTERN){
         if( (v->flags & (INLINEFUNC|INLINEEXT)) != INLINEFUNC ){
@@ -330,11 +331,11 @@ void gen_code(FILE *f,struct IC *p,struct Var *v,zmax offset){
 
     //emit function prologue
     emit(f, "\tPUSH \t %s\n", regnames[FP]);  //push FP
-    emit(f, "\tMOV \t %s %s\n", regnames[SP], regnames[FP]); //MOVE SP -> FP
+    emit(f, "\tOR   \t %s %s %s\n",regnames[R0], regnames[SP], regnames[FP]); //MOVE SP -> FP
 
     //make space for auto variables at stack
     for(int i = 0; i < zm2l(offset); i++){
-        emit(f, "\tPUSH \t R0\n");
+        emit(f, "\tDEC \t %s %s\n", regnames[SP], regnames[SP]);
     }
 
     //store backend registers
@@ -388,7 +389,7 @@ void gen_code(FILE *f,struct IC *p,struct Var *v,zmax offset){
                 //we can simplify assign when both operands are in registers
                 if((((p->q1.flags) & (KONST|VAR|REG|DREFOBJ|VARADR)) == REG) &&
                    (((p->z.flags) & (KONST|VAR|REG|DREFOBJ|VARADR)) == REG) ){
-                    emit(f, "\tMOV \t %s %s", regnames[p->q1.reg], regnames[p->z.reg]);
+                    emit(f, "\tOR   \t %s %s %s",regnames[R0], regnames[p->q1.reg], regnames[p->z.reg]);
                 }
 
                 //this is another optimalization, if have to assign zero; then
@@ -470,10 +471,7 @@ void gen_code(FILE *f,struct IC *p,struct Var *v,zmax offset){
                 #ifdef DEBUG_MARK
                 printf("\n\tKOMPLEMENT\n");
                 #endif
-
-                load_into_reg(f, R1, &(p->q1), p->typf, R2);
-                emit(f, "\t.MVI \t R2 0xFFFFFFFF\n\tXOR \t R1 R1 R2\n");
-                store_from_reg(f, R1, &(p->z), p->typf, R2, R3);
+                arithmetic(f, p);
                 break;
             case MINUS:
                 #ifdef DEBUG_MARK
@@ -508,41 +506,48 @@ void gen_code(FILE *f,struct IC *p,struct Var *v,zmax offset){
                 #ifdef DEBUG_MARK
                 printf("\n\tCALL\n\tq1.flags: %d\n", p->q1.flags);
                 #endif
-                if(((p->q1.flags) & (KONST|VAR|REG|DREFOBJ|VARADR)) == VAR){
 
-                    #ifdef DEBUG_MARK
-                    printf("\tq1.v->storage_class: %d\n", p->q1.v->storage_class);
-                    #endif
-
-                    switch((p->q1.v->storage_class) & (AUTO|REGISTER|STATIC|EXTERN)){
-                        case EXTERN:
-                            emit(f, "\tCALL \t %s\n", p->q1.v->identifier);
-                            for(int i = 0; i < (p->q2.val.vmax); i++){
-                                emit(f, "\tPOP \t R0\n");
-                            }
-                            break;
-                        case STATIC:
-                            emit(f, "\tCALL \t L_%ld\n", zm2l(p->q1.v->offset));
-                            for(int i = 0; i < (p->q2.val.vmax); i++){
-                                emit(f, "\tPOP \t R0\n");
-                            }
-                            break;
-                        default:
-                            #ifdef DEBUG_MARK
-                            printf("\tThis is not implemented!\n");
-                            #else
-                            ierror(0);
-                            #endif
-                            break;
-                    }
-
+                if((p->q1.flags & (VAR|DREFOBJ)) == VAR && p->q1.v->fi && p->q1.v->fi->inline_asm){
+                    emit_inline_asm(f,p->q1.v->fi->inline_asm);
                 }
                 else{
-                    #ifdef DEBUG_MARK
-                    printf("\tThis is not implemented!\n");
-                    #else
-                    ierror(0);
-                    #endif
+
+                    if(((p->q1.flags) & (KONST|VAR|REG|DREFOBJ|VARADR)) == VAR){
+
+                        #ifdef DEBUG_MARK
+                        printf("\tq1.v->storage_class: %d\n", p->q1.v->storage_class);
+                        #endif
+
+                        switch((p->q1.v->storage_class) & (AUTO|REGISTER|STATIC|EXTERN)){
+                            case EXTERN:
+                                emit(f, "\tCALL \t %s\n", p->q1.v->identifier);
+                                for(int i = 0; i < (p->q2.val.vmax); i++){
+                                    emit(f, "\tINC \t %s %s\n", regnames[SP], regnames[SP]);
+                                }
+                                break;
+                            case STATIC:
+                                emit(f, "\tCALL \t L_%ld\n", zm2l(p->q1.v->offset));
+                                for(int i = 0; i < (p->q2.val.vmax); i++){
+                                    emit(f, "\tINC \t %s %s\n", regnames[SP], regnames[SP]);
+                                }
+                                break;
+                            default:
+                                #ifdef DEBUG_MARK
+                                printf("\tThis is not implemented!\n");
+                                #else
+                                ierror(0);
+                                #endif
+                                break;
+                        }
+
+                    }
+                    else{
+                        #ifdef DEBUG_MARK
+                        printf("\tThis is not implemented!\n");
+                        #else
+                        ierror(0);
+                        #endif
+                    }
                 }
                 break;
             case CONVERT:
@@ -731,9 +736,16 @@ void gen_code(FILE *f,struct IC *p,struct Var *v,zmax offset){
     emit(f, "\tPOP \t R4\n\tPOP \t R3\n\tPOP \t R2\n\tPOP \t R1\n");
 
     //emit function epilogue
-    emit(f, "\tMOV \t %s %s\n", regnames[FP], regnames[SP]); //restore SP from FP
+    emit(f, "\tOR  \t %s %s %s\n",regnames[R0], regnames[FP], regnames[SP]); //restore SP from FP
     emit(f, "\tPOP \t %s\n", regnames[FP]); //restore old FP from stack
-    emit(f, "\tRET\n"); //return
+
+    //return
+    if((v->tattr)&INTERRUPT){
+        emit(f, "\tRETI\n");
+    }
+    else{
+        emit(f, "\tRET\n");
+    }
 }
 
 /*
@@ -800,17 +812,11 @@ void gen_dc(FILE *f,int t,struct const_list *p){
     printf("Called gen_dc(FILE *f,int t,struct const_list *p)\n");
     #endif
 
-    //FIXME: generování DC
-    // tady je blbě to šaškování s floatem, šaškovat se musí to je jasný,  říká to doku ale
-    // formát je úplně blbě, však MARK ještě float vůbec neřešil
-
     if(!p->tree){
         if(ISFLOAT(t)){
-            #ifdef DEBUG_MARK
-            printf("Float numbers are not supported!\n");
-            #else
-            ierror(0);
-            #endif
+            emit(f,"\t.DAT \t ");
+            emit(f,"0x%x", *(unsigned int*)&p->val);
+            emit(f,"\n");
         }
         else{
             emit(f,"\t.DAT \t ");
@@ -873,7 +879,7 @@ void compare(FILE *f, struct IC *p){
     }
     else{
         q2reg = R2;
-        emit(f, "\tMOV \t %s %s\n", regnames[R0], regnames[R2]);
+        emit(f, "\tOR  \t %s %s %s\n",regnames[R0], regnames[R0], regnames[R2]);
     }
 
     //find branch IC
@@ -884,60 +890,75 @@ void compare(FILE *f, struct IC *p){
     }
 
     //emit compare code
-    switch(branch_ic->code){
-        case BEQ:
-            emit(f, "\tCMP \t EQ %s %s R4\n", regnames[q2reg], regnames[q1reg]);
-            break;
-        case BNE:
-            emit(f, "\tCMP \t NEQ %s %s R4\n", regnames[q2reg], regnames[q1reg]);
-            break;
-        case BLT:
-            if((p->typf & UNSIGNED) == UNSIGNED){
-                emit(f, "\tCMP \t LU %s %s R4\n", regnames[q2reg], regnames[q1reg]);
-            }
-            else{
-                emit(f, "\tCMP \t L %s %s R4\n", regnames[q2reg], regnames[q1reg]);
-            }
-            break;
-        case BGE:
-            if((p->typf & UNSIGNED) == UNSIGNED){
-                emit(f, "\tCMP \t GEU %s %s R4\n", regnames[q2reg], regnames[q1reg]);
-            }
-            else{
-                emit(f, "\tCMP \t GE %s %s R4\n", regnames[q2reg], regnames[q1reg]);
-            }
-            break;
-        case BLE:
-            if((p->typf & UNSIGNED) == UNSIGNED){
-                emit(f, "\tCMP \t LU %s %s R4\n", regnames[q2reg], regnames[q1reg]);
-                emit(f, "\tCMP \t EQ %s %s %s\n", regnames[q2reg], regnames[q1reg], regnames[q2reg]);
-                emit(f, "\tOR  \t %s R4 R4\n", regnames[q2reg]);
-            }
-            else{
-                emit(f, "\tCMP \t L %s %s R4\n", regnames[q2reg], regnames[q1reg]);
-                emit(f, "\tCMP \t EQ %s %s %s\n", regnames[q2reg], regnames[q1reg], regnames[q2reg]);
-                emit(f, "\tOR  \t %s R4 R4\n", regnames[q2reg]);
-            }
-            break;
-        case BGT:
-            if((p->typf & UNSIGNED) == UNSIGNED){
-                emit(f, "\tCMP \t GEU %s %s R4\n", regnames[q2reg], regnames[q1reg]);
-                emit(f, "\tCMP \t NEQ %s %s %s\n", regnames[q2reg], regnames[q1reg], regnames[q2reg]);
-                emit(f, "\tAND \t %s R4 R4\n", regnames[q2reg]);
-            }
-            else{
-                emit(f, "\tCMP \t GE %s %s R4\n", regnames[q2reg], regnames[q1reg]);
-                emit(f, "\tCMP \t NEQ %s %s %s\n", regnames[q2reg], regnames[q1reg], regnames[q2reg]);
-                emit(f, "\tAND \t %s R4 R4\n", regnames[q2reg]);
-            }
-            break;
-        default:
-            #ifdef DEBUG_MARK
-            printf("\tunknown condition!\n");
-            #else
-            ierror(0);
-            #endif
-            break;
+    if (((p->typf) & FLOAT) == FLOAT || ((p->typf) & DOUBLE) == DOUBLE || ((p->typf) & LDOUBLE) == LDOUBLE){
+        switch(branch_ic->code){
+            case BEQ:
+                emit(f, "\tCMPF \t EQ %s %s R4\n", regnames[q1reg], regnames[q2reg]);
+                break;
+            case BNE:
+                emit(f, "\tCMPF \t NEQ %s %s R4\n", regnames[q1reg], regnames[q2reg]);
+                break;
+            case BLT:
+                emit(f, "\tCMPF \t L %s %s R4\n", regnames[q1reg], regnames[q2reg]);
+                break;
+            case BGE:
+                emit(f, "\tCMPF \t GE %s %s R4\n", regnames[q1reg], regnames[q2reg]);
+                break;
+            case BLE:
+                emit(f, "\tCMPF \t LE %s %s R4\n", regnames[q1reg], regnames[q2reg]);
+                break;
+            case BGT:
+                emit(f, "\tCMPF \t G %s %s R4\n", regnames[q1reg], regnames[q2reg]);
+                break;
+            default:
+                ierror(0);
+                break;
+        }
+    }
+    else{
+        switch(branch_ic->code){
+            case BEQ:
+                emit(f, "\tCMPI \t EQ %s %s R4\n", regnames[q1reg], regnames[q2reg]);
+                break;
+            case BNE:
+                emit(f, "\tCMPI \t NEQ %s %s R4\n", regnames[q1reg], regnames[q2reg]);
+                break;
+            case BLT:
+                if((p->typf & UNSIGNED) == UNSIGNED){
+                    emit(f, "\tCMPI \t LU %s %s R4\n", regnames[q1reg], regnames[q2reg]);
+                }
+                else{
+                    emit(f, "\tCMPI \t L %s %s R4\n", regnames[q1reg], regnames[q2reg]);
+                }
+                break;
+            case BGE:
+                if((p->typf & UNSIGNED) == UNSIGNED){
+                    emit(f, "\tCMPI \t GEU %s %s R4\n", regnames[q1reg], regnames[q2reg]);
+                }
+                else{
+                    emit(f, "\tCMPI \t GE %s %s R4\n", regnames[q1reg], regnames[q2reg]);
+                }
+                break;
+            case BLE:
+                if((p->typf & UNSIGNED) == UNSIGNED){
+                    emit(f, "\tCMPI \t LEU %s %s R4\n", regnames[q1reg], regnames[q2reg]);
+                }
+                else{
+                    emit(f, "\tCMPI \t LE %s %s R4\n", regnames[q1reg], regnames[q2reg]);
+                }
+                break;
+            case BGT:
+                if((p->typf & UNSIGNED) == UNSIGNED){
+                    emit(f, "\tCMPI \t GU %s %s R4\n", regnames[q1reg], regnames[q2reg]);
+                }
+                else{
+                    emit(f, "\tCMPI \t G %s %s R4\n", regnames[q1reg], regnames[q2reg]);
+                }
+                break;
+            default:
+                ierror(0);
+                break;
+        }
     }
 }
 
@@ -955,7 +976,7 @@ void load_into_reg(FILE *f, int dest_reg, struct obj *o, int type, int tmp_reg){
         case REG:
             //move between registers
             if((o->reg) != dest_reg){
-                emit(f, "\tMOV \t %s %s\n", regnames[o->reg], regnames[dest_reg]);
+                emit(f, "\tOR  \t %s %s %s\n",regnames[R0], regnames[o->reg], regnames[dest_reg]);
             }
             break;
         case VAR:
@@ -966,8 +987,8 @@ void load_into_reg(FILE *f, int dest_reg, struct obj *o, int type, int tmp_reg){
                     if(zm2l(o->val.vmax) != 0){
                         emit(f, "\tMVIA \t %s L_%ld\n", regnames[dest_reg], zm2l(o->v->offset));
                         load_cons(f, tmp_reg, zm2l(o->val.vmax));
-                        emit(f, "\tADD \t %s %s %s\n", regnames[dest_reg], regnames[tmp_reg], regnames[dest_reg]);
-                        emit(f, "\tLDI \t %s %s\n", regnames[dest_reg], regnames[dest_reg]);
+                        emit(f, "\tADD \t %s %s %s\n", regnames[dest_reg], regnames[tmp_reg], regnames[tmp_reg]);
+                        emit(f, "\tLDI \t %s %s\n", regnames[tmp_reg], regnames[dest_reg]);
                     }
                     else{
                         emit(f, "\tLD \t L_%ld %s\n", zm2l(o->v->offset), regnames[dest_reg]);
@@ -977,8 +998,8 @@ void load_into_reg(FILE *f, int dest_reg, struct obj *o, int type, int tmp_reg){
                     if(zm2l(o->val.vmax) != 0){
                         emit(f, "\tMVIA \t %s %s\n", regnames[dest_reg], o->v->identifier);
                         load_cons(f, tmp_reg, zm2l(o->val.vmax));
-                        emit(f, "\tADD \t %s %s %s\n", regnames[dest_reg], regnames[tmp_reg], regnames[dest_reg]);
-                        emit(f, "\tLDI \t %s %s\n", regnames[dest_reg], regnames[dest_reg]);
+                        emit(f, "\tADD \t %s %s %s\n", regnames[dest_reg], regnames[tmp_reg], regnames[tmp_reg]);
+                        emit(f, "\tLDI \t %s %s\n", regnames[tmp_reg], regnames[dest_reg]);
                     }
                     else{
                         emit(f, "\tLD \t %s %s\n", o->v->identifier , regnames[dest_reg]);
@@ -988,8 +1009,8 @@ void load_into_reg(FILE *f, int dest_reg, struct obj *o, int type, int tmp_reg){
                     if((o->v->offset) < 0){
                         //this is argument
                         load_cons(f, dest_reg, (zm2l(o->v->offset)/(-1L))+2+zm2l(o->val.vmax));
-                        emit(f, "\tADD \t %s %s %s\n", regnames[dest_reg],regnames[FP], regnames[dest_reg]);
-                        emit(f, "\tLDI \t %s %s\n", regnames[dest_reg], regnames[dest_reg]);
+                        emit(f, "\tADD \t %s %s %s\n", regnames[dest_reg],regnames[FP], regnames[tmp_reg]);
+                        emit(f, "\tLDI \t %s %s\n", regnames[tmp_reg], regnames[dest_reg]);
                     }
                     else{
                         //this is auto variable
@@ -999,13 +1020,13 @@ void load_into_reg(FILE *f, int dest_reg, struct obj *o, int type, int tmp_reg){
                             emit(f, "\tLDI \t %s %s\n", regnames[FP], regnames[dest_reg]);
                         }
                         else if(offset == 1){
-                            emit(f, "\tDEC \t %s %s\n", regnames[FP], regnames[dest_reg]);
-                            emit(f, "\tLDI \t %s %s\n", regnames[dest_reg], regnames[dest_reg]);
+                            emit(f, "\tDEC \t %s %s\n", regnames[FP], regnames[tmp_reg]);
+                            emit(f, "\tLDI \t %s %s\n", regnames[tmp_reg], regnames[dest_reg]);
                         }
                         else{
                             load_cons(f, dest_reg, offset);
-                            emit(f, "\tSUB \t %s %s %s\n", regnames[FP],regnames[dest_reg], regnames[dest_reg]);
-                            emit(f, "\tLDI \t %s %s\n", regnames[dest_reg], regnames[dest_reg]);
+                            emit(f, "\tSUB \t %s %s %s\n", regnames[FP],regnames[dest_reg], regnames[tmp_reg]);
+                            emit(f, "\tLDI \t %s %s\n", regnames[tmp_reg], regnames[dest_reg]);
                         }
 
                     }
@@ -1022,7 +1043,7 @@ void load_into_reg(FILE *f, int dest_reg, struct obj *o, int type, int tmp_reg){
             break;
         case (VAR|REG):
             if((o->reg) != dest_reg){
-                emit(f, "\tMOV \t %s %s\n", regnames[o->reg], regnames[dest_reg]);
+                emit(f, "\tOR  \t %s %s %s\n", regnames[R0], regnames[o->reg], regnames[dest_reg]);
             }
             break;
         case (REG|DREFOBJ):
@@ -1039,31 +1060,31 @@ void load_into_reg(FILE *f, int dest_reg, struct obj *o, int type, int tmp_reg){
                         emit(f, "\tMVIA \t %s L_%ld\n", regnames[dest_reg], zm2l(o->v->offset));
                         load_cons(f, tmp_reg, zm2l(o->val.vmax));
                         emit(f, "\tADD \t %s %s %s\n", regnames[dest_reg], regnames[tmp_reg], regnames[dest_reg]);
-                        emit(f, "\tLDI \t %s %s\n", regnames[dest_reg], regnames[dest_reg]);
+                        emit(f, "\tLDI \t %s %s\n", regnames[dest_reg], regnames[tmp_reg]);
                     }
                     else{
-                        emit(f, "\tLD  \t L_%ld %s\n", zm2l(o->v->offset), regnames[dest_reg]);
+                        emit(f, "\tLD  \t L_%ld %s\n", zm2l(o->v->offset), regnames[tmp_reg]);
                     }
-                    emit(f, "\tLDI \t %s %s\n", regnames[dest_reg], regnames[dest_reg]);
+                    emit(f, "\tLDI \t %s %s\n", regnames[tmp_reg], regnames[dest_reg]);
                     break;
                 case EXTERN:
                     if(zm2l(o->val.vmax) != 0){
                         emit(f, "\tMVIA \t %s %s\n", regnames[dest_reg], o->v->identifier);
                         load_cons(f, tmp_reg, zm2l(o->val.vmax));
                         emit(f, "\tADD \t %s %s %s\n", regnames[dest_reg], regnames[tmp_reg], regnames[dest_reg]);
-                        emit(f, "\tLDI \t %s %s\n", regnames[dest_reg], regnames[dest_reg]);
+                        emit(f, "\tLDI \t %s %s\n", regnames[dest_reg], regnames[tmp_reg]);
                     }
                     else{
-                        emit(f, "\tLD \t %s %s\n", o->v->identifier , regnames[dest_reg]);
+                        emit(f, "\tLD \t %s %s\n", o->v->identifier , regnames[tmp_reg]);
                     }
-                    emit(f, "\tLDI \t %s %s\n", regnames[dest_reg], regnames[dest_reg]);
+                    emit(f, "\tLDI \t %s %s\n", regnames[tmp_reg], regnames[dest_reg]);
                     break;
                 case AUTO:
                     if((o->v->offset) < 0){
                         //this is argument
                         load_cons(f, dest_reg, (zm2l(o->v->offset)/(-1L))+2+zm2l(o->val.vmax));
-                        emit(f, "\tADD \t %s %s %s\n", regnames[dest_reg],regnames[FP], regnames[dest_reg]);
-                        emit(f, "\tLDI \t %s %s\n", regnames[dest_reg], regnames[dest_reg]);
+                        emit(f, "\tADD \t %s %s %s\n", regnames[dest_reg],regnames[FP], regnames[tmp_reg]);
+                        emit(f, "\tLDI \t %s %s\n", regnames[tmp_reg], regnames[dest_reg]);
                     }
                     else{
                         //this is auto variable
@@ -1073,13 +1094,13 @@ void load_into_reg(FILE *f, int dest_reg, struct obj *o, int type, int tmp_reg){
                             emit(f, "\tLDI \t %s %s\n", regnames[FP], regnames[dest_reg]);
                         }
                         else if(offset == 1){
-                            emit(f, "\tDEC \t %s %s\n", regnames[FP], regnames[dest_reg]);
-                            emit(f, "\tLDI \t %s %s\n", regnames[dest_reg], regnames[dest_reg]);
+                            emit(f, "\tDEC \t %s %s\n", regnames[FP], regnames[tmp_reg]);
+                            emit(f, "\tLDI \t %s %s\n", regnames[tmp_reg], regnames[dest_reg]);
                         }
                         else{
                             load_cons(f, dest_reg, offset);
-                            emit(f, "\tSUB \t %s %s %s\n", regnames[FP],regnames[dest_reg], regnames[dest_reg]);
-                            emit(f, "\tLDI \t %s %s\n", regnames[dest_reg], regnames[dest_reg]);
+                            emit(f, "\tSUB \t %s %s %s\n", regnames[FP],regnames[dest_reg], regnames[tmp_reg]);
+                            emit(f, "\tLDI \t %s %s\n", regnames[tmp_reg], regnames[dest_reg]);
                         }
 
                     }
@@ -1093,14 +1114,15 @@ void load_into_reg(FILE *f, int dest_reg, struct obj *o, int type, int tmp_reg){
                     break;
             }
 
-            emit(f, "\tLDI \t %s %s\n", regnames[dest_reg], regnames[dest_reg]);
+            emit(f, "\tLDI \t %s %s\n", regnames[dest_reg], regnames[tmp_reg]);
+            emit(f, "\tOR  \t R0 %s %s\n", regnames[tmp_reg], regnames[dest_reg]);
 
             break;
         case (VAR|REG|DREFOBJ):
             if((o->reg) != dest_reg){
-                emit(f, "\tMOV \t %s %s\n", regnames[o->reg], regnames[dest_reg]);
+                emit(f, "\tOR  \t %s %s %s\n",regnames[R0], regnames[o->reg], regnames[tmp_reg]);
             }
-            emit(f, "\tLDI \t %s %s\n", regnames[dest_reg], regnames[dest_reg]);
+            emit(f, "\tLDI \t %s %s\n", regnames[tmp_reg], regnames[dest_reg]);
             break;
         case (VAR|VARADR):
             //into dest_reg store address of variable
@@ -1140,7 +1162,7 @@ void store_from_reg(FILE *f, int source_reg, struct obj *o, int type, int tmp_re
         case REG:
             //move from register into register
             if(source_reg != (o->reg)){
-                emit(f, "\tMOV \t %s %s\n",regnames[source_reg], regnames[o->reg]);
+                emit(f, "\tOR  \t %s %s %s\n",regnames[R0], regnames[source_reg], regnames[o->reg]);
             }
             break;
         case VAR:
@@ -1202,7 +1224,7 @@ void store_from_reg(FILE *f, int source_reg, struct obj *o, int type, int tmp_re
             }
             break;
         case (VAR|REG):
-            emit(f, "\tMOV \t %s %s\n", regnames[source_reg], regnames[o->reg]);
+            emit(f, "\tOR   \t %s %s %s\n", regnames[R0], regnames[source_reg], regnames[o->reg]);
             break;
         case (REG|DREFOBJ):
             //use value in register as pointer into memory
@@ -1215,8 +1237,8 @@ void store_from_reg(FILE *f, int source_reg, struct obj *o, int type, int tmp_re
                     if(zm2l(o->val.vmax) != 0){
                         emit(f, "\tMVIA \t %s L_%ld\n", regnames[tmp_reg], zm2l(o->v->offset));
                         load_cons(f, tmp_reg_b, zm2l(o->val.vmax));
-                        emit(f, "\tADD \t %s %s %s\n", regnames[tmp_reg], regnames[tmp_reg_b], regnames[tmp_reg]);
-                        emit(f, "\tLDI \t %s %s\n", regnames[tmp_reg], regnames[tmp_reg]);
+                        emit(f, "\tADD \t %s %s %s\n", regnames[tmp_reg], regnames[tmp_reg_b], regnames[tmp_reg_b]);
+                        emit(f, "\tLDI \t %s %s\n", regnames[tmp_reg_b], regnames[tmp_reg]);
                     }
                     else{
                         emit(f, "\tLD  \t L_%ld %s\n", zm2l(o->v->offset), regnames[tmp_reg]);
@@ -1227,8 +1249,8 @@ void store_from_reg(FILE *f, int source_reg, struct obj *o, int type, int tmp_re
                     if(zm2l(o->val.vmax) != 0){
                         emit(f, "\tMVIA \t %s %s\n", regnames[tmp_reg], o->v->identifier);
                         load_cons(f, tmp_reg_b, zm2l(o->val.vmax));
-                        emit(f, "\tADD \t %s %s %s\n", regnames[tmp_reg], regnames[tmp_reg_b], regnames[tmp_reg]);
-                        emit(f, "\tLDI \t %s %s\n", regnames[tmp_reg], regnames[tmp_reg]);
+                        emit(f, "\tADD \t %s %s %s\n", regnames[tmp_reg], regnames[tmp_reg_b], regnames[tmp_reg_b]);
+                        emit(f, "\tLDI \t %s %s\n", regnames[tmp_reg_b], regnames[tmp_reg]);
                     }
                     else{
                         emit(f, "\tLD  \t %s %s\n", o->v->identifier, regnames[tmp_reg] );
@@ -1239,8 +1261,8 @@ void store_from_reg(FILE *f, int source_reg, struct obj *o, int type, int tmp_re
                     if((o->v->offset) < 0){
                         //function argument
                         load_cons(f, tmp_reg, (zm2l(o->v->offset)/(-1L))+2+zm2l(o->val.vmax));
-                        emit(f, "\tADD \t %s %s %s\n", regnames[tmp_reg],regnames[FP], regnames[tmp_reg]);
-                        emit(f, "\tLDI \t %s %s\n", regnames[tmp_reg], regnames[tmp_reg]);
+                        emit(f, "\tADD \t %s %s %s\n", regnames[tmp_reg],regnames[FP], regnames[tmp_reg_b]);
+                        emit(f, "\tLDI \t %s %s\n", regnames[tmp_reg_b], regnames[tmp_reg]);
                         emit(f, "\tSTI \t %s %s\n", regnames[source_reg], regnames[tmp_reg]);
                     }
                     else{
@@ -1250,15 +1272,15 @@ void store_from_reg(FILE *f, int source_reg, struct obj *o, int type, int tmp_re
                             emit(f, "\tLDI \t %s %s\n", regnames[FP], regnames[tmp_reg]);
                         }
                         else if(offset == 1){
-                            emit(f, "\tDEC \t %s %s\n", regnames[FP], regnames[tmp_reg]);
-                            emit(f, "\tLDI \t %s %s\n", regnames[tmp_reg], regnames[tmp_reg]);
+                            emit(f, "\tDEC \t %s %s\n", regnames[FP], regnames[tmp_reg_b]);
+                            emit(f, "\tLDI \t %s %s\n", regnames[tmp_reg_b], regnames[tmp_reg]);
                         }
                         else{
                             load_cons(f, tmp_reg, offset);
                             emit(f, "\tSUB \t %s %s %s\n", regnames[FP],regnames[tmp_reg], regnames[tmp_reg]);
-                            emit(f, "\tLDI \t %s %s\n", regnames[tmp_reg], regnames[tmp_reg]);
+                            emit(f, "\tLDI \t %s %s\n", regnames[tmp_reg], regnames[tmp_reg_b]);
                         }
-                        emit(f, "\tSTI \t %s %s\n", regnames[source_reg], regnames[tmp_reg]);
+                        emit(f, "\tSTI \t %s %s\n", regnames[source_reg], regnames[tmp_reg_b]);
                     }
                     break;
                 default:
@@ -1307,7 +1329,12 @@ void arithmetic(FILE *f, struct IC *p){
 
     int unary = 0;
 
-    if((p->code) == MINUS){
+    int isunsigned = 0;
+    if (((p->typf) & UNSIGNED) == UNSIGNED){
+        isunsigned = 1;
+    }
+
+    if(((p->code) == MINUS) || ((p->code) == KOMPLEMENT)){
         unary = 1;
     }
 
@@ -1340,56 +1367,101 @@ void arithmetic(FILE *f, struct IC *p){
         movez = 1;
     }
 
-    //emit instruction opcode
-    switch(p->code){
-        case OR:
-            emit(f, "\tOR   \t ");
-            break;
-        case XOR:
-            emit(f, "\tXOR \t ");
-            break;
-        case AND:
-            emit(f, "\tAND \t ");
-            break;
-        case LSHIFT:
-            emit(f, "\t$LSHIFT \t ");
-            break;
-        case RSHIFT:
-            emit(f, "\t$RSHIFT \t ");
-            break;
-        case ADD:
-            emit(f, "\tADD \t ");
-            break;
-        case SUB:
-            emit(f, "\tSUB \t ");
-            break;
-        case MULT:
-            emit(f, "\t$MULT \t ");
-            break;
-        case DIV: //FIXME: vylepšit CPU o tuto instrukci
-            emit(f, "\t$DIV \t ");
-            break;
-        case MOD: //FIXME: vylepšit CPU o tuto instrukci
-            emit(f, "\t$MOD \t ");
-            break;
-        case ADDI2P:
-            emit(f, "\tADD \t ");
-            break;
-        case SUBIFP:
-            emit(f, "\tSUB \t ");
-            break;
-        case SUBPFP:
-            emit(f, "\tSUB \t ");
-            break;
-        case MINUS:
-            emit(f, "\tDEC \t ");
-        default:
-            #ifdef DEBUG_MARK
-            printf("\tPassed invalid IC into arithmetic()\n\tp->code: %d\n", p->code);
-            #else
-            ierror(0);
-            #endif
-            break;
+    if (((p->typf) & FLOAT) == FLOAT || ((p->typf) & DOUBLE) == DOUBLE || ((p->typf) & LDOUBLE) == LDOUBLE){
+        switch(p->code){
+            case ADD:
+                emit(f, "\tFADD \t ");
+                break;
+            case SUB:
+                emit(f, "\tFSUB \t ");
+                break;
+            case MULT:
+                emit(f, "\tFMUL \t ");
+                break;
+            case DIV:
+                emit(f, "\tFDIV \t ");
+                break;
+            default:
+                ierror(0);
+        }
+    }
+    else{
+
+        //emit instruction opcode
+        switch(p->code){
+            case OR:
+                emit(f, "\tOR  \t ");
+                break;
+            case XOR:
+                emit(f, "\tXOR \t ");
+                break;
+            case AND:
+                emit(f, "\tAND \t ");
+                break;
+            case LSHIFT:
+                emit(f, "\tLSL \t ");
+                break;
+            case RSHIFT:
+                if(isunsigned == 1) {
+                    emit(f, "\tLSR \t ");
+                }
+                else{
+                    emit(f, "\tASR \t ");
+                }
+                break;
+            case ADD:
+                emit(f, "\tADD \t ");
+                break;
+            case SUB:
+                emit(f, "\tSUB \t ");
+                break;
+            case MULT:
+                if(isunsigned == 1) {
+                    emit(f, "\tMULU \t ");
+                }
+                else{
+                    emit(f, "\tMUL \t ");
+                }
+                break;
+            case DIV:
+                if(isunsigned == 1) {
+                    emit(f, "\tDIVU \t ");
+                }
+                else{
+                    emit(f, "\tDIV \t ");
+                }
+                break;
+            case MOD:
+                if(isunsigned == 1) {
+                    emit(f, "\tREMU \t ");
+                }
+                else{
+                    emit(f, "\tREM \t ");
+                }
+                break;
+            case ADDI2P:
+                emit(f, "\tADD \t ");
+                break;
+            case SUBIFP:
+                emit(f, "\tSUB \t ");
+                break;
+            case SUBPFP:
+                emit(f, "\tSUB \t ");
+                break;
+            case MINUS:
+                emit(f, "\tDEC \t ");
+                break;
+            case KOMPLEMENT:
+                emit(f, "\tNOT \t ");
+                break;
+            default:
+                #ifdef DEBUG_MARK
+                printf("\tPassed invalid IC into arithmetic()\n\tp->code: %d\n", p->code);
+                #else
+                ierror(0);
+                #endif
+                break;
+        }
     }
 
     //emit instruction arguments
@@ -1407,22 +1479,15 @@ void arithmetic(FILE *f, struct IC *p){
 
 void load_cons(FILE *f, int reg, long int value){
     if(value == 0){
-        emit(f, "\tMOV \t R0 %s\n", regnames[reg]);
+        emit(f, "\tOR  \t R0 R0 %s\n", regnames[reg]);
     }
     else if((16777216 > value) && (value > 0)){
         emit(f, "\tMVIA \t %s %ld\n", regnames[reg], value);
     }
-    else{
+    else if (value > 0){
         emit(f, "\t.MVI \t %s %ld\n", regnames[reg], value);
     }
-}
-
-void emit_macros(FILE *f){
-    if(macros_emited == 1) return;
-
-    emit(f, "#macro MULT RA RB RC\n\tMOV \t R0 RC\n\tPUSH \t RB\n\tBZ   \t RB end\nlabel:\n\tADD \t RC RA RC\n\tDEC \t RB RB\n\tBNZ \t RB label\nend:\n\tPOP \t RB\n#endmacro\n");
-    emit(f, "#macro RSHIFT RA RB RC\n\tPUSH \t RA\n\tPUSH \t RB\n\tBZ   \t RB end\nloop:\n\tLSR \t 1 RA RA\n\tDEC \t RB RB\n\tBNZ \t RB loop\nend:\n\tMOV \t RA RC\n\tPOP \t RB\n\tPOP \t RA\n#endmacro\n");
-    emit(f, "#macro LSHIFT RA RB RC\n\tPUSH \t RA\n\tPUSH \t RB\n\tBZ   \t RB end\nloop:\n\tLSL \t 1 RA RA\n\tDEC \t RB RB\n\tBNZ \t RB loop\nend:\n\tMOV \t RA RC\n\tPOP \t RB\n\tPOP \t RA\n#endmacro\n");
-
-    macros_emited = 1;
+    else{
+        emit(f, "\t.MVI \t %s 0x%x\n", regnames[reg], value);
+    }
 }

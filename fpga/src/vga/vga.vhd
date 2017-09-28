@@ -44,9 +44,9 @@ entity vga is
     );
     port(
         clk_bus: in std_logic;
-        address: in unsigned(23 downto 0);
-        data_mosi: in unsigned(31 downto 0);
-        data_miso: out unsigned(31 downto 0);
+        address: in std_logic_vector(23 downto 0);
+        data_mosi: in std_logic_vector(31 downto 0);
+        data_miso: out std_logic_vector(31 downto 0);
         WR: in std_logic;
         RD: in std_logic;
         ack: out std_logic;
@@ -268,7 +268,7 @@ begin
 
     --BUS interface
     process(address) is begin
-        if (address >= BASE_ADDRESS and address <= (BASE_ADDRESS + 4095)) then
+        if (unsigned(address) >= BASE_ADDRESS and unsigned(address) <= (BASE_ADDRESS + 4095)) then
             cs <= '1';
         else
             cs <= '0';
@@ -277,11 +277,11 @@ begin
 
     ack <= '1' when ((WR = '1' and cs = '1') or (RD = '1' and cs = '1')) else '0';
 
-    data_miso <= x"0000" & "0" & q_a when ((RD = '1') and (cs = '1')) else (others => 'Z');
-    data_a <= data_mosi(14 downto 0);
+    data_miso <= std_logic_vector(x"0000" & "0" & q_a) when ((RD = '1') and (cs = '1')) else (others => 'Z');
+    data_a <= unsigned(data_mosi(14 downto 0));
 
     we_a <= WR and cs;
 
-    addr_a <= address(11 downto 0);
+    addr_a <= unsigned(address(11 downto 0));
 
 end architecture;

@@ -16,9 +16,9 @@
    version="1.1"
    inkscape:version="0.91 r13725"
    sodipodi:docname="MARK_II.svg"
-   inkscape:export-filename="C:\Users\Vladislav\Desktop\markii.png"
-   inkscape:export-xdpi="27.93"
-   inkscape:export-ydpi="27.93">
+   inkscape:export-filename="/home/vladis/Plocha/MARK_II.png"
+   inkscape:export-xdpi="27.928602"
+   inkscape:export-ydpi="27.928602">
   <defs
      id="defs4138" />
   <sodipodi:namedview
@@ -29,9 +29,9 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="0.16"
-     inkscape:cx="-1210.7358"
-     inkscape:cy="-1288.7437"
-     inkscape:current-layer="layer2"
+     inkscape:cx="-2991.4661"
+     inkscape:cy="-1478.0488"
+     inkscape:current-layer="layer1"
      id="namedview4140"
      showgrid="false"
      inkscape:window-width="1366"
@@ -994,31 +994,6 @@
            y="594.50208"
            x="-581.97076"
            sodipodi:role="line">PLL</tspan></text>
-    </g>
-    <g
-       id="g4839">
-      <rect
-         y="640.13281"
-         x="-633.82294"
-         height="85.155815"
-         width="102.70702"
-         id="rect4757-5-2"
-         style="fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:1;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
-      <text
-         sodipodi:linespacing="125%"
-         id="text4766-6-7"
-         y="676.75739"
-         x="-583.21808"
-         style="font-style:normal;font-weight:normal;font-size:19.75555611px;line-height:125%;font-family:sans-serif;text-align:center;letter-spacing:0px;word-spacing:0px;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-         xml:space="preserve"><tspan
-           id="tspan4770-9-9"
-           y="676.75739"
-           x="-583.21808"
-           sodipodi:role="line">Clock</tspan><tspan
-           y="701.45184"
-           x="-583.21808"
-           sodipodi:role="line"
-           id="tspan4833">control</tspan></text>
     </g>
     <g
        id="g5205-3-44-79"

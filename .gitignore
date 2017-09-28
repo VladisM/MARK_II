@@ -20,7 +20,6 @@ fpga/project/**
 !fpga/project/MARK_II.qpf
 !fpga/project/MARK_II.qsf
 !fpga/project/MARK_II.sdc
-!fpga/project/src
 
 doc/refman/**/*.aux
 doc/refman/**/*.log
@@ -43,4 +42,5 @@ spl_ref.pdf
 sw/**/*.o
 sw/**/*.ldm
 sw/**/*.asm
-!sw/**/startup.asm
+sw/**/*.mif
+sw/**/*disasm

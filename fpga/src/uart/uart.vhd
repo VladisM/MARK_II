@@ -17,9 +17,9 @@ entity uart is
     port(
         clk: in std_logic;
         res: in std_logic;
-        address: in unsigned(23 downto 0);
-        data_mosi: in unsigned(31 downto 0);
-        data_miso: out unsigned(31 downto 0);
+        address: in std_logic_vector(23 downto 0);
+        data_mosi: in std_logic_vector(31 downto 0);
+        data_miso: out std_logic_vector(31 downto 0);
         WR: in std_logic;
         RD: in std_logic;
         ack: out std_logic;
@@ -103,13 +103,13 @@ begin
 
     --chip select
     process(address) is begin
-        if (address = BASE_ADDRESS)then
+        if (unsigned(address) = BASE_ADDRESS)then
             reg_sel <= "0001";  --TX reg
-        elsif (address = (BASE_ADDRESS + 1)) then
+        elsif (unsigned(address) = (BASE_ADDRESS + 1)) then
             reg_sel <= "0010";  --RX reg
-        elsif (address = (BASE_ADDRESS + 2)) then
+        elsif (unsigned(address) = (BASE_ADDRESS + 2)) then
             reg_sel <= "0100";  --status reg
-        elsif (address = (BASE_ADDRESS + 3)) then
+        elsif (unsigned(address) = (BASE_ADDRESS + 3)) then
             reg_sel <= "1000";  --control reg
         else
             reg_sel <= "0000";
@@ -193,7 +193,7 @@ begin
             if res = '1' then
                 control_reg_v := (others => '0');
             elsif ((WR = '1') and (reg_sel = "1000")) then
-                control_reg_v := std_logic_vector(data_mosi(24 downto 0));
+                control_reg_v := data_mosi(24 downto 0);
             end if;
         end if;
         control_reg <= control_reg_v;
@@ -225,7 +225,7 @@ begin
             else
                 case fsm_state is
                     when idle =>
-                        if ((RD = '1') and (reg_sel /= "0000")) then
+                        if    ((RD = '1') and (reg_sel /= "0000")) then
                             case reg_sel is
                                 when "0010" => fsm_state <= read1;
                                 when others => fsm_state <= read0;
@@ -238,28 +238,12 @@ begin
                         else
                             fsm_state <= idle;
                         end if;
-                    when write0 =>
-                        case WR is
-                            when '1' => fsm_state <= write0;
-                            when others => fsm_state <= idle;
-                        end case;
+                    when write0 => fsm_state <= idle;
                     when write1 => fsm_state <= write2;
-                    when write2 =>
-                        case WR is
-                            when '1' => fsm_state <= write2;
-                            when others => fsm_state <= idle;
-                        end case;
-                    when read0 =>
-                        case RD is
-                            when '1' => fsm_state <= read0;
-                            when others => fsm_state <= idle;
-                        end case;
+                    when write2 => fsm_state <= idle;
+                    when read0 => fsm_state <= idle;
                     when read1 => fsm_state <= read2;
-                    when read2 =>
-                        case RD is
-                            when '1' => fsm_state <= read2;
-                            when others => fsm_state <= idle;
-                        end case;
+                    when read2 => fsm_state <= idle;
                 end case;
             end if;
         end if;
@@ -295,8 +279,8 @@ begin
             when read0=>
                 case reg_sel is
                     when "0001" => data_miso <= (others => 'Z');
-                    when "0100" => data_miso <= x"00" & "000000" & unsigned(status_reg);
-                    when "1000" => data_miso <= "0000000" & unsigned(control_reg);
+                    when "0100" => data_miso <= x"00" & "000000" & status_reg;
+                    when "1000" => data_miso <= "0000000" & control_reg;
                     when others => data_miso <= (others => 'Z');
                 end case;
                 ack <= '1';
@@ -304,13 +288,13 @@ begin
                 rx_data_rdreq <= '0';
 
             when read1=>
-                data_miso <= x"000000" & rx_data_output;
+                data_miso <= x"000000" & std_logic_vector(rx_data_output);
                 ack <= '0';
                 tx_data_wrreq <= '0';
                 rx_data_rdreq <= '1';
 
             when read2=>
-                data_miso <= x"000000" & rx_data_output;
+                data_miso <= x"000000" & std_logic_vector(rx_data_output);
                 ack <= '1';
                 tx_data_wrreq <= '0';
                 rx_data_rdreq <= '0';
@@ -318,7 +302,7 @@ begin
         end case;
     end process;
 
-    tx_data_input <= data_mosi(7 downto 0);
+    tx_data_input <= unsigned(data_mosi(7 downto 0));
 
 end architecture uart_arch;
 

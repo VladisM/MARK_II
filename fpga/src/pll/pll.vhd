@@ -159,7 +159,7 @@ BEGIN
 		clk1_phase_shift => "0",
 		clk2_divide_by => 5,
 		clk2_duty_cycle => 50,
-		clk2_multiply_by => 8,
+		clk2_multiply_by => 4,
 		clk2_phase_shift => "0",
 		compensate_clock => "CLK0",
 		inclk0_input_frequency => 20000,
@@ -241,13 +241,13 @@ END SYN;
 -- Retrieval info: PRIVATE: DEVICE_SPEED_GRADE STRING "6"
 -- Retrieval info: PRIVATE: DIV_FACTOR0 NUMERIC "45"
 -- Retrieval info: PRIVATE: DIV_FACTOR1 NUMERIC "1"
--- Retrieval info: PRIVATE: DIV_FACTOR2 NUMERIC "10"
+-- Retrieval info: PRIVATE: DIV_FACTOR2 NUMERIC "5"
 -- Retrieval info: PRIVATE: DUTY_CYCLE0 STRING "50.00000000"
 -- Retrieval info: PRIVATE: DUTY_CYCLE1 STRING "50.00000000"
 -- Retrieval info: PRIVATE: DUTY_CYCLE2 STRING "50.00000000"
 -- Retrieval info: PRIVATE: EFF_OUTPUT_FREQ_VALUE0 STRING "14.444445"
 -- Retrieval info: PRIVATE: EFF_OUTPUT_FREQ_VALUE1 STRING "31.500000"
--- Retrieval info: PRIVATE: EFF_OUTPUT_FREQ_VALUE2 STRING "80.000000"
+-- Retrieval info: PRIVATE: EFF_OUTPUT_FREQ_VALUE2 STRING "40.000000"
 -- Retrieval info: PRIVATE: EXPLICIT_SWITCHOVER_COUNTER STRING "0"
 -- Retrieval info: PRIVATE: EXT_FEEDBACK_RADIO STRING "0"
 -- Retrieval info: PRIVATE: GLOCKED_COUNTER_EDIT_CHANGED STRING "1"
@@ -276,14 +276,14 @@ END SYN;
 -- Retrieval info: PRIVATE: MIRROR_CLK2 STRING "0"
 -- Retrieval info: PRIVATE: MULT_FACTOR0 NUMERIC "13"
 -- Retrieval info: PRIVATE: MULT_FACTOR1 NUMERIC "1"
--- Retrieval info: PRIVATE: MULT_FACTOR2 NUMERIC "16"
+-- Retrieval info: PRIVATE: MULT_FACTOR2 NUMERIC "4"
 -- Retrieval info: PRIVATE: NORMAL_MODE_RADIO STRING "1"
 -- Retrieval info: PRIVATE: OUTPUT_FREQ0 STRING "14.40000000"
 -- Retrieval info: PRIVATE: OUTPUT_FREQ1 STRING "31.50000000"
 -- Retrieval info: PRIVATE: OUTPUT_FREQ2 STRING "40.00000000"
 -- Retrieval info: PRIVATE: OUTPUT_FREQ_MODE0 STRING "0"
 -- Retrieval info: PRIVATE: OUTPUT_FREQ_MODE1 STRING "1"
--- Retrieval info: PRIVATE: OUTPUT_FREQ_MODE2 STRING "0"
+-- Retrieval info: PRIVATE: OUTPUT_FREQ_MODE2 STRING "1"
 -- Retrieval info: PRIVATE: OUTPUT_FREQ_UNIT0 STRING "MHz"
 -- Retrieval info: PRIVATE: OUTPUT_FREQ_UNIT1 STRING "MHz"
 -- Retrieval info: PRIVATE: OUTPUT_FREQ_UNIT2 STRING "MHz"
@@ -343,7 +343,7 @@ END SYN;
 -- Retrieval info: CONSTANT: CLK1_PHASE_SHIFT STRING "0"
 -- Retrieval info: CONSTANT: CLK2_DIVIDE_BY NUMERIC "5"
 -- Retrieval info: CONSTANT: CLK2_DUTY_CYCLE NUMERIC "50"
--- Retrieval info: CONSTANT: CLK2_MULTIPLY_BY NUMERIC "8"
+-- Retrieval info: CONSTANT: CLK2_MULTIPLY_BY NUMERIC "4"
 -- Retrieval info: CONSTANT: CLK2_PHASE_SHIFT STRING "0"
 -- Retrieval info: CONSTANT: COMPENSATE_CLOCK STRING "CLK0"
 -- Retrieval info: CONSTANT: INCLK0_INPUT_FREQUENCY NUMERIC "20000"

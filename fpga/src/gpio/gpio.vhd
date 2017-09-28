@@ -25,9 +25,9 @@ entity gpio is
     port(
         clk: in std_logic;
         res: in std_logic;
-        address: in unsigned(23 downto 0);
-        data_mosi: in unsigned(31 downto 0);
-        data_miso: out unsigned(31 downto 0);
+        address: in std_logic_vector(23 downto 0);
+        data_mosi: in std_logic_vector(31 downto 0);
+        data_miso: out std_logic_vector(31 downto 0);
         WR: in std_logic;
         RD: in std_logic;
         ack: out std_logic;
@@ -48,8 +48,8 @@ architecture gpio_arch of gpio is
         );
     end component pin_selector;
 
-    signal data_from_pin_pa, data_output_reg_pa, pin_direction_reg_pa: unsigned((GPIO_WIDE -1) downto 0);
-    signal data_from_pin_pb, data_output_reg_pb, pin_direction_reg_pb: unsigned((GPIO_WIDE -1) downto 0);
+    signal data_from_pin_pa, data_output_reg_pa, pin_direction_reg_pa: std_logic_vector((GPIO_WIDE -1) downto 0);
+    signal data_from_pin_pb, data_output_reg_pb, pin_direction_reg_pb: std_logic_vector((GPIO_WIDE -1) downto 0);
 
     --internal chip select signal
     signal reg_sel: std_logic_vector(3 downto 0);
@@ -57,13 +57,13 @@ architecture gpio_arch of gpio is
 begin
     --this is just chip select decoder
     process(address) is begin
-        if (address = BASE_ADDRESS) then
+        if (unsigned(address) = BASE_ADDRESS) then
             reg_sel <= "0001";
-        elsif (address = (BASE_ADDRESS + 1)) then
+        elsif (unsigned(address) = (BASE_ADDRESS + 1)) then
             reg_sel <= "0010";
-        elsif (address = (BASE_ADDRESS + 2)) then
+        elsif (unsigned(address) = (BASE_ADDRESS + 2)) then
             reg_sel <= "0100";
-        elsif (address = (BASE_ADDRESS + 3)) then
+        elsif (unsigned(address) = (BASE_ADDRESS + 3)) then
             reg_sel <= "1000";
         else
             reg_sel <= "0000";

@@ -17,9 +17,10 @@ entity rom is
     );
     port(
         clk: in std_logic;
-        address: in unsigned(23 downto 0);
-        data_mosi: in unsigned(31 downto 0);
-        data_miso: out unsigned(31 downto 0);
+        res: in std_logic;
+        address: in std_logic_vector(23 downto 0);
+        data_mosi: in std_logic_vector(31 downto 0);
+        data_miso: out std_logic_vector(31 downto 0);
         WR: in std_logic;
         RD: in std_logic;
         ack: out std_logic
@@ -30,6 +31,10 @@ architecture rom_arch of rom is
     signal data_for_read: std_logic_vector(31 downto 0);
     --signal thats represent chip select
     signal cs: std_logic;
+
+    type ack_fsm is (idle, set);
+    signal ack_fsm_state: ack_fsm;
+
 begin
     -- read only memory
     mem:lpm_rom
@@ -42,7 +47,7 @@ begin
         )
         port map(
             inclock=>clk,
-            address=>std_logic_vector(address(7 downto 0)),
+            address=>address(7 downto 0),
             q=>data_for_read
         );
 
@@ -56,8 +61,38 @@ begin
     end process;
 
     --tri state outputs
-    data_miso <= unsigned(data_for_read) when (cs = '1' and RD = '1') else (others => 'Z');
+    data_miso <= data_for_read when (cs = '1' and RD = '1') else (others => 'Z');
 
-    ack <= '1' when (cs = '1' and RD = '1') else '0';
+    process(clk) is
+    begin
+        if rising_edge(clk) then
+            if res = '1' then
+                ack_fsm_state <= idle;
+            else
+                case ack_fsm_state is
+                    when idle =>
+                        if (cs = '1' and RD = '1') then
+                            ack_fsm_state <= set;
+                        else
+                            ack_fsm_state <= idle;
+                        end if;
+                    when set =>
+                        ack_fsm_state <= idle;
+                end case;
+            end if;
+        end if;
+    end process;
+
+    process(ack_fsm_state) is
+    begin
+        case ack_fsm_state is
+            when idle =>
+                ack <= '0';
+            when set =>
+                ack <= '1';
+        end case;
+    end process;
+
+
 
 end architecture rom_arch;

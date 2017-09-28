@@ -23,7 +23,7 @@
 
 # Clock constraints
 
-create_clock -name "main_clk" -period 20.000ns [get_ports {clk}]
+create_clock -name "clk" -period 20.000ns [get_ports {clk}]
 
 
 # Automatically constrain PLL and other generated clocks
@@ -38,3 +38,5 @@ derive_clock_uncertainty
 
 # tpd constraints
 
+set_false_path -from [get_clocks {pll0|altpll_component|auto_generated|pll1|clk[2]}] -to [get_clocks {pll0|altpll_component|auto_generated|pll1|clk[0]}]
+set_false_path -from [get_clocks {pll0|altpll_component|auto_generated|pll1|clk[0]}] -to [get_clocks {pll0|altpll_component|auto_generated|pll1|clk[2]}]

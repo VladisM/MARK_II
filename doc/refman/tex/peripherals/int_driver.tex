@@ -4,32 +4,66 @@ Interrupt driver is one of peripherals tightly connected to the CPU. It is
 responsible for taking care about interrupts. It can disable some interrupt
 vectors, it also have to decide what interrupt should be evaluated when more
 request come at once. Also, interrupt driver have to take care about interrupt
-queue where interrupt requests are waiting for CPU time.
+queue where interrupt requests are waiting for CPU time. And finally, interrupt
+driver maintain addresses of ISR.
 
 \subsubsection{Function}
 
-There is only one register in interrupt driver, from programmer look this
-peripheral is quiet simple. This one register is INTMR and is 32bit wide. There
-is also 32bit sources of interrupts. Interrupt driver is responsible for
-masking disabled interrupt requests. You can disable interrupt by writing
-logical one into register INTMR. Bit no. 0 is controlling interrupt source 0,
-bit 1 interrupt source 1 and so on.
+Interrupt driver is able to handle up to 16 interrupt sources. Each source have
+to be enabled in interrupt mask register (INTMR) and its ISR address have to be
+set.
+
+Please note that some peripherals have to be configured to enable own
+interrupts too.
+
+There is totaly 17 registers in interrupt driver. One is INTMR. This register
+is 16 bit wide and is used to enabling/disabling interrupt sources. In this
+register bit no. 0 is controlling interrupt source 0, bit 1 interrupt source 1
+and so on.
 
 Priority of individuals interrupts are decreasing with interrupt number, for
 example interrupt 0 is smallest number, so it have highest priority, interrupt
-31 is largest interrupt number, so have lowest priority.
+15 is largest interrupt number, so have lowest priority.
+
+Additional 16 registers are used to specify address of individuals interrupt
+service routines. One register for one interrupt source. There registers are
+24 bit wides due to wide of address bus.
+
+If one want enable interrupt from specified source, following have to be done:
+
+\begin{itemize}
+    \item Configure peripheral for generating interrupt (see peripheral chapter)
+    \item Set address of interrupt service routine to appropriate register
+    \item Write log. 1 to appropriate bit of INTMR
+\end{itemize}
+
 
 \subsubsection{Registers}
 
-There is only one register called INTMR, his offset is $+0$ and thus it can be
-found at base address.
+All registers are listed in table \ref{tab:int_driver_reg_map}.
 
-\begin{table}[h]
+\begin{table}[H]
     \centering
     \begin{tabular}{|l|l|l|}
         \hline
         \textbf{Offset} & \textbf{Name} & \textbf{Purpose}             \\ \hline
         $+0$            & INTMR         & Mask for enabling interrupts \\ \hline
+        $+1$            & INTVEC0       & Address of ISR0              \\ \hline
+        $+2$            & INTVEC1       & Address of ISR1              \\ \hline
+        $+3$            & INTVEC2       & Address of ISR2              \\ \hline
+        $+4$            & INTVEC3       & Address of ISR3              \\ \hline
+        $+5$            & INTVEC4       & Address of ISR4              \\ \hline
+        $+6$            & INTVEC5       & Address of ISR5              \\ \hline
+        $+7$            & INTVEC6       & Address of ISR6              \\ \hline
+        $+8$            & INTVEC7       & Address of ISR7              \\ \hline
+        $+9$            & INTVEC8       & Address of ISR8              \\ \hline
+        $+10$           & INTVEC9       & Address of ISR9              \\ \hline
+        $+11$           & INTVEC10      & Address of ISR10             \\ \hline
+        $+12$           & INTVEC11      & Address of ISR11             \\ \hline
+        $+13$           & INTVEC12      & Address of ISR12             \\ \hline
+        $+14$           & INTVEC13      & Address of ISR13             \\ \hline
+        $+15$           & INTVEC14      & Address of ISR14             \\ \hline
+        $+16$           & INTVEC15      & Address of ISR15             \\ \hline
     \end{tabular}
     \caption{Interrupt driver registers map}
     \label{tab:int_driver_reg_map}
@@ -41,12 +75,14 @@ Interrupt driver can't be modified because it is highly coupled with CPU. When
 you want to modify SoC, you have every time had interrupt controlled in your design.
 
 There is of course standard bus interface for this peripheral, and some device
-specific signals. These are int\_req, int\_accept, int\_completed and int\_cpu\_req.
+specific signals. These are int\_req, int\_accept, int\_completed,
+int\_cpu\_address and int\_cpu\_rq.
 
-Signals int\_accept, int\_completed and int\_cpu\_req should be connected directly
-to the CPU and are used for communication between CPU and interrupt driver.
+Signals int\_accept, int\_completed, int\_cpu\_address and int\_cpu\_rq should
+be connected directly to the CPU and are used for communication between CPU and
+interrupt driver.
 
-Signal int\_req is 32 bits wide vector of interrupt request signals. These should be
+Signal int\_req is 16 bits wide vector of interrupt request signals. These should be
 connected to the peripherals interrupt request outputs.
 
 \begin{lstlisting}[language=VHDL, frame=single]
@@ -57,16 +93,17 @@ entity intController is
     port(
         clk: in std_logic;
         res: in std_logic;
-        address: in unsigned(23 downto 0);
-        data_mosi: in unsigned(31 downto 0);
-        data_miso: out unsigned(31 downto 0);
+        address: in std_logic_vector(23 downto 0);
+        data_mosi: in std_logic_vector(31 downto 0);
+        data_miso: out std_logic_vector(31 downto 0);
         WR: in std_logic;
         RD: in std_logic;
         ack: out std_logic;
-        int_req: in std_logic_vector(31 downto 0);
+        int_req: in std_logic_vector(15 downto 0);
         int_accept: in std_logic;
         int_completed: in std_logic;
-        int_cpu_req: out std_logic_vector(31 downto 0)
+        int_cpu_address: out std_logic_vector(23 downto 0);
+        int_cpu_rq: out std_logic
     );
 end entity intController;
 \end{lstlisting}

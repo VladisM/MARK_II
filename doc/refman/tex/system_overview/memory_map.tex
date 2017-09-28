@@ -16,15 +16,15 @@ informations about individual register please see corresponding peripheral secti
         ROM                 & 0x000000      & $2^{8}$       & 0x0000FF     & Read only memory                               \\ \hline
         GPIO                & 0x000100      & $2^{2}$       & 0x000103     & General purpose inputs and outputs             \\ \hline
         System Timer        & 0x000104      & $2^{1}$       & 0x000105     & 24b system timer                               \\ \hline
-        Interrupt driver    & 0x000108      & $2^{0}$       & 0x000108     & Enable and disable interrupts                  \\ \hline
-        PS2 Keyboard        & 0x000109      & $2^{0}$       & 0x000109     & PS2 interface driver                           \\ \hline
-        Timer 0             & 0x000110      & $2^{2}$       & 0x000113     & General purpose timer 0                        \\ \hline
-        Timer 1             & 0x000114      & $2^{2}$       & 0x000117     & General purpose timer 1                        \\ \hline
-        Timer 2             & 0x000118      & $2^{2}$       & 0x00011B     & General purpose timer 2                        \\ \hline
-        Timer 3             & 0x00011C      & $2^{2}$       & 0x00011F     & General purpose timer 3                        \\ \hline
-        UART 0              & 0x000120      & $2^{2}$       & 0x000123     & Serial port 0                                  \\ \hline
-        UART 1              & 0x000124      & $2^{2}$       & 0x000127     & Serial port 1                                  \\ \hline
-        UART 2              & 0x000128      & $2^{2}$       & 0x00012B     & Serial port 2                                  \\ \hline
+        PS2 Keyboard        & 0x000106      & $2^{0}$       & 0x000106     & PS2 interface driver                           \\ \hline
+        Interrupt driver    & 0x00010F      & $2^{4} + 1$   & 0x00011F     & Control interrupts                             \\ \hline
+        Timer 0             & 0x000120      & $2^{2}$       & 0x000123     & General purpose timer 0                        \\ \hline
+        Timer 1             & 0x000124      & $2^{2}$       & 0x000127     & General purpose timer 1                        \\ \hline
+        Timer 2             & 0x000128      & $2^{2}$       & 0x00012B     & General purpose timer 2                        \\ \hline
+        Timer 3             & 0x00012C      & $2^{2}$       & 0x00012F     & General purpose timer 3                        \\ \hline
+        UART 0              & 0x000130      & $2^{2}$       & 0x000133     & Serial port 0                                  \\ \hline
+        UART 1              & 0x000134      & $2^{2}$       & 0x000137     & Serial port 1                                  \\ \hline
+        UART 2              & 0x000138      & $2^{2}$       & 0x00013B     & Serial port 2                                  \\ \hline
         on-chip RAM0        & 0x000400      & $2^{10}$      & 0x0007FF     & Simple onchip RAM - fastest RAM in SoC         \\ \hline
         VGA                 & 0x001000      & $2^{13}$      & 0x001FFF     & VGA GPU - text mode output 80x30 chars         \\ \hline
         on-chip RAM1        & 0x100000      & $2^{13}$      & 0x101FFF     & Simple onchip RAM - fastest RAM in SoC         \\ \hline

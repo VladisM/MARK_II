@@ -1,28 +1,32 @@
 \section{Introduction}
 
-MARK II is simple SoC written in VHDL for synthetization into Altera Cyclone
+MARK II is simple SoC written in VHDL for synthesization into Altera Cyclone
 FPGA. SoC consist of simple RISC like CPU and a few peripherals. There is also
-small toolchain for writing programs that can run on MARK-II CPU.
+full featured toolchain for writing programs that can run on MARK-II CPU.
 
 CPU is 32 bits wide and following Von Neumann architecture, can address up to
-$2^{24}$ words, has 32 interrupt sources, 16 registers including three special
+$2^{24}$ words, has 16 interrupt sources, 16 registers including three special
 ones.
 
 To the CPU can be connected memory mapped peripherals, following peripherals
 are available: UART, PS/2, VGA driver, general purpose timers, system timer,
-GPIO, onchip RAM and ROM, interrupt controller.
+GPIO, onchip RAM and ROM and interrupt controller.
 
 Thanks to toolchain, you can write programs in human way. Toolchain consist of
-Assembler, Linker, Emulator, Disassembler, Loader and ldm2mif converter.
+Assembler, Linker, Emulator, Disassembler, Loader and ldm2mif converter. There is
+also backend for vbcc so you can compile your C programs too.
 
-This document is reference guide for MARK-II CPU. Please, note that this
-document is not completed yet and some information can be outdated or even
-missing! Every Time please read source codes or contact code authors.
+This document is reference guide for MARK-II CPU. But because this project is really
+complex and still it is one man show, some informations in this manual can be
+outdated. If you are get stuck on something, please see source codes or
+contact author.
 
-MARK-II is home project, created just for fun. There isn't any main goals except
-one, have fun from coding. As home fun project, is licensed under MIT license to
-be free for everybody to try run it.
+MARK-II is home project, created just for fun. There isn't any main goals
+except one, have fun from coding. As home fun project, is mostly licensed under
+MIT license to be free for everybody to try run it. But due to complexity there
+are some parts that is licensed under another license, for example vbcc front
+end.
 
-Anyway, some goals exist, but it's more like "I want to try ..." rather than
+Anyway, some goals exist, but they are more like "I want to try ..." rather than
 "I have to ...", these goals are changing in time and they are following topics
 that I want to explore.

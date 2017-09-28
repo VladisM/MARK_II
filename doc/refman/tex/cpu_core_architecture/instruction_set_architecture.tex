@@ -1,12 +1,12 @@
 \subsection{Instruction set architecture}
 
 There is only quick explanation of meaning individual instruction. If you want
-to see binary format, see isa.ods file in doc folder.
+to see binary format, plese see file /doc/isa.ods.
 
 \subsubsection{Program control instructions}
 
 These instruction control program flow. In this group are instruction RET,
-RETI, CALLI, BZI, BNZI, CALL, BZ and BNZ.
+RETI, CALLI, BZI, BNZI, CALL, BZ, BNZ and SWI.
 
 Instruction RETI is intended for returning from interrupt service routine. It
 is necessary inform interrupt driver about completing the ISR. So, this is
@@ -27,6 +27,10 @@ some register, instruction without I have address in their instruction word.
 There isn't any flags for conditional jumps, for example, instruction BZ jump
 when in specified register is zero, if there is another value, it will continue
 without jumping.
+
+SWI instruction is quiet special one. It is used to generate software interrupt.
+This can be used in implementation of operating system to transfer control from
+user space program to the kernel.
 
 \subsubsection{Memory instructions}
 
@@ -67,18 +71,24 @@ three operand arithmetic, so you have to specify three register, two for
 operand, and one for result. But, there are also few instruction where only one
 operand is used, for example increment instruction.
 
-CPU is able to do basic bitwise operations, concretely AND, OR, XOR. There are
-also ADD and SUB instruction for adding and subtracting, be ware there is no
-overflow control.
+CPU is able to do basic bitwise operations, concretely AND, OR, XOR and NOT.
+There are also ADD and SUB instruction for adding and subtracting, MUL and MULU
+for signed and unsigned multiplication, DIV and DIVU for signed and unsigned
+integer division, REM and REMU for signed and unsigned integer division remainder.
 
-Instructions IND and DEC instructions for incrementing and decrementing
-register, these instruction use only two operand, one for input operand and
-second for result.
+CPU also have floating point unit. In order to make computation on floats there
+are instruction FADD, FSUB, FDIV and FMUL for adding, subtracting, division
+and multiplication.
 
-There are also shifting instructions LSL, LSR, ROL and ROR. LSL for logical
-shift to left, LSR for logical shift to right, ROL for rotate to left and ROR
-for rotate to right. You can also specify distance from 0 to 15. Shift and
-rotations are done in barrel shifter.
+Instructions INC and DEC are used for incrementing and decrementing registers,
+these instruction use only two operands, one for input operand and second for
+result.
+
+There are also shifting instructions LSL, LSR, ROL, ROR, ASL and ASR. LSL for
+logical shift to left, LSR for logical shift to right, ROL for rotate to left,
+ROR for rotate to right, ASL for arithmetic shift left and ASR for arithmetic
+shift right. You can also specify distance from 0 to 31. All shifts and rotations
+are done using single cycle barrel shifter.
 
 \subsubsection{Special instructions}
 
@@ -86,6 +96,7 @@ Currently there is only one special instruction and that is CMP. This
 instruction is mandatory for branching. With this instruction you can compare
 two register with specified comparison type and store 1 if "expression" is true
 or 0 if false, into specified register.
+
 
 \subsubsection{List of instructions}
 
@@ -117,6 +128,16 @@ or 0 if false, into specified register.
         \end{lstlisting}
         \item \textbf{Comment} \\
     Return from interrupt service routine.
+    \end{itemize}
+
+    \item SWI
+    \begin{itemize}
+        \item \textbf{Syntax}
+        \begin{lstlisting}[language={[markII]Assembler}, frame=single]
+    SWI
+        \end{lstlisting}
+        \item \textbf{Comment} \\
+    Call software interrupt.
     \end{itemize}
 
     \item CALLI
@@ -173,6 +194,8 @@ or 0 if false, into specified register.
         \end{lstlisting}
         \item \textbf{Comment} \\
     Load from memory. Address is stored in some of register.
+        \item \textbf{Warning} \\
+    Register $rA$ cannot be same as register $rB$, due to CPU architecture. Avoid this situation!
     \end{itemize}
 
     \item STI
@@ -217,32 +240,18 @@ or 0 if false, into specified register.
     Branch if register isn't equal to zero. Address for jump is stored in register.
     \end{itemize}
 
-    \item MOV
+    \item CMPI
     \begin{itemize}
         \item \textbf{Syntax}
         \begin{lstlisting}[language={[markII]Assembler}, frame=single]
-    MOV rA rB
-        \end{lstlisting}
-        \item \textbf{Explanation}
-        \begin{lstlisting}[language=bash, frame=single]
-    reg(rB) <= reg(rA)
-        \end{lstlisting}
-        \item \textbf{Comment} \\
-    Move data from one register to the another.
-    \end{itemize}
-
-    \item CMP
-    \begin{itemize}
-        \item \textbf{Syntax}
-        \begin{lstlisting}[language={[markII]Assembler}, frame=single]
-    CMP Comp rA rB rC
+    CMPI Comp rA rB rC
         \end{lstlisting}
         \item \textbf{Explanation}
         \begin{lstlisting}[language=bash, frame=single]
     if reg(rA) "Comp" reg(rB) then reg(rC) <= 1
         \end{lstlisting}
         \item \textbf{Comment} \\
-    Compare two registers. Condition is "Comp" and can be found in table \ref{tab:cmp_conds}.
+    Compare two registers (integers). Condition is "Comp" and can be found in table \ref{tab:cmp_conds_i}.
 
     \begin{table}[h]
         \centering
@@ -253,11 +262,46 @@ or 0 if false, into specified register.
             Not Equal                 & NQE             & $A!=B$                \\ \hline
             Lower than                & L               & $A<B$                 \\ \hline
             Lower than (U)            & LU              & $A<B$ Unsigned        \\ \hline
+            Lower or equal than       & LE              & $A<B | A==B$          \\ \hline
+            Lower or equal than (U)   & LEU             & $A<B | A==B$ Unsigned \\ \hline
+            Greater                   & G               & $A>B$                 \\ \hline
+            Greater (U)               & GU              & $A>B$ Unsigned        \\ \hline
             Greater or equal than     & GE              & $A>B | A==B$          \\ \hline
             Greater or equal than (U) & GEU             & $A>B | A==B$ Unsigned \\ \hline
         \end{tabular}
-        \caption{Conditions for CMP instruction.}
-        \label{tab:cmp_conds}
+        \caption{Conditions for CMPI instruction.}
+        \label{tab:cmp_conds_i}
+    \end{table}
+
+    \end{itemize}
+
+    \item CMPF
+    \begin{itemize}
+        \item \textbf{Syntax}
+        \begin{lstlisting}[language={[markII]Assembler}, frame=single]
+    CMPF Comp rA rB rC
+        \end{lstlisting}
+        \item \textbf{Explanation}
+        \begin{lstlisting}[language=bash, frame=single]
+    if reg(rA) "Comp" reg(rB) then reg(rC) <= 1
+        \end{lstlisting}
+        \item \textbf{Comment} \\
+    Compare two registers (floats). Condition is "Comp" and can be found in table \ref{tab:cmp_conds_f}.
+
+    \begin{table}[h]
+        \centering
+        \begin{tabular}{|l|l|l|}
+            \hline
+            \textbf{Name}             & \textbf{Symbol} & \textbf{Meaning}      \\ \hline
+            Equal                     & EQ              & $A==B$                \\ \hline
+            Not Equal                 & NQE             & $A!=B$                \\ \hline
+            Lower than                & L               & $A<B$                 \\ \hline
+            Lower or equal than       & LE              & $A<B | A==B$          \\ \hline
+            Greater                   & G               & $A>B$                 \\ \hline
+            Greater or equal than     & GE              & $A>B | A==B$          \\ \hline
+        \end{tabular}
+        \caption{Conditions for CMPF instruction.}
+        \label{tab:cmp_conds_f}
     \end{table}
 
     \end{itemize}
@@ -302,6 +346,20 @@ or 0 if false, into specified register.
         \end{lstlisting}
         \item \textbf{Comment} \\
     Bitwise XOR between two registers.
+    \end{itemize}
+
+    \item NOT
+    \begin{itemize}
+        \item \textbf{Syntax}
+        \begin{lstlisting}[language={[markII]Assembler}, frame=single]
+    NOT rA rB
+        \end{lstlisting}
+        \item \textbf{Explanation}
+        \begin{lstlisting}[language=bash, frame=single]
+    reg(rB) <= ~(reg(rA))
+        \end{lstlisting}
+        \item \textbf{Comment} \\
+    Bitwise negation of register.
     \end{itemize}
 
     \item ADD
@@ -360,18 +418,46 @@ or 0 if false, into specified register.
     Decrement value from register and store it into another.
     \end{itemize}
 
+    \item ASL
+    \begin{itemize}
+        \item \textbf{Syntax}
+        \begin{lstlisting}[language={[markII]Assembler}, frame=single]
+    ASL rA rB rC
+        \end{lstlisting}
+        \item \textbf{Explanation}
+        \begin{lstlisting}[language=bash, frame=single]
+    reg(rC) <= reg(rA) left shift by reg(rB)
+        \end{lstlisting}
+        \item \textbf{Comment} \\
+    Arithmetical shift to left using barrel shifter.
+    \end{itemize}
+
+    \item ASR
+    \begin{itemize}
+        \item \textbf{Syntax}
+        \begin{lstlisting}[language={[markII]Assembler}, frame=single]
+    ASR rA rB rC
+        \end{lstlisting}
+        \item \textbf{Explanation}
+        \begin{lstlisting}[language=bash, frame=single]
+    reg(rC) <= reg(rA) right shift by reg(rB)
+        \end{lstlisting}
+        \item \textbf{Comment} \\
+    Arithmetical shift to right using barrel shifter.
+    \end{itemize}
+
     \item LSL
     \begin{itemize}
         \item \textbf{Syntax}
         \begin{lstlisting}[language={[markII]Assembler}, frame=single]
-    LSL Dist rA rB
+    LSL rA rB rC
         \end{lstlisting}
         \item \textbf{Explanation}
         \begin{lstlisting}[language=bash, frame=single]
-    reg(rB) <= reg(rA) left shift by "Dist"
+    reg(rC) <= reg(rA) left shift by reg(rB)
         \end{lstlisting}
         \item \textbf{Comment} \\
-    Logical shift to left using barell shifter. "Dist" should be number from $0$ to $15$.
+    Logical shift to left using barrel shifter.
     \end{itemize}
 
     \item LSR
@@ -382,38 +468,122 @@ or 0 if false, into specified register.
         \end{lstlisting}
         \item \textbf{Explanation}
         \begin{lstlisting}[language=bash, frame=single]
-    reg(rB) <= reg(rA) righ shift by "Dist"
+    reg(rC) <= reg(rA) right shift by reg(rB)
         \end{lstlisting}
         \item \textbf{Comment} \\
-    Logical shift to right using barell shifter. "Dist" should be number from $0$ to $15$.
+    Logical shift to right using barrel shifter.
     \end{itemize}
 
     \item ROL
     \begin{itemize}
         \item \textbf{Syntax}
         \begin{lstlisting}[language={[markII]Assembler}, frame=single]
-    ROL Dist rA rB
+    ROL rA rB rC
         \end{lstlisting}
         \item \textbf{Explanation}
         \begin{lstlisting}[language=bash, frame=single]
-    reg(rB) <= reg(rA) left rotate by "Dist"
+    reg(rC) <= reg(rA) left rotate by reg(rB)
         \end{lstlisting}
         \item \textbf{Comment} \\
-    Rotate to left using barell shifter. "Dist" should be number from $0$ to $15$.
+    Rotate to left using barrel shifter.
     \end{itemize}
 
     \item ROR
     \begin{itemize}
         \item \textbf{Syntax}
         \begin{lstlisting}[language={[markII]Assembler}, frame=single]
-    ROR Dist rA rB
+    ROR rA rB rC
         \end{lstlisting}
         \item \textbf{Explanation}
         \begin{lstlisting}[language=bash, frame=single]
-    reg(rB) <= reg(rA) righ rotate by "Dist"
+    reg(rC) <= reg(rA) right rotate by reg(rB)
         \end{lstlisting}
         \item \textbf{Comment} \\
-    Rotate to right using barell shifter. "Dist" should be number from $0$ to $15$.
+    Rotate to right using barrel shifter.
+    \end{itemize}
+
+    \item MUL
+    \begin{itemize}
+        \item \textbf{Syntax}
+        \begin{lstlisting}[language={[markII]Assembler}, frame=single]
+    MUL rA rB rC
+        \end{lstlisting}
+        \item \textbf{Explanation}
+        \begin{lstlisting}[language=bash, frame=single]
+    reg(rC) <= reg(rA) * reg(rB)
+        \end{lstlisting}
+        \item \textbf{Comment} \\
+        Multiply two registers. Represent them as signed values. Result is 32bit.
+    \end{itemize}
+
+    \item MULU
+    \begin{itemize}
+        \item \textbf{Syntax}
+        \begin{lstlisting}[language={[markII]Assembler}, frame=single]
+    MULU rA rB rC
+        \end{lstlisting}
+        \item \textbf{Explanation}
+        \begin{lstlisting}[language=bash, frame=single]
+    reg(rC) <= reg(rA) * reg(rB)
+        \end{lstlisting}
+        \item \textbf{Comment} \\
+        Multiply two registers. Represent them as unsigned values. Result is 32bit.
+    \end{itemize}
+
+    \item DIV
+    \begin{itemize}
+        \item \textbf{Syntax}
+        \begin{lstlisting}[language={[markII]Assembler}, frame=single]
+    DIV rA rB rC
+        \end{lstlisting}
+        \item \textbf{Explanation}
+        \begin{lstlisting}[language=bash, frame=single]
+    reg(rC) <= reg(rA) / reg(rB)
+        \end{lstlisting}
+        \item \textbf{Comment} \\
+        Divide two registers. Represent them as signed values. Result is 32bit.
+    \end{itemize}
+
+    \item DIV
+    \begin{itemize}
+        \item \textbf{Syntax}
+        \begin{lstlisting}[language={[markII]Assembler}, frame=single]
+    DIVU rA rB rC
+        \end{lstlisting}
+        \item \textbf{Explanation}
+        \begin{lstlisting}[language=bash, frame=single]
+    reg(rC) <= reg(rA) / reg(rB)
+        \end{lstlisting}
+        \item \textbf{Comment} \\
+        Divide two registers. Represent them as unsigned values. Result is 32bit.
+    \end{itemize}
+
+    \item REM
+    \begin{itemize}
+        \item \textbf{Syntax}
+        \begin{lstlisting}[language={[markII]Assembler}, frame=single]
+    REM rA rB rC
+        \end{lstlisting}
+        \item \textbf{Explanation}
+        \begin{lstlisting}[language=bash, frame=single]
+    reg(rC) <= reg(rA) \% reg(rB)
+        \end{lstlisting}
+        \item \textbf{Comment} \\
+        Remainder after integer division of two registers. Represent them as signed values. Result is 32bit.
+    \end{itemize}
+
+    \item REMU
+    \begin{itemize}
+        \item \textbf{Syntax}
+        \begin{lstlisting}[language={[markII]Assembler}, frame=single]
+    REMU rA rB rC
+        \end{lstlisting}
+        \item \textbf{Explanation}
+        \begin{lstlisting}[language=bash, frame=single]
+    reg(rC) <= reg(rA) \% reg(rB)
+        \end{lstlisting}
+        \item \textbf{Comment} \\
+        Remainder after integer division of two registers. Represent them as unsigned values. Result is 32bit.
     \end{itemize}
 
     \item MVIL
@@ -526,6 +696,62 @@ or 0 if false, into specified register.
         \end{lstlisting}
         \item \textbf{Comment} \\
     Load 24b constant into specified register. This is usefull for loading label addresses.
+    \end{itemize}
+
+    \item FADD
+    \begin{itemize}
+        \item \textbf{Syntax}
+        \begin{lstlisting}[language={[markII]Assembler}, frame=single]
+    FADD rA rB rC
+        \end{lstlisting}
+        \item \textbf{Explanation}
+        \begin{lstlisting}[language=bash, frame=single]
+    reg(rC) <= reg(rA) + reg(rB)
+        \end{lstlisting}
+        \item \textbf{Comment} \\
+        Floating point addition. Registers are represented as single precision.
+    \end{itemize}
+
+    \item FSUB
+    \begin{itemize}
+        \item \textbf{Syntax}
+        \begin{lstlisting}[language={[markII]Assembler}, frame=single]
+    FSUB rA rB rC
+        \end{lstlisting}
+        \item \textbf{Explanation}
+        \begin{lstlisting}[language=bash, frame=single]
+    reg(rC) <= reg(rA) - reg(rB)
+        \end{lstlisting}
+        \item \textbf{Comment} \\
+        Floating point subtraction. Registers are represented as single precision.
+    \end{itemize}
+
+    \item FDIV
+    \begin{itemize}
+        \item \textbf{Syntax}
+        \begin{lstlisting}[language={[markII]Assembler}, frame=single]
+    FDIV rA rB rC
+        \end{lstlisting}
+        \item \textbf{Explanation}
+        \begin{lstlisting}[language=bash, frame=single]
+    reg(rC) <= reg(rA) / reg(rB)
+        \end{lstlisting}
+        \item \textbf{Comment} \\
+        Floating point division. Registers are represented as single precision.
+    \end{itemize}
+
+    \item FMUL
+    \begin{itemize}
+        \item \textbf{Syntax}
+        \begin{lstlisting}[language={[markII]Assembler}, frame=single]
+    FMUL rA rB rC
+        \end{lstlisting}
+        \item \textbf{Explanation}
+        \begin{lstlisting}[language=bash, frame=single]
+    reg(rC) <= reg(rA) * reg(rB)
+        \end{lstlisting}
+        \item \textbf{Comment} \\
+        Floating point multiplication. Registers are represented as single precision.
     \end{itemize}
 
 \end{itemize}
