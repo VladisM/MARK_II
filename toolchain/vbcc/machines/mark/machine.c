@@ -3,7 +3,7 @@
 
 static char FILE_[]=__FILE__;
 
-char cg_copyright[]="MARK-II code generator v1.0 (c) in 2017 by Vladislav Mlejnecký";
+#include "version.h"
 
 int g_flags[MAXGF]={};
 char *g_flags_name[MAXGF]={};

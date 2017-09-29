@@ -11,6 +11,7 @@ toolchain/vbcc/**/*.o
 toolchain/vbcc/bin/**
 toolchain/vbcc/machines/**/dt.h
 toolchain/vbcc/machines/**/dt.c
+toolchain/vbcc/machines/mark/version.h
 
 hw/**/*.b#*
 hw/**/*.s#*
