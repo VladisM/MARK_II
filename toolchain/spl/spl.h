@@ -16,5 +16,6 @@
 #include "rom.h"
 #include "ram.h"
 #include "vga.h"
+#include "cpu.h"
 
 #endif
