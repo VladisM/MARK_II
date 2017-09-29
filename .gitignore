@@ -5,6 +5,7 @@ toolchain/loader/*.ldm
 toolchain/loader/*.mif
 
 toolchain/m2tools/**/*.pyc
+toolchain/m2tools/src/version.py
 
 toolchain/vbcc/**/*.o
 toolchain/vbcc/bin/**

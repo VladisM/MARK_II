@@ -6,6 +6,8 @@ echo "Create directory for toolchain..."
 mkdir $DIR
 
 echo "Install toolchain..."
+echo "version = \"version $(git rev-parse --short HEAD)\"" > toolchain/m2tools/src/version.py
+
 cp -r toolchain/m2tools/src $DIR/
 cp -r toolchain/m2tools/bin $DIR/
 
