@@ -133,10 +133,45 @@ is used frame pointer. And they are stored after stored old frame pointer.
 C Standard Library is not yet implemented but there is SPL - Standard
 Peripheral Library for MARK II available. This library is only header files
 defining some useful macros and constants for reading and writing registers,
-accessing RAM, ROM and VRAM memories and bit mask for acessing various bits in
+accessing RAM, ROM and VRAM memories and bit mask for accessing various bits in
 registers. For more details please refer SPL reference manual, or see examples
 in sw directory.
 
 Usage is really simple. When toolchain is installed, install script emit path to
 SPL. These path have to be parsed into vbcc at compile time with -I argument.
 Then you can normally include header file spl.h as usual.
+
+\subsubsection{Interrupts}
+
+Interrupt service routines is a bit different than normal functions. Thus there is
+need to inform compiler functions used as interrupt routines. This can be done by
+simply adding specified keyword before function return type. Also, function return
+type have to be void. 
+
+For example, declaration of ISR function should look like:
+
+\begin{lstlisting}[language={C}, frame=single]
+    __interrupt void swi_isr();
+\end{lstlisting}
+
+Name of function doesn't matter, but remember, address of this function have to be 
+stored in interrupt controller register by hand. 
+
+\subsubsection{Inline assembler}
+
+VBCC frondend and MARK-II backend support inline assembler. You can use it for
+special CPU features like software interrupts or for hand optimalized functions.
+
+Ussage is simple, just define function and after argument brackets put string
+containing your assembler instructions. This string will be directly emited into
+output assembler file by vbcc.
+
+For example, following is declaration of inline assembler for calling software interrupt.
+
+\begin{lstlisting}[language={C}, frame=single]
+    void intrq() = "\tSWI";
+\end{lstlisting}
+
+For more informations please see vbcc documentation. It is also possible to specify 
+register number used for function passing. For this feature please refer vbcc documentation
+too and keep in mind compiler register ussage.
