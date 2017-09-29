@@ -235,7 +235,8 @@ class tokenizer():
 
             #this take care about end of conditional assembly region
             elif line_for_save[0] == "#endif":
-                pre_if_false = pre_if_false - 1
+                if pre_if_false > 0:
+                    pre_if_false = pre_if_false - 1
 
             #magic for include!
             elif line_for_save[0] == "#include":
