@@ -223,7 +223,9 @@ def main():
         ser = serial.Serial(port, baudrate)
 
     #try connect to loader in MARK
-
+    
+    print "Trying to connect..."
+    
     ser.write(chr(0x55))
     time.sleep(2)
 
@@ -233,7 +235,7 @@ def main():
             print "Can't connect to MARK II Loader. Aborting..."
             return 1
         else:
-            print "Connected, start sending. Please wait..."
+            print "Connected, sending " + str(size * 4) + " bytes of data. Please wait..."
     else:
         print "Can't connect to MARK II Loader. Aborting..."
         return 1
@@ -248,12 +250,19 @@ def main():
     send_char(chr((size >> 8) & 0xFF), ser)
     send_char(chr(size & 0xFF), ser)
 
+    counter = 1
     for value in buff:
         send_char(chr((value >> 24) & 0xFF), ser)
         send_char(chr((value >> 16) & 0xFF), ser)
         send_char(chr((value >> 8) & 0xFF), ser)
         send_char(chr(value & 0xFF), ser)
-
+        
+        sys.stdout.write("\rSent: " + str(counter * 4) + "/" + str(size * 4) + " ")
+        sys.stdout.flush()
+        counter = counter + 1
+        
+    sys.stdout.write("\nDone...\n")
+    sys.stdout.flush()
     ser.close()
 
     return 0
