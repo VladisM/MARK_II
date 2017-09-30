@@ -389,42 +389,63 @@ begin
     reg14_we <= '1' when (((regfile_c_we = '1') and (instruction_word(3 downto 0) = x"e")) or (force_we_reg_14 = '1')) else '0';
     reg15_we <= '1' when ((regfile_c_we = '1') and (instruction_word(3 downto 0) = x"f")) else '0';
 
-    regfile_a <=
-        reg00_q when instruction_word(11 downto 8) = x"0" else
-        reg01_q when instruction_word(11 downto 8) = x"1" else
-        reg02_q when instruction_word(11 downto 8) = x"2" else
-        reg03_q when instruction_word(11 downto 8) = x"3" else
-        reg04_q when instruction_word(11 downto 8) = x"4" else
-        reg05_q when instruction_word(11 downto 8) = x"5" else
-        reg06_q when instruction_word(11 downto 8) = x"6" else
-        reg07_q when instruction_word(11 downto 8) = x"7" else
-        reg08_q when instruction_word(11 downto 8) = x"8" else
-        reg09_q when instruction_word(11 downto 8) = x"9" else
-        reg10_q when instruction_word(11 downto 8) = x"a" else
-        reg11_q when instruction_word(11 downto 8) = x"b" else
-        reg12_q when instruction_word(11 downto 8) = x"c" else
-        reg13_q when instruction_word(11 downto 8) = x"d" else
-        reg14_q when instruction_word(11 downto 8) = x"e" else
-        reg15_q;
-
-    regfile_b <=
-        reg00_q when instruction_word(7 downto 4) = x"0" else
-        reg01_q when instruction_word(7 downto 4) = x"1" else
-        reg02_q when instruction_word(7 downto 4) = x"2" else
-        reg03_q when instruction_word(7 downto 4) = x"3" else
-        reg04_q when instruction_word(7 downto 4) = x"4" else
-        reg05_q when instruction_word(7 downto 4) = x"5" else
-        reg06_q when instruction_word(7 downto 4) = x"6" else
-        reg07_q when instruction_word(7 downto 4) = x"7" else
-        reg08_q when instruction_word(7 downto 4) = x"8" else
-        reg09_q when instruction_word(7 downto 4) = x"9" else
-        reg10_q when instruction_word(7 downto 4) = x"a" else
-        reg11_q when instruction_word(7 downto 4) = x"b" else
-        reg12_q when instruction_word(7 downto 4) = x"c" else
-        reg13_q when instruction_word(7 downto 4) = x"d" else
-        reg14_q when instruction_word(7 downto 4) = x"e" else
-        reg15_q;
-
+    
+    process(clk) is 
+    begin
+        if rising_edge(clk) then
+            if res = '1' then
+                regfile_a <= (others => '0');
+            else
+                case instruction_word(11 downto 8) is
+                    when x"0" => regfile_a <= reg00_q;
+                    when x"1" => regfile_a <= reg01_q;
+                    when x"2" => regfile_a <= reg02_q;
+                    when x"3" => regfile_a <= reg03_q;
+                    when x"4" => regfile_a <= reg04_q;
+                    when x"5" => regfile_a <= reg05_q;
+                    when x"6" => regfile_a <= reg06_q;
+                    when x"7" => regfile_a <= reg07_q;
+                    when x"8" => regfile_a <= reg08_q;
+                    when x"9" => regfile_a <= reg09_q;
+                    when x"a" => regfile_a <= reg10_q;
+                    when x"b" => regfile_a <= reg11_q;
+                    when x"c" => regfile_a <= reg12_q;
+                    when x"d" => regfile_a <= reg13_q;
+                    when x"e" => regfile_a <= reg14_q;
+                    when others => regfile_a <= reg15_q;
+                end case;
+            end if;
+        end if;
+    end process;
+    
+    process(clk) is 
+    begin
+        if rising_edge(clk) then
+            if res = '1' then
+                regfile_b <= (others => '0');
+            else
+                case instruction_word(7 downto 4) is
+                    when x"0" => regfile_b <= reg00_q;
+                    when x"1" => regfile_b <= reg01_q;
+                    when x"2" => regfile_b <= reg02_q;
+                    when x"3" => regfile_b <= reg03_q;
+                    when x"4" => regfile_b <= reg04_q;
+                    when x"5" => regfile_b <= reg05_q;
+                    when x"6" => regfile_b <= reg06_q;
+                    when x"7" => regfile_b <= reg07_q;
+                    when x"8" => regfile_b <= reg08_q;
+                    when x"9" => regfile_b <= reg09_q;
+                    when x"a" => regfile_b <= reg10_q;
+                    when x"b" => regfile_b <= reg11_q;
+                    when x"c" => regfile_b <= reg12_q;
+                    when x"d" => regfile_b <= reg13_q;
+                    when x"e" => regfile_b <= reg14_q;
+                    when others => regfile_b <= reg15_q;
+                end case;
+            end if;
+        end if;
+    end process;
+    
     zero_flag(0) <= '1' when (reg00_q = x"00000000") else '0';
     zero_flag(1) <= '1' when (reg01_q = x"00000000") else '0';
     zero_flag(2) <= '1' when (reg02_q = x"00000000") else '0';
