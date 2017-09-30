@@ -288,7 +288,8 @@ architecture MARK_II_arch of MARK_II is
         port(
             inclk0: in std_logic:= '0';
             c0: out std_logic;
-            c1: out std_logic
+            c1: out std_logic;
+            c2: out std_logic
         );
     end component;
 
@@ -315,10 +316,9 @@ architecture MARK_II_arch of MARK_II is
 begin
 
     resi <= not(res);
-    clk_sys <= clk;
    
     pll0: pll
-        port map(clk, clk_uart, clk_31M5);
+        port map(clk, clk_uart, clk_31M5, clk_sys);
     
     cpu0: cpu
         port map(clk_sys, resi, bus_address, bus_data_mosi, bus_data_miso, bus_WR, bus_RD, bus_ack, int_req(0), intCPUReq, intAddress, intAccepted, intCompleted);

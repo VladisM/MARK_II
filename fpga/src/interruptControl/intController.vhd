@@ -87,7 +87,9 @@ architecture intControllerArch of intController is
     signal vector_0, vector_1, vector_2, vector_3, vector_4, vector_5,
     vector_6, vector_7, vector_8, vector_9, vector_10, vector_11, vector_12,
     vector_13, vector_14, vector_15: std_logic_vector(23 downto 0);
-
+    
+    signal int_cpu_address_signal: std_logic_vector(23 downto 0);
+    signal int_cpu_rq_signal: std_logic;
 begin
 
     --chip select
@@ -131,7 +133,7 @@ begin
 
     --FSM which control interrupts
     fsm: intFSM
-        port map(res, clk, intFiltred, int_cpu_addr_sel, int_cpu_rq, intTaken, int_accept, int_completed);
+        port map(res, clk, intFiltred, int_cpu_addr_sel, int_cpu_rq_signal, intTaken, int_accept, int_completed);
 
     reg_sel_vector(0) <= '1' when (unsigned(address) = (BASE_ADDRESS + 1)) else '0';
     reg_sel_vector(1) <= '1' when (unsigned(address) = (BASE_ADDRESS + 2)) else '0';
@@ -202,25 +204,42 @@ begin
     vector_5, vector_6, vector_7, vector_8, vector_9, vector_10, vector_11,
     vector_12, vector_13, vector_14, vector_15) is begin
         case int_cpu_addr_sel is
-            when "0000" => int_cpu_address <= vector_0;
-            when "0001" => int_cpu_address <= vector_1;
-            when "0010" => int_cpu_address <= vector_2;
-            when "0011" => int_cpu_address <= vector_3;
-            when "0100" => int_cpu_address <= vector_4;
-            when "0101" => int_cpu_address <= vector_5;
-            when "0110" => int_cpu_address <= vector_6;
-            when "0111" => int_cpu_address <= vector_7;
-            when "1000" => int_cpu_address <= vector_8;
-            when "1001" => int_cpu_address <= vector_9;
-            when "1010" => int_cpu_address <= vector_10;
-            when "1011" => int_cpu_address <= vector_11;
-            when "1100" => int_cpu_address <= vector_12;
-            when "1101" => int_cpu_address <= vector_13;
-            when "1110" => int_cpu_address <= vector_14;
-            when others  => int_cpu_address <= vector_15;
+            when "0000" => int_cpu_address_signal <= vector_0;
+            when "0001" => int_cpu_address_signal <= vector_1;
+            when "0010" => int_cpu_address_signal <= vector_2;
+            when "0011" => int_cpu_address_signal <= vector_3;
+            when "0100" => int_cpu_address_signal <= vector_4;
+            when "0101" => int_cpu_address_signal <= vector_5;
+            when "0110" => int_cpu_address_signal <= vector_6;
+            when "0111" => int_cpu_address_signal <= vector_7;
+            when "1000" => int_cpu_address_signal <= vector_8;
+            when "1001" => int_cpu_address_signal <= vector_9;
+            when "1010" => int_cpu_address_signal <= vector_10;
+            when "1011" => int_cpu_address_signal <= vector_11;
+            when "1100" => int_cpu_address_signal <= vector_12;
+            when "1101" => int_cpu_address_signal <= vector_13;
+            when "1110" => int_cpu_address_signal <= vector_14;
+            when others  => int_cpu_address_signal <= vector_15;
         end case;
     end process;
-
+    
+    process(clk) is
+        variable vector_reg: std_logic_vector(23 downto 0);
+        variable rq_reg: std_logic;
+    begin
+        if rising_edge(clk) then
+            if res = '1' then
+                vector_reg := (others => '0');
+                rq_reg := '0';
+            else
+                vector_reg := int_cpu_address_signal;
+                rq_reg := int_cpu_rq_signal;
+            end if;
+        end if;
+        int_cpu_rq <= rq_reg;
+        int_cpu_address <= vector_reg;
+    end process;
+    
 end architecture intControllerArch;
 
 library ieee;
@@ -406,7 +425,7 @@ begin
             when start =>                 int_taken <= x"0000"; int_cpu_addr_sel <= "0000"; int_cpu_rq <= '0';
             when wait_for_int_come =>     int_taken <= x"0000"; int_cpu_addr_sel <= "0000"; int_cpu_rq <= '0';
             when wait_for_int_complete => int_taken <= x"0000"; int_cpu_addr_sel <= "0000"; int_cpu_rq <= '0';
-
+            
             when setint0 =>  int_taken <= x"0000"; int_cpu_addr_sel <= "0000"; int_cpu_rq <= '1';
             when setint1 =>  int_taken <= x"0000"; int_cpu_addr_sel <= "0001"; int_cpu_rq <= '1';
             when setint2 =>  int_taken <= x"0000"; int_cpu_addr_sel <= "0010"; int_cpu_rq <= '1';
