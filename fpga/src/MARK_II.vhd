@@ -284,14 +284,17 @@ architecture MARK_II_arch of MARK_II is
         );
     end component ps2;
 
-    component pll
+    component clkgen is 
         port(
-            inclk0: in std_logic:= '0';
-            c0: out std_logic;
-            c1: out std_logic;
-            c2: out std_logic
+            res: in std_logic;
+            clk_ext: in std_logic;
+            res_out: out std_logic;
+            clk_sys: out std_logic;
+            clk_sdram: out std_logic;
+            clk_vga: out std_logic;
+            clk_uart: out std_logic        
         );
-    end component;
+    end component clkgen;
 
     --signal for internal bus
     signal bus_address: std_logic_vector(23 downto 0);
@@ -306,20 +309,19 @@ architecture MARK_II_arch of MARK_II is
 
     signal clk_31M5: std_logic;     -- 31,5 MHz clk for vga
     signal clk_uart: std_logic;     -- 14,4 MHz clk for uarts
-    signal clk_sys: std_logic;      -- 50 MHz clk for CPU
+    signal clk_sys: std_logic;      -- 50 MHz clk for system (CPU and buses)
+    signal clk_sdram: std_logic;    -- 100 MHz clk for SDRAM driver
 
-    signal resi: std_logic;         --inverted reset
+    signal resi: std_logic;         --internal reset
 
     signal rom_ack, ram_ack, int_ack, gpio_ack, systim_ack, vga_ack, tim0_ack, ram1_ack,
            tim1_ack,tim2_ack,tim3_ack, uart0_ack, uart1_ack, uart2_ack, ps2_ack : std_logic;
 
 begin
 
-    resi <= not(res);
-   
-    pll0: pll
-        port map(clk, clk_uart, clk_31M5, clk_sys);
-    
+    clkgen0: clkgen
+        port map(res, clk, resi, clk_sys, clk_sdram, clk_31M5, clk_uart);
+
     cpu0: cpu
         port map(clk_sys, resi, bus_address, bus_data_mosi, bus_data_miso, bus_WR, bus_RD, bus_ack, int_req(0), intCPUReq, intAddress, intAccepted, intCompleted);
 
