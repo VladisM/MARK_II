@@ -45,11 +45,25 @@ if {$make_assignments} {
     set_global_assignment -name ORIGINAL_QUARTUS_VERSION 13.0
     set_global_assignment -name PROJECT_CREATION_TIME_DATE "12:01:54  SEPTEMBER 30, 2017"
     set_global_assignment -name LAST_QUARTUS_VERSION 13.0
-    set_global_assignment -name QIP_FILE ./src/pll/pll.qip
-    set_global_assignment -name QIP_FILE ./src/cpu/qip/add.qip
-    set_global_assignment -name QIP_FILE ./src/cpu/qip/div.qip
-    set_global_assignment -name QIP_FILE ./src/cpu/qip/fpcmp.qip
-    set_global_assignment -name QIP_FILE ./src/cpu/qip/mul.qip
+    set_global_assignment -name PROJECT_OUTPUT_DIRECTORY output_files
+    set_global_assignment -name MIN_CORE_JUNCTION_TEMP 0
+    set_global_assignment -name MAX_CORE_JUNCTION_TEMP 85
+    set_global_assignment -name ERROR_CHECK_FREQUENCY_DIVISOR 1
+    set_global_assignment -name EDA_SIMULATION_TOOL "ModelSim-Altera (VHDL)"
+    set_global_assignment -name EDA_OUTPUT_DATA_FORMAT VHDL -section_id eda_simulation
+    set_global_assignment -name USE_CONFIGURATION_DEVICE OFF
+    set_global_assignment -name CRC_ERROR_OPEN_DRAIN OFF
+    set_global_assignment -name RESERVE_ALL_UNUSED_PINS_WEAK_PULLUP "AS INPUT TRI-STATED"
+    set_global_assignment -name STRATIX_DEVICE_IO_STANDARD "3.3-V LVTTL"
+    set_global_assignment -name OUTPUT_IO_TIMING_NEAR_END_VMEAS "HALF VCCIO" -rise
+    set_global_assignment -name OUTPUT_IO_TIMING_NEAR_END_VMEAS "HALF VCCIO" -fall
+    set_global_assignment -name OUTPUT_IO_TIMING_FAR_END_VMEAS "HALF SIGNAL SWING" -rise
+    set_global_assignment -name OUTPUT_IO_TIMING_FAR_END_VMEAS "HALF SIGNAL SWING" -fall
+    set_global_assignment -name PARTITION_NETLIST_TYPE SOURCE -section_id Top
+    set_global_assignment -name PARTITION_FITTER_PRESERVATION_LEVEL PLACEMENT_AND_ROUTING -section_id Top
+    set_global_assignment -name PARTITION_COLOR 16764057 -section_id Top
+    set_instance_assignment -name PARTITION_HIERARCHY root_partition -to | -section_id Top
+    
     set_global_assignment -name VHDL_FILE ./src/cpu/cpu.vhd
     set_global_assignment -name VHDL_FILE ./src/cpu/id.vhd
     set_global_assignment -name VHDL_FILE ./src/gpio/gpio.vhd
@@ -70,24 +84,17 @@ if {$make_assignments} {
     set_global_assignment -name VHDL_FILE ./src/vga/vga.vhd
     set_global_assignment -name VHDL_FILE ./src/vga/font.vhd
     set_global_assignment -name VHDL_FILE ./src/MARK_II.vhd
-    set_global_assignment -name PROJECT_OUTPUT_DIRECTORY output_files
-    set_global_assignment -name MIN_CORE_JUNCTION_TEMP 0
-    set_global_assignment -name MAX_CORE_JUNCTION_TEMP 85
-    set_global_assignment -name ERROR_CHECK_FREQUENCY_DIVISOR 1
-    set_global_assignment -name EDA_SIMULATION_TOOL "ModelSim-Altera (VHDL)"
-    set_global_assignment -name EDA_OUTPUT_DATA_FORMAT VHDL -section_id eda_simulation
-    set_global_assignment -name USE_CONFIGURATION_DEVICE OFF
-    set_global_assignment -name CRC_ERROR_OPEN_DRAIN OFF
-    set_global_assignment -name RESERVE_ALL_UNUSED_PINS_WEAK_PULLUP "AS INPUT TRI-STATED"
-    set_global_assignment -name STRATIX_DEVICE_IO_STANDARD "3.3-V LVTTL"
-    set_global_assignment -name OUTPUT_IO_TIMING_NEAR_END_VMEAS "HALF VCCIO" -rise
-    set_global_assignment -name OUTPUT_IO_TIMING_NEAR_END_VMEAS "HALF VCCIO" -fall
-    set_global_assignment -name OUTPUT_IO_TIMING_FAR_END_VMEAS "HALF SIGNAL SWING" -rise
-    set_global_assignment -name OUTPUT_IO_TIMING_FAR_END_VMEAS "HALF SIGNAL SWING" -fall
-    set_global_assignment -name PARTITION_NETLIST_TYPE SOURCE -section_id Top
-    set_global_assignment -name PARTITION_FITTER_PRESERVATION_LEVEL PLACEMENT_AND_ROUTING -section_id Top
-    set_global_assignment -name PARTITION_COLOR 16764057 -section_id Top
-    set_instance_assignment -name PARTITION_HIERARCHY root_partition -to | -section_id Top
+    set_global_assignment -name VHDL_FILE ../src/clkgen/clkgen.vhd
+    
+    set_global_assignment -name QIP_FILE ./src/cpu/qip/add.qip
+    set_global_assignment -name QIP_FILE ./src/cpu/qip/div.qip
+    set_global_assignment -name QIP_FILE ./src/cpu/qip/fpcmp.qip
+    set_global_assignment -name QIP_FILE ./src/cpu/qip/mul.qip
+    set_global_assignment -name QIP_FILE ../src/clkgen/pll_peripherals.qip
+    set_global_assignment -name QIP_FILE ../src/clkgen/pll_system.qip
+    
+    set_global_assignment -name SDC_FILE MARK_II.sdc
+        
     set_location_assignment PIN_P16 -to blue[1]
     set_location_assignment PIN_R16 -to blue[0]
     set_location_assignment PIN_R8 -to clk
@@ -130,6 +137,7 @@ if {$make_assignments} {
     set_location_assignment PIN_K15 -to tx1
     set_location_assignment PIN_E11 -to tx2
     set_location_assignment PIN_M10 -to v_sync
+    
     set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to blue[1]
     set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to blue[0]
     set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to clk
@@ -172,7 +180,7 @@ if {$make_assignments} {
     set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to tx1
     set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to tx2
     set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to v_sync
-    set_global_assignment -name SDC_FILE MARK_II.sdc
+    
     
     # Commit assignments
     export_assignments
