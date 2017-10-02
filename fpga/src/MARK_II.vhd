@@ -53,39 +53,6 @@ end entity MARK_II;
 
 architecture MARK_II_arch of MARK_II is
 
-    attribute chip_pin : string;
-
-    attribute chip_pin of clk           : signal is "R8";
-    attribute chip_pin of res           : signal is "J15";
-
-    attribute chip_pin of porta         : signal is "L3, B1, F3, D1, A11, B13, A13, A15";
-    attribute chip_pin of portb         : signal is "A2, A3, B3, B4, A4, B5, A5, D5";
-
-    attribute chip_pin of tim0_pwma     : signal is "B6";
-    attribute chip_pin of tim0_pwmb     : signal is "A6";
-    attribute chip_pin of tim1_pwma     : signal is "B7";
-    attribute chip_pin of tim1_pwmb     : signal is "D6";
-    attribute chip_pin of tim2_pwma     : signal is "A7";
-    attribute chip_pin of tim2_pwmb     : signal is "C6";
-    attribute chip_pin of tim3_pwma     : signal is "C8";
-    attribute chip_pin of tim3_pwmb     : signal is "E6";
-
-    attribute chip_pin of tx0           : signal is "J16";
-    attribute chip_pin of rx0           : signal is "J13";
-    attribute chip_pin of tx1           : signal is "K15";
-    attribute chip_pin of rx1           : signal is "N14";
-    attribute chip_pin of tx2           : signal is "E11";
-    attribute chip_pin of rx2           : signal is "E10";
-
-    attribute chip_pin of h_sync        : signal is "L14";
-    attribute chip_pin of v_sync        : signal is "M10";
-    attribute chip_pin of red           : signal is "N15,R14";
-    attribute chip_pin of green         : signal is "N16,P15";
-    attribute chip_pin of blue          : signal is "P16,R16";
-
-    attribute chip_pin of ps2clk        : signal is "L16";
-    attribute chip_pin of ps2dat        : signal is "L15";
-
     component cpu is
         port(
             --system interface
