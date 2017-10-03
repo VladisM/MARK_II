@@ -1176,7 +1176,7 @@ void store_from_reg(FILE *f, int source_reg, struct obj *o, int type, int tmp_re
                         emit(f, "\tSTI \t %s %s\n", regnames[source_reg], regnames[tmp_reg]);
                     }
                     else{
-                        emit(f, "\tST  \t %s L_%ld\n", regnames[tmp_reg], zm2l(o->v->offset));
+                        emit(f, "\tST  \t %s L_%ld\n", regnames[source_reg], zm2l(o->v->offset));
                     }
                     break;
                 case EXTERN:
@@ -1187,7 +1187,7 @@ void store_from_reg(FILE *f, int source_reg, struct obj *o, int type, int tmp_re
                         emit(f, "\tSTI \t %s %s\n", regnames[source_reg], regnames[tmp_reg]);
                     }
                     else{
-                        emit(f, "\tST  \t %s %s\n", regnames[tmp_reg], o->v->identifier);
+                        emit(f, "\tST  \t %s %s\n", regnames[source_reg], o->v->identifier);
                     }
                     break;
                 case AUTO:
