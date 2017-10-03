@@ -90,8 +90,8 @@ if {$make_assignments} {
     set_global_assignment -name QIP_FILE ./src/cpu/qip/div.qip
     set_global_assignment -name QIP_FILE ./src/cpu/qip/fpcmp.qip
     set_global_assignment -name QIP_FILE ./src/cpu/qip/mul.qip
-    set_global_assignment -name QIP_FILE ../src/clkgen/pll_peripherals.qip
-    set_global_assignment -name QIP_FILE ../src/clkgen/pll_system.qip
+    set_global_assignment -name QIP_FILE ./src/clkgen/pll_peripherals.qip
+    set_global_assignment -name QIP_FILE ./src/clkgen/pll_system.qip
     
     set_global_assignment -name SDC_FILE MARK_II.sdc
         
