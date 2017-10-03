@@ -16,8 +16,10 @@ toolchain/vbcc/machines/mark/version.h
 hw/**/*.b#*
 hw/**/*.s#*
 
-fpga/*
+fpga/**
 !fpga/src/
+!fpga/src/**
+fpga/src/**/*.bak
 !fpga/Makefile
 !fpga/MARK_II.tcl
 !fpga/MARK_II.sdc
