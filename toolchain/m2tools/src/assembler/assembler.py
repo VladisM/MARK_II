@@ -143,8 +143,12 @@ class assembler():
                     if type(size) != int:
                         print "Invalid operand type at: " + token.fileName + "@" + str(token.lineNumber) + ". PseudoOp .DS expected <type 'int'> as <size> argument, " + str(type(value)) + " given."
                         sys.exit(1)
-
-                    location_counter = location_counter + size
+                    
+                    while size > 0:
+                        new_blob = p1o.blob(token, location_counter, 0)
+                        self.pass1_buffer.append(new_blob)
+                        location_counter = location_counter + 1
+                        size = size - 1
 
                 elif token.opcode == "EXPORT":
 

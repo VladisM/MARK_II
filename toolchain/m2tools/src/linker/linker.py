@@ -70,7 +70,10 @@ class instruction():
 
         if self.relocation == False:
             return;
-
+        
+        if (self.relocation == True) and (self.special == True):
+            return;
+        
         instruction_type = (self.value & 0xF0000000) >> 28
 
         instruction_argument = self.__get_argument()
@@ -156,7 +159,7 @@ class instruction():
 
         found = False
         value = 0
-
+        
         for item in import_symbols_table:
             if item.id == instruction_argument:
                 found = True
@@ -164,7 +167,7 @@ class instruction():
                 break
 
         if found == False:
-            print "I did not found inported label in import label table."
+            print "I did not found imported label in import label table."
             sys.exit(1)
 
         self.__set_argument(value)
