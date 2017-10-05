@@ -11,7 +11,7 @@
 
 import version
 
-import sys, getopt
+import sys, getopt, os, glob
 
 class symbol():
     #symbol - not so much usefull at all
@@ -349,19 +349,21 @@ Arguments:
     -h --help           Print this help.
     -o <file>           Output LDM file name. If not specified, name of first
                         object file will be used.
+    -l <path>           Path to look for libraries.
        --version        Print version number and exit.
 """
 
 def get_args():
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "ho:", ["help", "version"])
+        opts, args = getopt.getopt(sys.argv[1:], "ho:l:", ["help", "version"])
     except getopt.GetoptError as err:
         print str(err)
         usage()
         sys.exit(1)
 
     output_file = None
-
+    libpaths = []
+    
     for option, value in opts:
         if option in ("-h", "--help"):
             usage()
@@ -371,6 +373,8 @@ def get_args():
         elif option == "--version":
             print "Linker for MARK-II CPU " + version.version
             sys.exit(1)
+        elif option == "-l":
+            libpaths.append(value)
         else:
             print "Unrecognized option " + option
             print "Type 'linker -h' for more informations."
@@ -387,12 +391,36 @@ def get_args():
 
     if output_file == None:
         output_file = (input_filenames[0].split('.')[0]).split('/')[-1] + ".ldm"
+    
+    return output_file, input_filenames, libpaths
 
-    return output_file, input_filenames
 
 def main():
 
-    output_file, input_files =  get_args()
+    output_file, input_files, libpaths = get_args()
+    
+    #parse all given path and search for static libraries
+    
+    libpaths_walk = []    
+    libobjs = []
+    
+    for path in libpaths:
+        
+        if os.path.isdir(path) == False:
+            print "Directory " + path + " specified as lib dir but doesn't exist!"
+            sys.exit()
+        
+        libpaths_walk = libpaths_walk + [x[0] for x in os.walk(os.path.abspath(path))]
+            
+    for path in libpaths_walk:
+        path = os.path.abspath(path)
+    
+        if path[-1] == '/':
+            libobjs = libobjs + glob.glob(path + "*.o")
+        else:
+            libobjs = libobjs + glob.glob(path + "/*.o")
+
+    
 
     buff = object_buffer(input_files)
     buff.link()
