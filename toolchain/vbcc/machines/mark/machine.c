@@ -252,7 +252,11 @@ int init_cg(void){
     return 1;
 }
 
-void cleanup_cg(FILE *f){}
+void cleanup_cg(FILE *f){
+    #ifdef DEBUG_MARK
+    printf("Called cleanup_cg()\n");
+    #endif
+}
 
 /*
  * Returns the register in which variables of type t are returned.
@@ -787,7 +791,7 @@ void gen_var_head(FILE *f,struct Var *v){
             printf("\tHave to emit extern variable head.\n");
             #endif
 
-            if(v->flags&DEFINED){
+            if(v->flags&(DEFINED|TENTATIVE)){
                 emit(f,".EXPORT \t %s\n", v->identifier);
                 emit(f,"%s:\n", v->identifier);
             }
@@ -798,6 +802,8 @@ void gen_var_head(FILE *f,struct Var *v){
         default:
             #ifdef DEBUG_MARK
             printf("\tCant generate head, unknown storage class: %d\n", v->storage_class);
+            #else
+            ierror(0);
             #endif
             break;
     }
