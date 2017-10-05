@@ -287,7 +287,7 @@ class object_buffer():
                 name = label_item.name
                 found, value = self.__find_exported_label(name)
 
-                if found == "False":
+                if found == False:
                     print "Label '" +  name + "' is not exported! Can not link files! Exiting!"
                     sys.exit(1)
 
