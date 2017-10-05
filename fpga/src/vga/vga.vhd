@@ -44,6 +44,7 @@ entity vga is
     );
     port(
         clk_bus: in std_logic;
+        res: in std_logic;
         address: in std_logic_vector(23 downto 0);
         data_mosi: in std_logic_vector(31 downto 0);
         data_miso: out std_logic_vector(31 downto 0);
@@ -107,6 +108,9 @@ architecture vga_arch of vga is
     signal we_a    : std_logic;
     signal q_a     : unsigned(14 downto 0);
     signal cs: std_logic;
+    
+    type ack_fsm is (idle, set);
+    signal ack_fsm_state: ack_fsm;
 begin
 
     process(clk_31M5) is
@@ -275,8 +279,36 @@ begin
         end if;
     end process;
 
-    ack <= '1' when ((WR = '1' and cs = '1') or (RD = '1' and cs = '1')) else '0';
+    process(clk_bus) is
+    begin
+        if rising_edge(clk_bus) then
+            if res = '1' then
+                ack_fsm_state <= idle;
+            else
+                case ack_fsm_state is
+                    when idle =>
+                        if ((WR = '1' and cs = '1') or (RD = '1' and cs = '1')) then
+                            ack_fsm_state <= set;
+                        else
+                            ack_fsm_state <= idle;
+                        end if;
+                    when set =>
+                        ack_fsm_state <= idle;
+                end case;
+            end if;
+        end if;
+    end process;
 
+    process(ack_fsm_state) is
+    begin
+        case ack_fsm_state is
+            when idle =>
+                ack <= '0';
+            when set =>
+                ack <= '1';
+        end case;
+    end process;
+    
     data_miso <= std_logic_vector(x"0000" & "0" & q_a) when ((RD = '1') and (cs = '1')) else (others => 'Z');
     data_a <= unsigned(data_mosi(14 downto 0));
 

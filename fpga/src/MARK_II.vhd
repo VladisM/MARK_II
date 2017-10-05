@@ -217,6 +217,7 @@ architecture MARK_II_arch of MARK_II is
         );
         port(
             clk_bus: in std_logic;
+            res: in std_logic;
             address: in std_logic_vector(23 downto 0);
             data_mosi: in std_logic_vector(31 downto 0);
             data_miso: out std_logic_vector(31 downto 0);
@@ -342,7 +343,7 @@ begin
 
     vga0: vga
         generic map(x"001000")
-        port map(clk_sys, bus_address, bus_data_mosi, bus_data_miso, bus_WR, bus_RD, vga_ack, clk_31M5, h_sync, v_sync, red, green, blue);
+        port map(clk_sys, resi, bus_address, bus_data_mosi, bus_data_miso, bus_WR, bus_RD, vga_ack, clk_31M5, h_sync, v_sync, red, green, blue);
 
     ps2keyboard0: ps2
         generic map(x"000106")
