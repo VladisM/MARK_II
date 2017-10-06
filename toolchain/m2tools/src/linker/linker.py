@@ -357,6 +357,7 @@ class object_buffer():
                 sys.exit()
             else:
                 self.files.append(lib)
+                break
         
         self.missing_exports = []
         
