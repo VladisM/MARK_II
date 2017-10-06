@@ -240,8 +240,10 @@ class object_file():
 class object_buffer():
     #here are all object files stored
 
-    def __init__(self,name_list):
+    def __init__(self,name_list, libs):
         self.files = []
+        self.missing_exports = []
+        self.libs = libs
         for name in name_list:
             new_object_file = object_file(name)
             new_object_file.fill()
@@ -279,6 +281,32 @@ class object_buffer():
                 break
         return [found, value]
 
+    def __find_imports(self):
+        
+        for file_item in self.files:
+            for label_item in file_item.symbols.imports:
+
+                name = label_item.name
+                found, value = self.__find_exported_label(name)
+
+                if found == False:
+                    self.missing_exports.append(name)
+    
+    #browse libs and return libname where label is exported
+    def __find_in_libs(self, label):
+        for lib in self.libs.files:
+            found = False
+            
+            for exported_label in lib.symbols.exports:
+                if exported_label.name == label:
+                    found = True
+                    break
+            
+            if found == True:
+                return True, lib
+            
+        return False, None
+        
     def __solve_imports(self):
 
         for file_item in self.files:
@@ -312,7 +340,31 @@ class object_buffer():
 
                 self.output_buff.append(new_item)
 
+
+    def __include_libs(self):
+        
+        
+        self.__get_exports()
+        self.__find_imports()
+        
+        if len(self.missing_exports) == 0:
+            return
+            
+        for label in self.missing_exports:
+            found, lib = self.__find_in_libs(label)
+            if found == False:
+                print "Didn't found included label in object files", label
+                sys.exit()
+            else:
+                self.files.append(lib)
+        
+        self.missing_exports = []
+        
+        self.__include_libs()
+    
+    
     def link(self):
+        self.__include_libs()
         self.__relocate_instructions()
         self.__relocate_exports()
         self.__get_exports()
@@ -337,6 +389,37 @@ class object_buffer():
             f.write("\n")
 
         f.close()
+
+class libraries():
+    
+    def __init__(self, libpaths):
+        
+        #parse all given paths and search for static libraries
+        libpaths_walk = []    
+        libobjs = []
+        
+        for path in libpaths:
+            
+            if os.path.isdir(path) == False:
+                print "Directory " + path + " specified as lib dir but doesn't exist!"
+                sys.exit()
+            
+            libpaths_walk = libpaths_walk + [x[0] for x in os.walk(os.path.abspath(path))]
+                
+        for path in libpaths_walk:
+            path = os.path.abspath(path)
+        
+            if path[-1] == '/':
+                libobjs = libobjs + glob.glob(path + "*.o")
+            else:
+                libobjs = libobjs + glob.glob(path + "/*.o")
+        
+        # append found static libraries into lib buffer
+        self.files = []
+        for name in libobjs:
+            new_object_file = object_file(name)
+            new_object_file.fill()
+            self.files.append(new_object_file)
 
 def usage():
     print """
@@ -399,30 +482,9 @@ def main():
 
     output_file, input_files, libpaths = get_args()
     
-    #parse all given path and search for static libraries
-    
-    libpaths_walk = []    
-    libobjs = []
-    
-    for path in libpaths:
-        
-        if os.path.isdir(path) == False:
-            print "Directory " + path + " specified as lib dir but doesn't exist!"
-            sys.exit()
-        
-        libpaths_walk = libpaths_walk + [x[0] for x in os.walk(os.path.abspath(path))]
-            
-    for path in libpaths_walk:
-        path = os.path.abspath(path)
-    
-        if path[-1] == '/':
-            libobjs = libobjs + glob.glob(path + "*.o")
-        else:
-            libobjs = libobjs + glob.glob(path + "/*.o")
+    libs = libraries(libpaths)
 
-    
-
-    buff = object_buffer(input_files)
+    buff = object_buffer(input_files, libs)
     buff.link()
     buff.generate_output_file(output_file)
 
