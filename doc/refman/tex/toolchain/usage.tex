@@ -32,6 +32,7 @@ label".
         -h --help           Print this help.
         -o <file>           Output LDM file name. If not specified,
                             name of first object file will be used.
+        -l <path>           Path to look for libraries.
            --version        Print version number and exit.
 \end{lstlisting}
 
@@ -44,6 +45,12 @@ In that case just compile each file separated and then call:
 \begin{lstlisting}[language=bash, frame=single]
     # linker file1.o file2.o
 \end{lstlisting}
+
+Linker is also needed when one want use compiled libraries. These 
+libraries are classical object files without any modifications. Linker 
+first try to link your ldm file from object files given as argument, 
+when some missing labels are occurred, patch given with -l argument are 
+searched for object files. 
 
 \subsubsection{ldm2mif}
 
