@@ -136,7 +136,7 @@ architecture cpu_arch of cpu is
     end component;
 
     -- main bus signals
-    signal data_a, data_b, data_c: std_logic_vector(31 downto 0);
+    signal data_a, data_b, data_c: std_logic_vector(31 downto 0) := x"00000000" ;
 
     -- partial results
     signal
@@ -144,52 +144,52 @@ architecture cpu_arch of cpu is
         result_rot, result_ari, divu_res, divs_res,
         divu_remain, divs_remain, add_res, sub_res, inc_res, dec_res, and_res,
         or_res, xor_res, mvil_res, mvih_res, not_res
-    : std_logic_vector(31 downto 0);
+    : std_logic_vector(31 downto 0) := x"00000000" ;
     signal
         mulu_res, muls_res
-    : std_logic_vector(63 downto 0);
+    : std_logic_vector(63 downto 0) := x"0000000000000000" ;
 
     signal
         fp_addsub
-    : std_logic;
+    : std_logic := '0';
 
     -- register values
     signal
         reg00_q, reg01_q, reg02_q, reg03_q, reg04_q, reg05_q, reg06_q, reg07_q,
         reg08_q, reg09_q, reg10_q, reg11_q, reg12_q, reg13_q, reg14_q, reg15_q
-    : std_logic_vector(31 downto 0);
+    : std_logic_vector(31 downto 0) := x"00000000" ;
 
     -- register we
     signal
         reg00_we, reg01_we, reg02_we, reg03_we, reg04_we, reg05_we, reg06_we, reg07_we,
         reg08_we, reg09_we, reg10_we, reg11_we, reg12_we, reg13_we, reg14_we, reg15_we
-    : std_logic;
+    : std_logic := '0';
 
     -- results from main parts
     signal
         fpu_result, comp_result, alu_result, barrel_result
-    : std_logic_vector(31 downto 0);
+    : std_logic_vector(31 downto 0) := x"00000000" ;
 
     signal
         regfile_a, regfile_b
-    : std_logic_vector(31 downto 0);
+    : std_logic_vector(31 downto 0) := x"00000000" ;
     signal
         zero_flag
-    : std_logic_vector(15 downto 0);
+    : std_logic_vector(15 downto 0) := x"0000" ;
 
-    signal instruction_word: std_logic_vector(31 downto 0);
-    signal res_sync: std_logic;
+    signal instruction_word: std_logic_vector(31 downto 0) := x"00000000" ;
+    signal res_sync: std_logic := '0';
 
     --control signals from ID
-    signal instr_opcode: std_logic_vector(7 downto 0);
-    signal data_c_sel: std_logic_vector(2 downto 0);
-    signal data_a_sel: std_logic_vector(3 downto 0);
-    signal data_b_sel: std_logic_vector(2 downto 0);
-    signal force_we_reg_14: std_logic;
-    signal inc_r14, inc_r15, dec_r15: std_logic;
-    signal instruction_we: std_logic;
-    signal regfile_c_we: std_logic;
-    signal flag: std_logic;
+    signal instr_opcode: std_logic_vector(7 downto 0) := x"00";
+    signal data_c_sel: std_logic_vector(2 downto 0) := "000";
+    signal data_a_sel: std_logic_vector(3 downto 0) := x"0";
+    signal data_b_sel: std_logic_vector(2 downto 0) := "000";
+    signal force_we_reg_14: std_logic := '0';
+    signal inc_r14, inc_r15, dec_r15: std_logic := '0';
+    signal instruction_we: std_logic := '0';
+    signal regfile_c_we: std_logic := '0';
+    signal flag: std_logic := '0';
 
 begin
 
