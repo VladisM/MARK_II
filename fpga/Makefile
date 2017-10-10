@@ -23,4 +23,4 @@ load: asm
 	quartus_pgm --mode=jtag -o "P;output_files/$(DESIGN_NAME).sof"
 
 clean:
-	rm -rf $(DESIGN_NAME).qpf $(DESIGN_NAME).qsf $(DESIGN_NAME).qws output_files/ db/ incremental_db/ simulation/ PLLJ_PLLSPE_INFO.txt 
+	rm -rf $(DESIGN_NAME).qpf $(DESIGN_NAME).qsf $(DESIGN_NAME).qws output_files/ db/ incremental_db/ simulation/ *.qip greybox_tmp/ PLLJ_PLLSPE_INFO.txt 

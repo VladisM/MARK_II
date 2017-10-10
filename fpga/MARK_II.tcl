@@ -84,14 +84,23 @@ if {$make_assignments} {
     set_global_assignment -name VHDL_FILE ./src/vga/vga.vhd
     set_global_assignment -name VHDL_FILE ./src/vga/font.vhd
     set_global_assignment -name VHDL_FILE ./src/MARK_II.vhd
-    set_global_assignment -name VHDL_FILE ../src/clkgen/clkgen.vhd
-    
+    set_global_assignment -name VHDL_FILE ./src/clkgen/clkgen.vhd
+    set_global_assignment -name VHDL_FILE ./src/sdram/sdram.vhd
+    set_global_assignment -name VHDL_FILE ./src/sdram/reader.vhd
+    set_global_assignment -name VHDL_FILE ./src/sdram/writer.vhd
+    set_global_assignment -name VHDL_FILE ./src/sdram/bus_interface.vhd
+
+    set_global_assignment -name VERILOG_FILE ./src/sdram/sdram_controller.v
+
     set_global_assignment -name QIP_FILE ./src/cpu/qip/add.qip
     set_global_assignment -name QIP_FILE ./src/cpu/qip/div.qip
     set_global_assignment -name QIP_FILE ./src/cpu/qip/fpcmp.qip
     set_global_assignment -name QIP_FILE ./src/cpu/qip/mul.qip
     set_global_assignment -name QIP_FILE ./src/clkgen/pll_peripherals.qip
     set_global_assignment -name QIP_FILE ./src/clkgen/pll_system.qip
+    set_global_assignment -name QIP_FILE ./src/sdram/fifo/fifo.qip
+    set_global_assignment -name QIP_FILE ./src/sdram/fifo/fifo_rd_addr.qip
+    set_global_assignment -name QIP_FILE ./src/sdram/fifo/fifo_rd_data.qip
     
     set_global_assignment -name SDC_FILE MARK_II.sdc
         
@@ -136,8 +145,47 @@ if {$make_assignments} {
     set_location_assignment PIN_J16 -to tx0
     set_location_assignment PIN_K15 -to tx1
     set_location_assignment PIN_E11 -to tx2
-    set_location_assignment PIN_M10 -to v_sync
-    
+    set_location_assignment PIN_M10 -to v_sync    
+    set_location_assignment PIN_M7 -to sdram_bank_addr[0]
+    set_location_assignment PIN_M6 -to sdram_bank_addr[1]
+    set_location_assignment PIN_R6 -to sdram_data_mask_low
+    set_location_assignment PIN_T5 -to sdram_data_mask_high
+    set_location_assignment PIN_L2 -to sdram_ras_n
+    set_location_assignment PIN_L1 -to sdram_cas_n
+    set_location_assignment PIN_L7 -to sdram_clock_enable
+    set_location_assignment PIN_R4 -to sdram_clk
+    set_location_assignment PIN_C2 -to sdram_we_n
+    set_location_assignment PIN_P6 -to sdram_cs_n
+    set_location_assignment PIN_G2 -to sdram_data[0]
+    set_location_assignment PIN_G1 -to sdram_data[1]
+    set_location_assignment PIN_L8 -to sdram_data[2]
+    set_location_assignment PIN_K5 -to sdram_data[3]
+    set_location_assignment PIN_K2 -to sdram_data[4]
+    set_location_assignment PIN_J2 -to sdram_data[5]
+    set_location_assignment PIN_J1 -to sdram_data[6]
+    set_location_assignment PIN_R7 -to sdram_data[7]
+    set_location_assignment PIN_T4 -to sdram_data[8]
+    set_location_assignment PIN_T2 -to sdram_data[9]
+    set_location_assignment PIN_T3 -to sdram_data[10]
+    set_location_assignment PIN_R3 -to sdram_data[11]
+    set_location_assignment PIN_R5 -to sdram_data[12]
+    set_location_assignment PIN_P3 -to sdram_data[13]
+    set_location_assignment PIN_N3 -to sdram_data[14]
+    set_location_assignment PIN_K1 -to sdram_data[15]
+    set_location_assignment PIN_P2 -to sdram_addr[0]
+    set_location_assignment PIN_N5 -to sdram_addr[1]
+    set_location_assignment PIN_N6 -to sdram_addr[2]
+    set_location_assignment PIN_M8 -to sdram_addr[3]
+    set_location_assignment PIN_P8 -to sdram_addr[4]
+    set_location_assignment PIN_T7 -to sdram_addr[5]
+    set_location_assignment PIN_N8 -to sdram_addr[6]
+    set_location_assignment PIN_T6 -to sdram_addr[7]
+    set_location_assignment PIN_R1 -to sdram_addr[8]
+    set_location_assignment PIN_P1 -to sdram_addr[9]
+    set_location_assignment PIN_N2 -to sdram_addr[10]
+    set_location_assignment PIN_N1 -to sdram_addr[11]
+    set_location_assignment PIN_L4 -to sdram_addr[12]
+            
     set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to blue[1]
     set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to blue[0]
     set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to clk
@@ -180,8 +228,46 @@ if {$make_assignments} {
     set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to tx1
     set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to tx2
     set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to v_sync
-    
-    
+    set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to sdram_bank_addr[0]
+    set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to sdram_bank_addr[1]
+    set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to sdram_data_mask_low
+    set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to sdram_data_mask_high
+    set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to sdram_ras_n
+    set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to sdram_cas_n
+    set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to sdram_clock_enable
+    set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to sdram_clk
+    set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to sdram_we_n
+    set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to sdram_cs_n
+    set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to sdram_data[0]
+    set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to sdram_data[1]
+    set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to sdram_data[2]
+    set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to sdram_data[3]
+    set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to sdram_data[4]
+    set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to sdram_data[5]
+    set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to sdram_data[6]
+    set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to sdram_data[7]
+    set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to sdram_data[8]
+    set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to sdram_data[9]
+    set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to sdram_data[10]
+    set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to sdram_data[11]
+    set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to sdram_data[12]
+    set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to sdram_data[13]
+    set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to sdram_data[14]
+    set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to sdram_data[15]
+    set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to sdram_addr[0]
+    set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to sdram_addr[1]
+    set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to sdram_addr[2]
+    set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to sdram_addr[3]
+    set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to sdram_addr[4]
+    set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to sdram_addr[5]
+    set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to sdram_addr[6]
+    set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to sdram_addr[7]
+    set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to sdram_addr[8]
+    set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to sdram_addr[9]
+    set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to sdram_addr[10]
+    set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to sdram_addr[11]
+    set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to sdram_addr[12]
+        
     # Commit assignments
     export_assignments
 

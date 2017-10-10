@@ -47,7 +47,20 @@ entity MARK_II is
 
         --keyboard
         ps2clk: in std_logic;
-        ps2dat: in std_logic
+        ps2dat: in std_logic;
+        
+        --sdram
+        sdram_addr: out std_logic_vector(12 downto 0);
+        sdram_bank_addr: out std_logic_vector(1 downto 0);
+        sdram_data: inout std_logic_vector(15 downto 0);
+        sdram_clock_enable: out std_logic;
+        sdram_cs_n: out std_logic;
+        sdram_ras_n: out std_logic;
+        sdram_cas_n: out std_logic;
+        sdram_we_n: out std_logic;
+        sdram_data_mask_low: out std_logic;
+        sdram_data_mask_high: out std_logic;
+        sdram_clk: out std_logic
     );
 end entity MARK_II;
 
@@ -264,6 +277,38 @@ architecture MARK_II_arch of MARK_II is
         );
     end component clkgen;
 
+    component sdram is
+        generic(
+            BASE_ADDRESS: unsigned(23 downto 0) := x"000000"
+        );
+        port(
+            --bus interface
+            clk: in std_logic;
+            res: in std_logic;
+            address: in std_logic_vector(23 downto 0);
+            data_mosi: in std_logic_vector(31 downto 0);
+            data_miso: out std_logic_vector(31 downto 0);
+            WR: in std_logic;
+            RD: in std_logic;
+            ack: out std_logic;
+            
+            -- device specific interface
+            clk_sdram: in std_logic;
+
+            -- sdram interface
+            addr: out std_logic_vector(12 downto 0);
+            bank_addr: out std_logic_vector(1 downto 0);
+            data: inout std_logic_vector(15 downto 0);
+            clock_enable: out std_logic;
+            cs_n: out std_logic;
+            ras_n: out std_logic;
+            cas_n: out std_logic;
+            we_n: out std_logic;
+            data_mask_low: out std_logic;
+            data_mask_high: out std_logic
+        );
+    end component sdram;
+    
     --signal for internal bus
     signal bus_address: std_logic_vector(23 downto 0);
     signal bus_data_mosi, bus_data_miso: std_logic_vector(31 downto 0);
@@ -283,7 +328,7 @@ architecture MARK_II_arch of MARK_II is
     signal resi: std_logic;         --internal reset
 
     signal rom_ack, ram_ack, int_ack, gpio_ack, systim_ack, vga_ack, tim0_ack, ram1_ack,
-           tim1_ack,tim2_ack,tim3_ack, uart0_ack, uart1_ack, uart2_ack, ps2_ack : std_logic;
+           tim1_ack,tim2_ack,tim3_ack, uart0_ack, uart1_ack, uart2_ack, ps2_ack, sdram_ack : std_logic;
 
 begin
 
@@ -352,9 +397,17 @@ begin
     ram1: ram
         generic map(x"100000", 13)
         port map(clk_sys, resi, bus_address, bus_data_mosi, bus_data_miso, bus_WR, bus_RD, ram1_ack);
-
+    
+    sdram0: sdram
+        generic map(x"800000")
+        port map(clk_sys, resi, bus_address, bus_data_mosi, bus_data_miso, bus_WR, bus_RD, sdram_ack,
+                 clk_sdram, sdram_addr, sdram_bank_addr, sdram_data, sdram_clock_enable, sdram_cs_n, 
+                 sdram_ras_n, sdram_cas_n, sdram_we_n, sdram_data_mask_low, sdram_data_mask_high);
+    
+    sdram_clk <= clk_sdram;
+    
     bus_ack <=
         rom_ack or ram_ack or int_ack or gpio_ack or systim_ack or vga_ack or tim0_ack or
-        tim1_ack or tim2_ack or tim3_ack or uart0_ack or uart1_ack or uart2_ack or ps2_ack or ram1_ack;
+        tim1_ack or tim2_ack or tim3_ack or uart0_ack or uart1_ack or uart2_ack or ps2_ack or ram1_ack or sdram_ack;
 
 end architecture MARK_II_arch;
