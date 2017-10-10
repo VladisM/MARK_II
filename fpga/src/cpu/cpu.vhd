@@ -319,7 +319,9 @@ begin
         and_res                  when (instruction_word(23 downto 20) = x"a") else
         or_res                   when (instruction_word(23 downto 20) = x"b") else
         xor_res                  when (instruction_word(23 downto 20) = x"c") else
-        not_res;
+        not_res                  when (instruction_word(23 downto 20) = x"d") else
+        mulu_res(63 downto 32)   when (instruction_word(23 downto 20) = x"e") else
+        muls_res(63 downto 32);
 
     -- FP and INT comparator
     comp0: comparator
