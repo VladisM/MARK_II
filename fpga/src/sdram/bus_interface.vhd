@@ -70,7 +70,7 @@ begin
                     when wr_state =>
                         fsm_state <= ack_state;
                     when wait_for_data =>
-                        if rdfifo_data_rdempty = '1' then
+                        if rdfifo_data_rdempty = '0' then
                             fsm_state <= read_data;
                         else
                             fsm_state <= wait_for_data;

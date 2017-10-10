@@ -59,20 +59,20 @@ begin
     end process;
     
     -- register for address
-    process(clk) is
-        variable addr_var: std_logic_vector(23 downto 0);
+    process(clk, addr_sel) is
+        variable addr_var: std_logic_vector(22 downto 0);
     begin
         if rising_edge(clk) then
             if res = '1' then
-                addr_var(23 downto 1) := (others => '0');
+                addr_var := (others => '0');
             else
                 if wr_addr_reg = '1' then
-                    addr_var(23 downto 1) := rdfifo_address_q;
+                    addr_var := rdfifo_address_q;
                 end if;
             end if;
-            addr_var(0) := addr_sel;            
+            
         end if;
-        rd_addr <= addr_var;
+        rd_addr <= addr_var & addr_sel;
     end process;
         
     process(clk) is
