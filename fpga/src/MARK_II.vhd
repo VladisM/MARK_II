@@ -273,7 +273,8 @@ architecture MARK_II_arch of MARK_II is
             clk_sys: out std_logic;
             clk_sdram: out std_logic;
             clk_vga: out std_logic;
-            clk_uart: out std_logic        
+            clk_uart: out std_logic;
+            clk_sdram_ext: out std_logic
         );
     end component clkgen;
 
@@ -333,7 +334,7 @@ architecture MARK_II_arch of MARK_II is
 begin
 
     clkgen0: clkgen
-        port map(res, clk, resi, clk_sys, clk_sdram, clk_31M5, clk_uart);
+        port map(res, clk, resi, clk_sys, clk_sdram, clk_31M5, clk_uart, sdram_clk);
 
     cpu0: cpu
         port map(clk_sys, resi, bus_address, bus_data_mosi, bus_data_miso, bus_WR, bus_RD, bus_ack, int_req(0), intCPUReq, intAddress, intAccepted, intCompleted);
@@ -404,7 +405,6 @@ begin
                  clk_sdram, sdram_addr, sdram_bank_addr, sdram_data, sdram_clock_enable, sdram_cs_n, 
                  sdram_ras_n, sdram_cas_n, sdram_we_n, sdram_data_mask_low, sdram_data_mask_high);
     
-    sdram_clk <= clk_sdram;
     
     bus_ack <=
         rom_ack or ram_ack or int_ack or gpio_ack or systim_ack or vga_ack or tim0_ack or

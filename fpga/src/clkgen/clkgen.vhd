@@ -10,7 +10,8 @@ entity clkgen is
         clk_sys: out std_logic;
         clk_sdram: out std_logic;
         clk_vga: out std_logic;
-        clk_uart: out std_logic        
+        clk_uart: out std_logic;
+        clk_sdram_ext: out std_logic
     );
 end entity clkgen;
 
@@ -25,7 +26,8 @@ architecture clkgen_arch of clkgen is
     component pll_system is port(
             inclk0		: in std_logic := '0';
             c0		: out std_logic;
-            c1		: out std_logic);
+            c1		: out std_logic;
+            c2: out std_logic);
     end component pll_system;
 
 begin
@@ -36,6 +38,6 @@ begin
         port map(clk_ext, clk_vga, clk_uart);
     
     pll1: pll_system
-        port map(clk_ext, clk_sdram, clk_sys);
+        port map(clk_ext, clk_sdram_ext, clk_sys, clk_sdram);
     
 end architecture clkgen_arch;
