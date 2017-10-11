@@ -22,7 +22,7 @@ int main(){
     // enable transmitter on UART0; set baudrate to 1200
     // UCR is configuration register there you can set baudrate, enable UART, enable interrupts..
     // use UCRX_xxx macros
-    UCR0 |= (UCR0_txen|(UCR0_N & 0x2ED));
+    UCR0 |= (UCR0_txen|(UCR0_N & 0x7CF));
 
     while(1){
         // write string and delay
