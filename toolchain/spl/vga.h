@@ -12,6 +12,9 @@
 
 #define VRAM0(ROW, COLUMN) (*(unsigned int *)(VRAM0_beg + ((ROW) * 0x80) + (COLUMN))) /**< @brief Macro for writing into video RAM. */
 
+#define CURSOR_ON          (0x1 << 15) /**< @brief Enable cursor. */
+#define CURSOR_OFF         (0x0 << 15) /**< @brief Disable cursor. */
+
 #define FG_BLACK           (0x0 << 7) /**< @brief Foreground color code. */
 #define FG_LIGHT_GRAY      (0x1 << 7) /**< @brief Foreground color code. */
 #define FG_RED             (0x2 << 7) /**< @brief Foreground color code. */

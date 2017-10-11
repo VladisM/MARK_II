@@ -11,26 +11,6 @@
 -- Text resolution: 80x30 chars
 -- Char resolution: 16x8 px
 --
--- Displayed text is stored in dual port video ram, in following order:
---
--- 0x0000 - 0x004F => first line
--- 0x0100 - 0x014F => second line
---        .
---        .
---        .
--- 0x1D00 - 0x1D4F => last line
---
---
--- In one line, charaters are stored as following:
---
--- 0x??00 => first character from left
--- 0x??01 => second character from left
---   .
---   .
---   .
--- 0x??4F => last character from left
---
---
 -- All characters are using ASCII encoding, see full docs for more
 -- details about charset.
 
@@ -75,38 +55,41 @@ architecture vga_arch of vga is
         port(
             clk_a   : in std_logic;
             addr_a  : in unsigned(11 downto 0);
-            data_a  : in unsigned(14 downto 0);
+            data_a  : in unsigned(15 downto 0);
             we_a    : in std_logic;
-            q_a     : out unsigned(14 downto 0);
+            q_a     : out unsigned(15 downto 0);
             clk_b   : in std_logic;
             addr_b  : in unsigned(11 downto 0);
-            q_b     : out unsigned(14 downto 0)
+            q_b     : out unsigned(15 downto 0)
         );
     end component vram;
 
     --to vram
     signal tile_line: unsigned(4 downto 0);
-    signal tile_row: unsigned(6 downto 0);
+    signal tile_col: unsigned(6 downto 0);
 
     --to pixel generator
     signal cell_line: unsigned(3 downto 0);
     signal cell_line_s: unsigned(3 downto 0);
-    signal cell_row: unsigned(2 downto 0);
-    signal cell_row_s: unsigned(2 downto 0);
+    signal cell_line_ss: unsigned(3 downto 0);
+    signal cell_col: unsigned(2 downto 0);
+    signal cell_col_s: unsigned(2 downto 0);
 
-    signal char_from_vram: unsigned(14 downto 0);
+    signal char_from_vram: unsigned(15 downto 0);
     signal line_from_charrom: unsigned(7 downto 0);
     signal pixel: std_logic;
-
+    
     signal blank_r, blank, h_sync_r, v_sync_r: std_logic;
 
     signal bg_color, fg_color: unsigned(3 downto 0);
-
+    
+    signal cursor_en, cursor_timer: std_logic;
+    
     --BUS interface
     signal addr_a  : unsigned(11 downto 0);
-    signal data_a  : unsigned(14 downto 0);
+    signal data_a  : unsigned(15 downto 0);
     signal we_a    : std_logic;
-    signal q_a     : unsigned(14 downto 0);
+    signal q_a     : unsigned(15 downto 0);
     signal cs: std_logic;
     
     type ack_fsm is (idle, set);
@@ -169,8 +152,8 @@ begin
 
         end if;
 
-        tile_row <= posx_v(9 downto 3);
-        cell_row <= posx_v(2 downto 0);
+        tile_col <= posx_v(9 downto 3);
+        cell_col <= posx_v(2 downto 0);
 
         tile_line <= posy_v(8 downto 4);
         cell_line <= posy_v(3 downto 0);
@@ -179,22 +162,25 @@ begin
 
     process(clk_31M5, cell_line) is
         variable cell_line_var: unsigned(3 downto 0);
+        variable cell_line_var_2: unsigned(3 downto 0);
     begin
         if rising_edge(clk_31M5) then
-            cell_line_var := cell_line;
+            cell_line_var_2 := cell_line_var;
+            cell_line_var := cell_line;            
         end if;
         cell_line_s <= cell_line_var;
+        cell_line_ss <= cell_line_var_2;
     end process;
 
-    process(clk_31M5, cell_row) is
-        variable cell_row_s1_var: unsigned(2 downto 0);
-        variable cell_row_s2_var: unsigned(2 downto 0);
+    process(clk_31M5, cell_col) is
+        variable cell_col_s1_var: unsigned(2 downto 0);
+        variable cell_col_s2_var: unsigned(2 downto 0);
     begin
         if rising_edge(clk_31M5) then
-            cell_row_s2_var := cell_row_s1_var;
-            cell_row_s1_var := cell_row;
+            cell_col_s2_var := cell_col_s1_var;
+            cell_col_s1_var := cell_col;
         end if;
-        cell_row_s <= cell_row_s2_var;
+        cell_col_s <= cell_col_s2_var;
     end process;
 
     process(clk_31M5, h_sync_r, v_sync_r) is
@@ -221,33 +207,67 @@ begin
         blank <= blank_s2;
     end process;
 
-    vram0: vram port map(clk_bus, addr_a, data_a, we_a, q_a, clk_31M5, tile_line & tile_row, char_from_vram);
+    vram0: vram port map(clk_bus, addr_a, data_a, we_a, q_a, clk_31M5, tile_line & tile_col, char_from_vram);
 
     font_rom0: font_rom port map(clk_31M5, char_from_vram(6 downto 0) & cell_line_s, line_from_charrom);
 
-    process(cell_row_s, line_from_charrom) is
+    process(clk_31M5) is 
+        variable cursor_timer_var: unsigned(24 downto 0);
     begin
-        case cell_row_s is
-            when "000" => pixel <= line_from_charrom(7);
-            when "001" => pixel <= line_from_charrom(6);
-            when "010" => pixel <= line_from_charrom(5);
-            when "011" => pixel <= line_from_charrom(4);
-            when "100" => pixel <= line_from_charrom(3);
-            when "101" => pixel <= line_from_charrom(2);
-            when "110" => pixel <= line_from_charrom(1);
-            when "111" => pixel <= line_from_charrom(0);
-        end case;
+        if rising_edge(clk_31M5) then
+            if res = '1' then
+                cursor_timer_var := (others => '0');
+            else
+                cursor_timer_var := cursor_timer_var + 1;
+            end if;
+        end if;
+        cursor_timer <= cursor_timer_var(24);
+    end process;
+
+    process(cell_col_s, cell_line_ss, line_from_charrom, cursor_en) is
+    begin
+        if cell_line_ss = "1111" then
+            case cursor_en is
+                when '1' =>
+                    pixel <= cursor_timer;
+                when others =>
+                    case cell_col_s is
+                        when "000" => pixel <= line_from_charrom(7);
+                        when "001" => pixel <= line_from_charrom(6);
+                        when "010" => pixel <= line_from_charrom(5);
+                        when "011" => pixel <= line_from_charrom(4);
+                        when "100" => pixel <= line_from_charrom(3);
+                        when "101" => pixel <= line_from_charrom(2);
+                        when "110" => pixel <= line_from_charrom(1);
+                        when "111" => pixel <= line_from_charrom(0);
+                    end case;                
+            end case;
+        else
+            case cell_col_s is
+                when "000" => pixel <= line_from_charrom(7);
+                when "001" => pixel <= line_from_charrom(6);
+                when "010" => pixel <= line_from_charrom(5);
+                when "011" => pixel <= line_from_charrom(4);
+                when "100" => pixel <= line_from_charrom(3);
+                when "101" => pixel <= line_from_charrom(2);
+                when "110" => pixel <= line_from_charrom(1);
+                when "111" => pixel <= line_from_charrom(0);
+            end case;
+        end if;
     end process;
 
     process(clk_31M5, char_from_vram) is
         variable fg_color_v, bg_color_v: unsigned(3 downto 0);
+        variable cursor_v: std_logic;
     begin
         if rising_edge(clk_31M5) then
             fg_color_v := char_from_vram(10 downto 7);
             bg_color_v := char_from_vram(14 downto 11);
+            cursor_v := char_from_vram(15);
         end if;
         fg_color <= fg_color_v;
         bg_color <= bg_color_v;
+        cursor_en <= cursor_v;
     end process;
 
     process(pixel, fg_color, bg_color, blank) is
@@ -309,8 +329,8 @@ begin
         end case;
     end process;
     
-    data_miso <= std_logic_vector(x"0000" & "0" & q_a) when ((RD = '1') and (cs = '1')) else (others => 'Z');
-    data_a <= unsigned(data_mosi(14 downto 0));
+    data_miso <= std_logic_vector(x"0000" & q_a) when ((RD = '1') and (cs = '1')) else (others => 'Z');
+    data_a <= unsigned(data_mosi(15 downto 0));
 
     we_a <= WR and cs;
 
