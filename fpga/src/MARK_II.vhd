@@ -335,7 +335,7 @@ begin
 
     clkgen0: clkgen
         port map(res, clk, resi, clk_sys, clk_sdram, clk_31M5, clk_uart, sdram_clk);
-
+    
     cpu0: cpu
         port map(clk_sys, resi, bus_address, bus_data_mosi, bus_data_miso, bus_WR, bus_RD, bus_ack, int_req(0), intCPUReq, intAddress, intAccepted, intCompleted);
 

@@ -40,29 +40,30 @@ if {[is_project_open]} {
 
 # Make assignments
 if {$make_assignments} {
-    set_global_assignment -name FAMILY "Cyclone IV E"
-    set_global_assignment -name DEVICE EP4CE22F17C6
-    set_global_assignment -name ORIGINAL_QUARTUS_VERSION 13.0
-    set_global_assignment -name PROJECT_CREATION_TIME_DATE "12:01:54  SEPTEMBER 30, 2017"
-    set_global_assignment -name LAST_QUARTUS_VERSION 13.0
-    set_global_assignment -name PROJECT_OUTPUT_DIRECTORY output_files
-    set_global_assignment -name MIN_CORE_JUNCTION_TEMP 0
-    set_global_assignment -name MAX_CORE_JUNCTION_TEMP 85
-    set_global_assignment -name ERROR_CHECK_FREQUENCY_DIVISOR 1
-    set_global_assignment -name EDA_SIMULATION_TOOL "ModelSim-Altera (VHDL)"
-    set_global_assignment -name EDA_OUTPUT_DATA_FORMAT VHDL -section_id eda_simulation
-    set_global_assignment -name USE_CONFIGURATION_DEVICE OFF
-    set_global_assignment -name CRC_ERROR_OPEN_DRAIN OFF
-    set_global_assignment -name RESERVE_ALL_UNUSED_PINS_WEAK_PULLUP "AS INPUT TRI-STATED"
-    set_global_assignment -name STRATIX_DEVICE_IO_STANDARD "3.3-V LVTTL"
-    set_global_assignment -name OUTPUT_IO_TIMING_NEAR_END_VMEAS "HALF VCCIO" -rise
-    set_global_assignment -name OUTPUT_IO_TIMING_NEAR_END_VMEAS "HALF VCCIO" -fall
-    set_global_assignment -name OUTPUT_IO_TIMING_FAR_END_VMEAS "HALF SIGNAL SWING" -rise
-    set_global_assignment -name OUTPUT_IO_TIMING_FAR_END_VMEAS "HALF SIGNAL SWING" -fall
-    set_global_assignment -name PARTITION_NETLIST_TYPE SOURCE -section_id Top
-    set_global_assignment -name PARTITION_FITTER_PRESERVATION_LEVEL PLACEMENT_AND_ROUTING -section_id Top
-    set_global_assignment -name PARTITION_COLOR 16764057 -section_id Top
-    set_instance_assignment -name PARTITION_HIERARCHY root_partition -to | -section_id Top
+	set_global_assignment -name FAMILY "Cyclone IV E"
+	set_global_assignment -name DEVICE EP4CE22F17C6
+	set_global_assignment -name ORIGINAL_QUARTUS_VERSION 13.0
+	set_global_assignment -name PROJECT_CREATION_TIME_DATE "12:01:54  SEPTEMBER 30, 2017"
+	set_global_assignment -name LAST_QUARTUS_VERSION 13.0
+	set_global_assignment -name PROJECT_OUTPUT_DIRECTORY output_files
+	set_global_assignment -name MIN_CORE_JUNCTION_TEMP 0
+	set_global_assignment -name MAX_CORE_JUNCTION_TEMP 85
+	set_global_assignment -name ERROR_CHECK_FREQUENCY_DIVISOR 1
+	set_global_assignment -name EDA_SIMULATION_TOOL "<None>"
+	set_global_assignment -name EDA_OUTPUT_DATA_FORMAT NONE -section_id eda_simulation
+	set_global_assignment -name USE_CONFIGURATION_DEVICE OFF
+	set_global_assignment -name CRC_ERROR_OPEN_DRAIN OFF
+	set_global_assignment -name RESERVE_ALL_UNUSED_PINS_WEAK_PULLUP "AS INPUT TRI-STATED"
+	set_global_assignment -name STRATIX_DEVICE_IO_STANDARD "3.3-V LVTTL"
+	set_global_assignment -name OUTPUT_IO_TIMING_NEAR_END_VMEAS "HALF VCCIO" -rise
+	set_global_assignment -name OUTPUT_IO_TIMING_NEAR_END_VMEAS "HALF VCCIO" -fall
+	set_global_assignment -name OUTPUT_IO_TIMING_FAR_END_VMEAS "HALF SIGNAL SWING" -rise
+	set_global_assignment -name OUTPUT_IO_TIMING_FAR_END_VMEAS "HALF SIGNAL SWING" -fall
+	set_global_assignment -name PARTITION_NETLIST_TYPE SOURCE -section_id Top
+	set_global_assignment -name PARTITION_FITTER_PRESERVATION_LEVEL PLACEMENT_AND_ROUTING -section_id Top
+	set_global_assignment -name PARTITION_COLOR 16764057 -section_id Top
+    set_global_assignment -name POWER_PRESET_COOLING_SOLUTION "23 MM HEAT SINK WITH 200 LFPM AIRFLOW"
+	set_global_assignment -name POWER_BOARD_THERMAL_MODEL "NONE (CONSERVATIVE)"
     
     set_global_assignment -name VHDL_FILE ./src/cpu/cpu.vhd
     set_global_assignment -name VHDL_FILE ./src/cpu/id.vhd
@@ -86,11 +87,8 @@ if {$make_assignments} {
     set_global_assignment -name VHDL_FILE ./src/MARK_II.vhd
     set_global_assignment -name VHDL_FILE ./src/clkgen/clkgen.vhd
     set_global_assignment -name VHDL_FILE ./src/sdram/sdram.vhd
-    set_global_assignment -name VHDL_FILE ./src/sdram/reader.vhd
-    set_global_assignment -name VHDL_FILE ./src/sdram/writer.vhd
     set_global_assignment -name VHDL_FILE ./src/sdram/bus_interface.vhd
-
-    set_global_assignment -name VERILOG_FILE ./src/sdram/sdram_controller.v
+    set_global_assignment -name VHDL_FILE ./src/sdram/SDRAM_Controller.vhd
 
     set_global_assignment -name QIP_FILE ./src/cpu/qip/add.qip
     set_global_assignment -name QIP_FILE ./src/cpu/qip/div.qip
@@ -267,6 +265,26 @@ if {$make_assignments} {
     set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to sdram_addr[10]
     set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to sdram_addr[11]
     set_instance_assignment -name IO_STANDARD "3.3-V LVTTL" -to sdram_addr[12]
+        
+    set_instance_assignment -name FAST_OUTPUT_REGISTER ON -to "sdram:sdram0|SDRAM_Controller:dram0|iob_command"
+    set_instance_assignment -name FAST_OUTPUT_REGISTER ON -to "sdram:sdram0|SDRAM_Controller:dram0|iob_address"
+	set_instance_assignment -name FAST_OUTPUT_REGISTER ON -to "sdram:sdram0|SDRAM_Controller:dram0|iob_dqm"
+	set_instance_assignment -name FAST_OUTPUT_REGISTER ON -to "sdram:sdram0|SDRAM_Controller:dram0|iob_cke"
+	set_instance_assignment -name FAST_OUTPUT_REGISTER ON -to "sdram:sdram0|SDRAM_Controller:dram0|iob_bank"
+	set_instance_assignment -name FAST_INPUT_REGISTER ON -to "sdram:sdram0|SDRAM_Controller:dram0|iob_data"
+	set_instance_assignment -name FAST_INPUT_REGISTER ON -to "sdram:sdram0|SDRAM_Controller:dram0|captured_data"
+	set_instance_assignment -name FAST_OUTPUT_REGISTER ON -to sdram_addr
+	set_instance_assignment -name FAST_OUTPUT_REGISTER ON -to sdram_bank_addr
+	set_instance_assignment -name FAST_OUTPUT_REGISTER ON -to sdram_clock_enable
+	set_instance_assignment -name FAST_OUTPUT_REGISTER ON -to sdram_clk
+	set_instance_assignment -name FAST_OUTPUT_REGISTER ON -to sdram_cs_n
+	set_instance_assignment -name FAST_OUTPUT_REGISTER ON -to sdram_data_mask_low
+    set_instance_assignment -name FAST_OUTPUT_REGISTER ON -to sdram_data_mask_high
+	set_instance_assignment -name FAST_OUTPUT_REGISTER ON -to sdram_cas_n
+	set_instance_assignment -name FAST_OUTPUT_REGISTER ON -to sdram_ras_n
+	set_instance_assignment -name FAST_OUTPUT_REGISTER ON -to sdram_we_n
+	set_instance_assignment -name FAST_OUTPUT_REGISTER ON -to sdram_data
+	set_instance_assignment -name FAST_INPUT_REGISTER ON -to sdram_data
         
     # Commit assignments
     export_assignments

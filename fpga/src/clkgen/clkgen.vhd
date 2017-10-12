@@ -27,9 +27,9 @@ architecture clkgen_arch of clkgen is
             inclk0		: in std_logic := '0';
             c0		: out std_logic;
             c1		: out std_logic;
-            c2: out std_logic);
+				c2: out std_logic);
     end component pll_system;
-
+    
 begin
 
     res_out <= not(res);
@@ -38,6 +38,7 @@ begin
         port map(clk_ext, clk_vga, clk_uart);
     
     pll1: pll_system
-        port map(clk_ext, clk_sdram_ext, clk_sys, clk_sdram);
+        port map(clk_ext, clk_sdram, clk_sys, clk_sdram_ext);
+    
     
 end architecture clkgen_arch;

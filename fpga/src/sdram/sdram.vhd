@@ -36,44 +36,40 @@ end entity sdram;
 
 architecture rtl of sdram is
 
-    component sdram_controller
-         generic(
-              row_width: integer:= 13;
-              col_width: integer:= 9;
-              bank_width: integer:= 2;
-              sdraddr_width: integer:= 13;
-              haddr_width: integer:= 24;
-              clk_frequency: integer:= 133;
-              refresh_time: integer:= 32;
-              refresh_count: integer:= 8192
-         );
-         port(
-              wr_addr: in std_logic_vector(haddr_width-1 downto 0);
-              wr_data: in std_logic_vector(15 downto 0);
-              wr_enable: in std_logic;
+    component SDRAM_Controller is
+        generic (
+          sdram_address_width : natural;
+          sdram_column_bits   : natural;
+          sdram_startup_cycles: natural;
+          cycles_per_refresh  : natural
+        );
+        Port ( clk           : in  STD_LOGIC;
+               reset         : in  STD_LOGIC;
+               
+               -- Interface to issue reads or write data
+               cmd_ready         : out STD_LOGIC;                     -- '1' when a new command will be acted on
+               cmd_enable        : in  STD_LOGIC;                     -- Set to '1' to issue new command (only acted on when cmd_read = '1')
+               cmd_wr            : in  STD_LOGIC;                     -- Is this a write?
+               cmd_address       : in  STD_LOGIC_VECTOR(sdram_address_width-2 downto 0); -- address to read/write
+               cmd_byte_enable   : in  STD_LOGIC_VECTOR(3 downto 0);  -- byte masks for the write command
+               cmd_data_in       : in  STD_LOGIC_VECTOR(31 downto 0); -- data for the write command
+               
+               data_out          : out STD_LOGIC_VECTOR(31 downto 0); -- word read from SDRAM
+               data_out_ready    : out STD_LOGIC;                     -- is new data ready?
+               
+               -- SDRAM signals
+               SDRAM_CLK     : out   STD_LOGIC;
+               SDRAM_CKE     : out   STD_LOGIC;
+               SDRAM_CS      : out   STD_LOGIC;
+               SDRAM_RAS     : out   STD_LOGIC;
+               SDRAM_CAS     : out   STD_LOGIC;
+               SDRAM_WE      : out   STD_LOGIC;
+               SDRAM_DQM     : out   STD_LOGIC_VECTOR( 1 downto 0);
+               SDRAM_ADDR    : out   STD_LOGIC_VECTOR(12 downto 0);
+               SDRAM_BA      : out   STD_LOGIC_VECTOR( 1 downto 0);
+               SDRAM_DATA    : inout STD_LOGIC_VECTOR(15 downto 0));
+    end component SDRAM_Controller;
 
-              rd_addr: in std_logic_vector(haddr_width-1 downto 0);
-              rd_data: out std_logic_vector(15 downto 0);
-              rd_ready: out std_logic;
-              rd_enable: in std_logic;
-
-              busy: out std_logic;
-
-              rst_n: in std_logic;
-              clk: in std_logic;
-
-              addr: out std_logic_vector(sdraddr_width-1 downto 0);
-              bank_addr: out std_logic_vector(bank_width-1 downto 0);
-              data: inout std_logic_vector(15 downto 0);
-              clock_enable: out std_logic;
-              cs_n: out std_logic;
-              ras_n: out std_logic;
-              cas_n: out std_logic;
-              we_n: out std_logic;
-              data_mask_low: out std_logic;
-              data_mask_high: out std_logic
-         );
-    end component;
     component fifo
         port (
             aclr        : in std_logic  := '0';
@@ -114,44 +110,6 @@ architecture rtl of sdram is
         );
     end component;
     
-    component writer is
-        port(
-            --system
-            clk: in std_logic;
-            res: in std_logic;
-            --fifo interface
-            wrfifo_read: out std_logic;
-            wrfifo_dataout: in std_logic_vector(54 downto 0);
-            wrfifo_rdempty: in std_logic;    
-            --sdram interface
-            wr_addr: out std_logic_vector(23 downto 0);
-            wr_data: out std_logic_vector(15 downto 0);
-            wr_enable: out std_logic;
-            busy: in std_logic
-        );
-    end component writer;
-    
-    component reader is
-        port(
-            -- system
-            clk: in std_logic;
-            res: in std_logic;
-            -- fifo
-            rdfifo_address_q: in std_logic_vector(22 downto 0);
-            rdfifo_address_rdempty: in std_logic;
-            rdfifo_address_rdreq: out std_logic;    
-            rdfifo_data_datain: out std_logic_vector(31 downto 0);
-            rdfifo_data_wremty: in std_logic;
-            rdfifo_data_wrreq: out std_logic;
-            -- sdram
-            rd_addr: out std_logic_vector(23 downto 0);
-            rd_data: in std_logic_vector(15 downto 0);
-            rd_ready: in std_logic;
-            rd_enable: out std_logic;
-            busy: in std_logic
-        );
-    end component reader;
-    
     component bus_interface is
         generic(
             BASE_ADDRESS: unsigned(23 downto 0) := x"000000"
@@ -179,19 +137,17 @@ architecture rtl of sdram is
         );
     end component bus_interface;
 
-
-    --reset signal for sdram driver
-    signal rst_n: std_logic;
     
     --control signals for sdram driver    
-    signal wr_addr: std_logic_vector(23 downto 0);
-    signal wr_data: std_logic_vector(15 downto 0);
-    signal wr_enable: std_logic;
-    signal rd_addr: std_logic_vector(23 downto 0);
-    signal rd_data: std_logic_vector(15 downto 0);
-    signal rd_ready: std_logic;
-    signal rd_enable: std_logic;
-    signal busy: std_logic;
+    signal cmd_ready         : std_logic;                     -- '1' when a new command will be acted on
+    signal cmd_enable        : std_logic;                     -- set to '1' to issue new command (only acted on when cmd_read = '1')
+    signal cmd_wr            : std_logic;                     -- is this a write?
+    signal cmd_address       : std_logic_vector(22 downto 0); -- address to read/write
+    signal cmd_data_in       : std_logic_vector(31 downto 0); -- data for the write command
+    signal data_out          : std_logic_vector(31 downto 0); -- word read from sdram
+    signal data_out_ready    : std_logic;                     -- is new data ready?
+    
+    signal data_mask : std_logic_vector(1 downto 0);
     
     -- following six signals are used for crossing clk domain in data write path
     
@@ -225,35 +181,125 @@ architecture rtl of sdram is
     signal rdfifo_data_rdreq: std_logic;
     signal rdfifo_data_rdempty: std_logic;
     
+    constant clk_freq_mhz : natural := 100;
+    
+    
+    type fsm_state_type is (idle, wrcmd_fifo, wrcmd_write, wrcmd_wait, rdcmd_fiforead, rdcmd_read, rdcmd_wait, rdcmd_fifowrite);
+    signal fsm_state: fsm_state_type;
+    
 begin
     
-    rst_n <= not(res);
     
     ----------------------------
     -- SDRAM CLK domain
-    
-    sd0: sdram_controller
-        generic map(13, 9, 2, 13, 24, 133, 32, 8192)
+  
+    dram0: SDRAM_Controller
+        generic map(
+            24, 9, 101 * clk_freq_mhz, (64000*clk_freq_mhz)/8192-1
+        )
         port map(
-            wr_addr, wr_data, wr_enable, rd_addr, rd_data, rd_ready,
-            rd_enable, busy, rst_n, clk_sdram, addr, bank_addr, data,
-            clock_enable, cs_n, ras_n, cas_n, we_n, data_mask_low,
-            data_mask_high
-        );
-    
-    wr0: writer
-        port map(        
-            clk_sdram, res, wrfifo_read, wrfifo_dataout, 
-            wrfifo_rdempty, wr_addr, wr_data, wr_enable, busy        
+            clk_sdram, res,
+            
+            cmd_ready, cmd_enable, cmd_wr, cmd_address, "1111", 
+            cmd_data_in, data_out, data_out_ready,
+            
+            open, clock_enable, cs_n, ras_n, cas_n, we_n, 
+            data_mask, addr, bank_addr, data            
+            
         );
         
-    rd0: reader
-        port map(
-            clk_sdram, res, rdfifo_address_q, rdfifo_address_rdempty,
-            rdfifo_address_rdreq, rdfifo_data_datain, rdfifo_data_wremty,
-            rdfifo_data_wrreq, rd_addr, rd_data, rd_ready, rd_enable, busy
-        );
-        
+    rdfifo_data_datain <= data_out;
+    cmd_data_in <= wrfifo_dataout(31 downto 0);
+    cmd_address <= wrfifo_dataout(54 downto 32) when cmd_wr = '1' else rdfifo_address_q;
+    
+    data_mask_low <= data_mask(0);
+    data_mask_high <= data_mask(1);
+    
+    --~ signal rdfifo_address_rdempty: std_logic;
+    --~ signal rdfifo_data_wremty: std_logic;
+    --~ signal wrfifo_rdempty: std_logic;    
+    --~ cmd_ready
+    --~ data_out_ready
+    
+    process(clk_sdram) is
+    begin
+        if rising_edge(clk_sdram) then
+            if res = '1' then
+                fsm_state <= idle;
+            else
+                case fsm_state is
+                    when idle =>
+                        if cmd_ready = '1' then
+                            if wrfifo_rdempty = '0' then
+                                fsm_state <= wrcmd_fifo;
+                            elsif rdfifo_address_rdempty = '0' then
+                                fsm_state <= rdcmd_fiforead;
+                            else
+                                fsm_state <= idle;
+                            end if;
+                        else
+                            fsm_state <= idle;
+                        end if;
+                    when wrcmd_fifo =>
+                        fsm_state <= wrcmd_write;
+                    when wrcmd_write =>
+                        fsm_state <= wrcmd_wait;
+                    when wrcmd_wait =>
+                        if cmd_ready = '1' then
+                            fsm_state <= idle;
+                        else
+                            fsm_state <= wrcmd_wait;
+                        end if;                        
+                    when rdcmd_fiforead =>
+                        fsm_state <= rdcmd_read;
+                    when rdcmd_read =>
+                        fsm_state <= rdcmd_wait;
+                    when rdcmd_wait =>
+                        if data_out_ready = '1' then 
+                            if rdfifo_data_wremty = '1' then
+                                fsm_state <= rdcmd_fifowrite;
+                            else
+                                fsm_state <= rdcmd_wait;
+                            end if;
+                        else
+                            fsm_state <= rdcmd_wait;
+                        end if;
+                    when rdcmd_fifowrite =>
+                        fsm_state <= idle;
+                end case;
+            end if;
+        end if;
+    end process;
+    
+    process(fsm_state) is
+    begin
+        case fsm_state is
+            when idle =>
+                cmd_enable <= '0'; cmd_wr <= '0'; rdfifo_address_rdreq <= '0'; rdfifo_data_wrreq <= '0'; wrfifo_read <= '0';
+            when wrcmd_fifo =>
+                cmd_enable <= '0'; cmd_wr <= '1'; rdfifo_address_rdreq <= '0'; rdfifo_data_wrreq <= '0'; wrfifo_read <= '1';
+            when wrcmd_write =>
+                cmd_enable <= '1'; cmd_wr <= '1'; rdfifo_address_rdreq <= '0'; rdfifo_data_wrreq <= '0'; wrfifo_read <= '0';
+            when wrcmd_wait =>
+                cmd_enable <= '0'; cmd_wr <= '0'; rdfifo_address_rdreq <= '0'; rdfifo_data_wrreq <= '0'; wrfifo_read <= '0';
+            when rdcmd_fiforead =>
+                cmd_enable <= '0'; cmd_wr <= '0'; rdfifo_address_rdreq <= '1'; rdfifo_data_wrreq <= '0'; wrfifo_read <= '0';
+            when rdcmd_read =>
+                cmd_enable <= '1'; cmd_wr <= '0'; rdfifo_address_rdreq <= '0'; rdfifo_data_wrreq <= '0'; wrfifo_read <= '0';
+            when rdcmd_wait =>
+                cmd_enable <= '0'; cmd_wr <= '0'; rdfifo_address_rdreq <= '0'; rdfifo_data_wrreq <= '0'; wrfifo_read <= '0';
+            when rdcmd_fifowrite =>
+                cmd_enable <= '0'; cmd_wr <= '0'; rdfifo_address_rdreq <= '0'; rdfifo_data_wrreq <= '1'; wrfifo_read <= '0';
+        end case;
+    end process;
+    
+    --~ cmd_enable
+    --~ cmd_wr
+    --~ signal rdfifo_address_rdreq: std_logic;
+    --~ signal rdfifo_data_wrreq: std_logic;
+    --~ signal wrfifo_read: std_logic;
+    
+    
     ----------------------------    
     -- CLK domain crossing
     
@@ -293,4 +339,4 @@ begin
             rdfifo_data_dataout, rdfifo_data_rdempty        
         );
         
-end architecture rtl;
+end architecture rtl;      
