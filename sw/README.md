@@ -24,4 +24,4 @@ rom0 otherwise you will not be able to connect.
 * **blink/** - blink with LEDs on PORTA
 * **uart/**  - write some text on uart console
 * **vga/**   - print hello world on the screen
-
+* **swi/**   - blink using software interrupts
