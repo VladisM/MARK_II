@@ -27,7 +27,7 @@
 #define INTVEC14 (*(unsigned int *)(INTDRV_BASE + 15)) /**< @brief Register INTVEC14 */
 #define INTVEC15 (*(unsigned int *)(INTDRV_BASE + 16)) /**< @brief Register INTVEC15 */
 
-#define ISW_VECTOR_REG INTVEC0
+#define SWI_VECTOR_REG INTVEC0
 #define SYSTIM_VECTOR_REG INTVEC1
 #define UART0_VECTOR_REG INTVEC8
 #define UART1_VECTOR_REG INTVEC9
