@@ -37,3 +37,7 @@ derive_clock_uncertainty
 # tco constraints
 
 # tpd constraints
+
+
+set_false_path -from [get_clocks {clk}] -to [get_clocks {clkgen0|pll0|altpll_component|auto_generated|pll1|clk[1]}]
+set_false_path -from [get_clocks {clkgen0|pll0|altpll_component|auto_generated|pll1|clk[1]}] -to [get_clocks {clk}] 

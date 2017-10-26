@@ -30,7 +30,9 @@ architecture vram_arch of vram is
     type memory_t is array(2**12-1 downto 0) of word_t;
 
     shared variable ram : memory_t;
-
+    attribute ramstyle : string;
+    attribute ramstyle of ram : variable is "no_rw_check";
+	 
 begin
 
     process(clk_a)

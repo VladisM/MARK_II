@@ -224,7 +224,7 @@ begin
         cursor_timer <= cursor_timer_var(24);
     end process;
 
-    process(cell_col_s, cell_line_ss, line_from_charrom, cursor_en) is
+    process(cell_col_s, cell_line_ss, line_from_charrom, cursor_en, cursor_timer) is
     begin
         if cell_line_ss = "1111" then
             case cursor_en is

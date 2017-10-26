@@ -258,7 +258,6 @@ architecture MARK_II_arch of MARK_II is
             clk_ext: in std_logic;
             res_out: out std_logic;
             clk_sys: out std_logic;
-            clk_sdram: out std_logic;
             clk_vga: out std_logic;
             clk_uart: out std_logic        
         );
@@ -278,7 +277,6 @@ architecture MARK_II_arch of MARK_II is
     signal clk_31M5: std_logic;     -- 31,5 MHz clk for vga
     signal clk_uart: std_logic;     -- 14,4 MHz clk for uarts
     signal clk_sys: std_logic;      -- 50 MHz clk for system (CPU and buses)
-    signal clk_sdram: std_logic;    -- 100 MHz clk for SDRAM driver
 
     signal resi: std_logic;         --internal reset
 
@@ -288,7 +286,7 @@ architecture MARK_II_arch of MARK_II is
 begin
 
     clkgen0: clkgen
-        port map(res, clk, resi, clk_sys, clk_sdram, clk_31M5, clk_uart);
+        port map(res, clk, resi, clk_sys, clk_31M5, clk_uart);
 
     cpu0: cpu
         port map(clk_sys, resi, bus_address, bus_data_mosi, bus_data_miso, bus_WR, bus_RD, bus_ack, int_req(0), intCPUReq, intAddress, intAccepted, intCompleted);
