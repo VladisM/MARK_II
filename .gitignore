@@ -47,3 +47,5 @@ sw/**/*.ldm
 sw/**/*.asm
 sw/**/*.mif
 sw/**/*disasm
+
+toolchain/apl/build/

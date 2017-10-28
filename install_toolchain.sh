@@ -42,6 +42,16 @@ cp build/__startup.o $DIR/stdlibc/
 make clean
 cd ../..
 
+echo "Install apl..."
+mkdir $DIR/apl
+mkdir $DIR/apl/lib
+cd toolchain/apl
+make
+cp build/*.o $DIR/apl/lib/
+cp include/*.h $DIR/apl/
+make clean
+cd ../..
+
 echo "\n\nDone!\n"
 echo "You have to add following path into your PATH variable:"
 echo $DIR/bin
