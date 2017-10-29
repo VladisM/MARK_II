@@ -29,9 +29,18 @@ rm -rf toolchain/vbcc/machines/mark/dt.h
 rm -rf toolchain/vbcc/machines/mark/dt.c
 rm -rf toolchain/vbcc/bin
 
+echo "Temporary change PATH to compile libs"
+export PATH=$PATH:$DIR/bin
+
 echo "Install spl..."
 mkdir $DIR/spl
-cp -r toolchain/spl/*.h $DIR/spl/
+mkdir $DIR/spl/lib
+cd toolchain/spl
+make
+cp build/*.o $DIR/spl/lib
+cp include/*.h $DIR/spl/
+make clean
+cd ../..
 
 echo "Install stdlibc..."
 mkdir $DIR/stdlibc
@@ -39,16 +48,6 @@ cd toolchain/stdlibc
 mkdir build
 make
 cp build/__startup.o $DIR/stdlibc/
-make clean
-cd ../..
-
-echo "Install apl..."
-mkdir $DIR/apl
-mkdir $DIR/apl/lib
-cd toolchain/apl
-make
-cp build/*.o $DIR/apl/lib/
-cp include/*.h $DIR/apl/
 make clean
 cd ../..
 
