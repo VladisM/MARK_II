@@ -17,6 +17,8 @@ from systim import systim
 from intControler import intControler
 from uart import uart
 
+import sys
+
 class MARK():
 
     def __init__(self, rom0mif, uart0_map):

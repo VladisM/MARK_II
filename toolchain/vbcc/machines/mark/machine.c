@@ -1275,7 +1275,7 @@ void store_from_reg(FILE *f, int source_reg, struct obj *o, int type, int tmp_re
                         //auto variable
                         int offset = zm2l(o->v->offset)+zm2l(o->val.vmax);
                         if(offset == 0){
-                            emit(f, "\tLDI \t %s %s\n", regnames[FP], regnames[tmp_reg]);
+                            emit(f, "\tLDI \t %s %s\n", regnames[FP], regnames[tmp_reg_b]);
                         }
                         else if(offset == 1){
                             emit(f, "\tDEC \t %s %s\n", regnames[FP], regnames[tmp_reg_b]);
