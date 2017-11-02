@@ -320,6 +320,7 @@ int shortcut(int code,int typ){
 void gen_code(FILE *f,struct IC *p,struct Var *v,zmax offset){
     #ifdef DEBUG_MARK
     printf("Called gen_code(FILE *f,struct IC *p,struct Var *v,zmax offset)\n");
+    printf("\tIdentifier: %s", v->identifier);
     #endif
 
     //emit function head
@@ -544,6 +545,14 @@ void gen_code(FILE *f,struct IC *p,struct Var *v,zmax offset){
                                 break;
                         }
 
+                    }
+                    else if(((p->q1.flags) & (KONST|VAR|REG|DREFOBJ|VARADR)) == (VAR|DREFOBJ)){
+                        #ifdef DEBUG_MARK
+                        printf("\tq1.v->storage_class: %d\n", p->q1.v->storage_class);
+                        #endif                        
+                        load_into_reg(f, R1, &(p->q1), p->typf, R3);
+                        emit(f, "\tCALLI\t %s\n", regnames[R1]);                        
+                        emit(f, "\tINC \t %s %s\n", regnames[SP], regnames[SP]);                        
                     }
                     else{
                         #ifdef DEBUG_MARK
@@ -1387,8 +1396,19 @@ void arithmetic(FILE *f, struct IC *p){
             case DIV:
                 emit(f, "\tFDIV \t ");
                 break;
+            case MINUS:
+                load_cons(f, R2, 0x3f800000);
+                emit(f, "\tSUB \t ");
+                unary = 0;
+                q2reg = R2;
+                break;
             default:
+                #ifdef DEBUG_MARK
+                printf("This is not implemented!\n");
+                #else
                 ierror(0);
+                #endif
+                break;
         }
     }
     else{
