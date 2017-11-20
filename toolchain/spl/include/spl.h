@@ -17,5 +17,6 @@
 #include "ram.h"
 #include "vga.h"
 #include "cpu.h"
+#include "sdram.h"
 
 #endif
