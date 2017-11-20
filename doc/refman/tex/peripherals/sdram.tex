@@ -8,11 +8,11 @@ board DE0 Nano.
 
 Usage is same as any other RAM, external sdram chip is configured 
 automatically and this process is transparent for CPU. But at power-up, 
-it take about $200 \mis$ to configure sdram chip.
+it take about $200 \mu s$ to configure sdram chip.
 
 \subsubsection{Hacking}
 
-Unlike on-chip RAM, you are not able to instantiate addition SDRAM driver. 
+Unlike on-chip RAM, you are not able to initialize addition SDRAM driver. 
 Used memory chip is also hardwired into driver and if you want use 
 different, you have to modify FSM in file 
-fpga/src/sdram/sdram_driver.vhd.
+fpga/src/sdram/sdram\_driver.vhd.
