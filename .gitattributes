@@ -4,3 +4,5 @@ toolchain/vbcc/machines/mark/* linguist-vendored=false
 fpga/src/cpu/qip/* linguist-vendored=true
 fpga/src/pll/* linguist-vendored=true
 doc/* linguist-vendored=false
+fpga/src/sdram/fifo/* linguist-vendored=true
+fpga/src/sdram/bidir_buff/* linguist-vendored=true
