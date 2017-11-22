@@ -15,7 +15,7 @@ OBJS         = main.o
 # where MARK-II loader is listening
 LOADER_PORT  = /dev/ttyUSB0
 # base address where you want load your ldm
-BASE_ADDRESS = 0x400
+BASE_ADDRESS = 0x800000
 
 # size of ROM for storing mif
 MIF_SIZE = 8
