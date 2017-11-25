@@ -14,7 +14,7 @@ import sys
 def tryConvertNumber(number):
 
     result = 0
-    if type(number) == int:
+    if type(number) == int or type(number) == long:
         return [True, number]
 
     if len(number) >= 2:
