@@ -1,42 +1,69 @@
-MARK II SoC
-====================
+# MARK-II SoC
 
-MARK II is system on chip written in VHDL, it have custom 32bit CPU and few custom peripherals.
-Also there is full featured toolchain including assembler, linker, emulator, c compiler and serial
-port loader.
+MARK II is system on chip written in VHDL, it have custom 32bit CPU and 
+few custom peripherals. Also there is full featured toolchain including 
+assembler, linker, emulator, c compiler and serial port loader.
 
-Installation & Usage
---------------------
+## Prerequisites
+	
+* Any common Linux distribution
+* git
+* texi2pdf
+* pdflatex
+* doxygen
+* gcc
+* python 2.7
+* make
+* quartus
 
-* Clone this repository.
-* If you know, what you are doing, checkout master branch, otherwise checkout version you want.
-* Build, print and read at least reference manual. Use compile_doc.sh script.
-* Build toolchain with install_toolchain.sh script. Run script and follow instructions.
-    * Path to SPL is important for vbcc compiler.
-* Install Quartus II open, compile and burn project located in folder /fpga/proj into your DE0 nano.
-* Write your code, compile it, load it, run it and enjoy!
+## Get more documentation
 
-Project structure:
---------------------
+In order to get more documentation, for example reference manual for 
+SoC, one can use script in root of this repository called 
+`compile_doc.sh`. This will create set of some PDF files with all 
+available documentation.
 
-* **fpga/** All FPGA related things.
-    * **project/** Example project for Quartus II 13.0 sp1 and DE0 Nano board.
-    * **src/** VHDL codes of whole MARK-II.
-* **hw/** All about Hardware. Addons for DE0 Nano board.
-* **sw/** Some simple applications to demonstrate how to work with MARK-II.
+## Install toolchain
+
+Toolchain can be found in folder `/toolchain`. In order to install it on 
+your computer please use script in root of this repository called 
+`install_toolchain.sh`.
+
+Please check this script and optionally change value of variable `DIR`. 
+In this variable should be an path to existing folder where you want to 
+have toolchain installed.
+
+At the end of installation, script will print three paths, first is 
+where everything is installed and you should add this path to your PATH 
+variable. Others two paths are important for compiler and linker, see 
+some of one example in folder `/doc/examples` to see how to work with 
+them.
+
+## Project structure:
+
+* **VHDL/** In this directory is all HDL sources for MARK-II SoC.
 * **toolchain/** MARK-II toolchain.
-    * **m2-tools/** Tools for programming on MARK-II. Emulator, assembler...
-    * **loader/** Serial bootloader firmware.
-    * **vbcc/** ISO C compiler with MARK-II backend.
-    * **spl/** Standard peripheral library.
 * **doc/** Documentation for MARK-II.
-    * **refman/** Reference manual directory.
 
-License
---------------------
+## License
 
-Whole project, except reference manual and vbcc, is licensed under MIT license.
-See /LICENSE for mode details. Reference manual is licensed under Creative
-Commons Attribution-NonCommercial 4.0 International License. The vbcc compiler
-is licensed by  Dr. Volker Barthelmann, full license can be found in vbcc
-documentation. MARK II backend for vbcc is licensed under MIT too.
+Whole project, except reference manual and vbcc, is licensed under MIT 
+license. Please see file LICENSE for more details. 
+
+### Reference Manual
+
+Reference manual is licensed under Creative Commons 
+Attribution-NonCommercial 4.0 International License. 
+
+### VBCC
+
+Please note: vbcc is licensed by Dr. Volker Barthelmann, you can found 
+full license in vbcc documentation.
+
+My work is only backed, namely these files:
+
+* machines/mark/machine.c
+* machines/mark/machine.h
+* machines/mark/machine.dt
+
+These three files are licensed under MIT license.

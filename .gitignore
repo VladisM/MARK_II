@@ -13,9 +13,6 @@ toolchain/vbcc/machines/**/dt.h
 toolchain/vbcc/machines/**/dt.c
 toolchain/vbcc/machines/mark/version.h
 
-hw/**/*.b#*
-hw/**/*.s#*
-
 fpga/**
 !fpga/src/
 !fpga/src/**
@@ -37,6 +34,7 @@ toolchain/vbcc/doc/vbcc.log
 toolchain/vbcc/doc/vbcc.toc
 
 toolchain/spl/latex/
+toolchain/spl/build/
 
 refman.pdf
 vbcc.pdf
@@ -48,4 +46,3 @@ sw/**/*.asm
 sw/**/*.mif
 sw/**/*disasm
 
-toolchain/apl/build/

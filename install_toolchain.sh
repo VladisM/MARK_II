@@ -27,6 +27,7 @@ echo "Clean up after vbcc..."
 rm -rf toolchain/vbcc/machines/mark/*.o
 rm -rf toolchain/vbcc/machines/mark/dt.h
 rm -rf toolchain/vbcc/machines/mark/dt.c
+rm -rf toolchain/vbcc/machines/mark/version.h
 rm -rf toolchain/vbcc/bin
 
 echo "Temporary change PATH to compile libs"
