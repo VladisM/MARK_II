@@ -8374,14 +8374,14 @@ Source: 3M</description>
 <label x="114.3" y="45.72" size="1.778" layer="95"/>
 </segment>
 </net>
-<net name="UART0_TXD" class="2">
+<net name="UART0_RXD" class="2">
 <segment>
 <pinref part="IC2" gate="G$2" pin="TXD"/>
 <wire x1="111.76" y1="63.5" x2="116.84" y2="63.5" width="0.1524" layer="91"/>
 <label x="114.3" y="63.5" size="1.778" layer="95"/>
 </segment>
 </net>
-<net name="UART0_RXD" class="2">
+<net name="UART0_TXD" class="2">
 <segment>
 <pinref part="IC2" gate="G$2" pin="RXD"/>
 <wire x1="111.76" y1="60.96" x2="116.84" y2="60.96" width="0.1524" layer="91"/>
@@ -9100,7 +9100,7 @@ Source: 3M</description>
 <label x="50.8" y="139.7" size="1.778" layer="95"/>
 </segment>
 </net>
-<net name="#RES" class="2">
+<net name="RES" class="2">
 <segment>
 <pinref part="IC3" gate="G$1" pin="!RESET"/>
 <wire x1="66.04" y1="144.78" x2="50.8" y2="144.78" width="0.1524" layer="91"/>
@@ -10402,49 +10402,49 @@ Source: 3M</description>
 <pinref part="Q5" gate="A" pin="OUT"/>
 </segment>
 </net>
-<net name="EX_DQ1" class="2">
+<net name="EX_DQ0" class="2">
 <segment>
 <wire x1="116.84" y1="99.06" x2="132.08" y2="99.06" width="0.1524" layer="91"/>
 <label x="129.54" y="99.06" size="1.778" layer="95"/>
 <pinref part="X9" gate="-19" pin="KL"/>
 </segment>
 </net>
-<net name="EX_DQ2" class="2">
+<net name="EX_DQ1" class="2">
 <segment>
 <wire x1="116.84" y1="104.14" x2="132.08" y2="104.14" width="0.1524" layer="91"/>
 <label x="129.54" y="104.14" size="1.778" layer="95"/>
 <pinref part="X9" gate="-17" pin="KL"/>
 </segment>
 </net>
-<net name="EX_DQ4" class="2">
+<net name="EX_DQ3" class="2">
 <segment>
 <wire x1="116.84" y1="111.76" x2="132.08" y2="111.76" width="0.1524" layer="91"/>
 <label x="129.54" y="111.76" size="1.778" layer="95"/>
 <pinref part="X9" gate="-14" pin="KL"/>
 </segment>
 </net>
-<net name="EX_DQ5" class="2">
+<net name="EX_DQ4" class="2">
 <segment>
 <wire x1="116.84" y1="116.84" x2="132.08" y2="116.84" width="0.1524" layer="91"/>
 <label x="129.54" y="116.84" size="1.778" layer="95"/>
 <pinref part="X9" gate="-12" pin="KL"/>
 </segment>
 </net>
-<net name="EX_DQ6" class="2">
+<net name="EX_DQ5" class="2">
 <segment>
 <wire x1="116.84" y1="121.92" x2="132.08" y2="121.92" width="0.1524" layer="91"/>
 <label x="129.54" y="121.92" size="1.778" layer="95"/>
 <pinref part="X9" gate="-10" pin="KL"/>
 </segment>
 </net>
-<net name="EX_DQ7" class="2">
+<net name="EX_DQ6" class="2">
 <segment>
 <wire x1="116.84" y1="127" x2="132.08" y2="127" width="0.1524" layer="91"/>
 <label x="129.54" y="127" size="1.778" layer="95"/>
 <pinref part="X9" gate="-8" pin="KL"/>
 </segment>
 </net>
-<net name="EX_DQ8" class="2">
+<net name="EX_DQ7" class="2">
 <segment>
 <wire x1="116.84" y1="134.62" x2="132.08" y2="134.62" width="0.1524" layer="91"/>
 <label x="129.54" y="134.62" size="1.778" layer="95"/>
@@ -10465,42 +10465,42 @@ Source: 3M</description>
 <pinref part="X9" gate="-2" pin="KL"/>
 </segment>
 </net>
-<net name="EX_DQ3" class="2">
+<net name="EX_DQ2" class="2">
 <segment>
 <wire x1="116.84" y1="106.68" x2="132.08" y2="106.68" width="0.1524" layer="91"/>
 <label x="129.54" y="106.68" size="1.778" layer="95"/>
 <pinref part="X9" gate="-16" pin="KL"/>
 </segment>
 </net>
-<net name="EX_CMD1" class="2">
+<net name="EX_CMD0" class="2">
 <segment>
 <wire x1="116.84" y1="144.78" x2="132.08" y2="144.78" width="0.1524" layer="91"/>
 <label x="129.54" y="144.78" size="1.778" layer="95"/>
 <pinref part="X9" gate="-1" pin="KL"/>
 </segment>
 </net>
-<net name="EX_CMD2" class="2">
+<net name="EX_CMD1" class="2">
 <segment>
 <wire x1="116.84" y1="139.7" x2="132.08" y2="139.7" width="0.1524" layer="91"/>
 <label x="129.54" y="139.7" size="1.778" layer="95"/>
 <pinref part="X9" gate="-3" pin="KL"/>
 </segment>
 </net>
-<net name="EX_CMD4" class="2">
+<net name="EX_CMD3" class="2">
 <segment>
 <wire x1="116.84" y1="109.22" x2="132.08" y2="109.22" width="0.1524" layer="91"/>
 <label x="129.54" y="109.22" size="1.778" layer="95"/>
 <pinref part="X9" gate="-15" pin="KL"/>
 </segment>
 </net>
-<net name="EX_CMD3" class="2">
+<net name="EX_CMD2" class="2">
 <segment>
 <wire x1="116.84" y1="119.38" x2="132.08" y2="119.38" width="0.1524" layer="91"/>
 <label x="129.54" y="119.38" size="1.778" layer="95"/>
 <pinref part="X9" gate="-11" pin="KL"/>
 </segment>
 </net>
-<net name="#RES" class="2">
+<net name="RES" class="2">
 <segment>
 <wire x1="116.84" y1="129.54" x2="132.08" y2="129.54" width="0.1524" layer="91"/>
 <label x="129.54" y="129.54" size="1.778" layer="95"/>
@@ -11115,77 +11115,77 @@ Source: 3M</description>
 <label x="200.66" y="165.1" size="1.778" layer="95" rot="MR0"/>
 </segment>
 </net>
-<net name="EX_DQ1" class="2">
+<net name="EX_DQ0" class="2">
 <segment>
 <pinref part="IC9" gate="_BANK5" pin="PIN84"/>
 <wire x1="152.4" y1="139.7" x2="157.48" y2="139.7" width="0.1524" layer="91"/>
 <label x="154.94" y="139.7" size="1.778" layer="95"/>
 </segment>
 </net>
-<net name="EX_DQ2" class="2">
+<net name="EX_DQ1" class="2">
 <segment>
 <pinref part="IC9" gate="_BANK5" pin="PIN85"/>
 <wire x1="152.4" y1="137.16" x2="157.48" y2="137.16" width="0.1524" layer="91"/>
 <label x="154.94" y="137.16" size="1.778" layer="95"/>
 </segment>
 </net>
-<net name="EX_DQ3" class="2">
+<net name="EX_DQ2" class="2">
 <segment>
 <pinref part="IC9" gate="_BANK5" pin="PIN86"/>
 <wire x1="152.4" y1="134.62" x2="157.48" y2="134.62" width="0.1524" layer="91"/>
 <label x="154.94" y="134.62" size="1.778" layer="95"/>
 </segment>
 </net>
-<net name="EX_CMD4" class="2">
+<net name="EX_CMD3" class="2">
 <segment>
 <pinref part="IC9" gate="_BANK5" pin="PIN87"/>
 <wire x1="152.4" y1="132.08" x2="157.48" y2="132.08" width="0.1524" layer="91"/>
 <label x="154.94" y="132.08" size="1.778" layer="95"/>
 </segment>
 </net>
-<net name="EX_DQ4" class="2">
+<net name="EX_DQ3" class="2">
 <segment>
 <pinref part="IC9" gate="_BANK6" pin="PIN88"/>
 <wire x1="121.92" y1="119.38" x2="116.84" y2="119.38" width="0.1524" layer="91"/>
 <label x="119.38" y="119.38" size="1.778" layer="95" rot="MR0"/>
 </segment>
 </net>
-<net name="EX_DQ5" class="2">
+<net name="EX_DQ4" class="2">
 <segment>
 <pinref part="IC9" gate="_BANK6" pin="PIN89"/>
 <wire x1="121.92" y1="116.84" x2="116.84" y2="116.84" width="0.1524" layer="91"/>
 <label x="119.38" y="116.84" size="1.778" layer="95" rot="MR0"/>
 </segment>
 </net>
-<net name="EX_CMD3" class="2">
+<net name="EX_CMD2" class="2">
 <segment>
 <pinref part="IC9" gate="_BANK6" pin="PIN92"/>
 <wire x1="121.92" y1="109.22" x2="116.84" y2="109.22" width="0.1524" layer="91"/>
 <label x="119.38" y="109.22" size="1.778" layer="95" rot="MR0"/>
 </segment>
 </net>
-<net name="EX_DQ6" class="2">
+<net name="EX_DQ5" class="2">
 <segment>
 <pinref part="IC9" gate="_BANK6" pin="PIN93"/>
 <wire x1="121.92" y1="106.68" x2="116.84" y2="106.68" width="0.1524" layer="91"/>
 <label x="119.38" y="106.68" size="1.778" layer="95" rot="MR0"/>
 </segment>
 </net>
-<net name="EX_CMD2" class="2">
+<net name="EX_CMD1" class="2">
 <segment>
 <pinref part="IC9" gate="_BANK6" pin="PIN98"/>
 <wire x1="152.4" y1="119.38" x2="157.48" y2="119.38" width="0.1524" layer="91"/>
 <label x="154.94" y="119.38" size="1.778" layer="95"/>
 </segment>
 </net>
-<net name="EX_CMD1" class="2">
+<net name="EX_CMD0" class="2">
 <segment>
 <pinref part="IC9" gate="_BANK6" pin="PIN99"/>
 <wire x1="152.4" y1="116.84" x2="157.48" y2="116.84" width="0.1524" layer="91"/>
 <label x="154.94" y="116.84" size="1.778" layer="95"/>
 </segment>
 </net>
-<net name="EX_DQ8" class="2">
+<net name="EX_DQ7" class="2">
 <segment>
 <pinref part="IC9" gate="_BANK6" pin="PIN97"/>
 <wire x1="121.92" y1="101.6" x2="116.84" y2="101.6" width="0.1524" layer="91"/>
@@ -11220,14 +11220,14 @@ Source: 3M</description>
 <label x="119.38" y="111.76" size="1.778" layer="95" rot="MR0"/>
 </segment>
 </net>
-<net name="EX_DQ7" class="2">
+<net name="EX_DQ6" class="2">
 <segment>
 <pinref part="IC9" gate="_BANK6" pin="PIN96"/>
 <wire x1="121.92" y1="104.14" x2="116.84" y2="104.14" width="0.1524" layer="91"/>
 <label x="119.38" y="104.14" size="1.778" layer="95" rot="MR0"/>
 </segment>
 </net>
-<net name="UART0_TXD" class="2">
+<net name="UART0_RXD" class="2">
 <segment>
 <pinref part="IC9" gate="_BANK5" pin="PIN81"/>
 <wire x1="152.4" y1="142.24" x2="157.48" y2="142.24" width="0.1524" layer="91"/>
@@ -11637,14 +11637,14 @@ Source: 3M</description>
 <label x="154.94" y="114.3" size="1.778" layer="95"/>
 </segment>
 </net>
-<net name="PWRMNG_RX" class="2">
+<net name="PWRMNG_RX00" class="2">
 <segment>
 <pinref part="IC9" gate="_BANK6" pin="PIN102"/>
 <wire x1="152.4" y1="109.22" x2="157.48" y2="109.22" width="0.1524" layer="91"/>
 <label x="154.94" y="109.22" size="1.778" layer="95"/>
 </segment>
 </net>
-<net name="PWRMNG_TX" class="2">
+<net name="PWRMNG_RX" class="2">
 <segment>
 <pinref part="IC9" gate="_BANK6" pin="PIN101"/>
 <wire x1="152.4" y1="111.76" x2="157.48" y2="111.76" width="0.1524" layer="91"/>
@@ -11658,7 +11658,7 @@ Source: 3M</description>
 <label x="71.12" y="149.86" size="1.778" layer="95"/>
 </segment>
 </net>
-<net name="#RES" class="2">
+<net name="RES" class="2">
 <segment>
 <pinref part="IC9" gate="_BANK5" pin="PIN77"/>
 <wire x1="121.92" y1="137.16" x2="116.84" y2="137.16" width="0.1524" layer="91"/>
@@ -11851,7 +11851,7 @@ Source: 3M</description>
 <label x="119.38" y="144.78" size="1.778" layer="95" rot="MR0"/>
 </segment>
 </net>
-<net name="UART0_RXD" class="2">
+<net name="UART0_TXD" class="2">
 <segment>
 <pinref part="IC9" gate="_BANK5" pin="PIN80"/>
 <wire x1="152.4" y1="144.78" x2="157.48" y2="144.78" width="0.1524" layer="91"/>
@@ -12287,18 +12287,11 @@ Source: 3M</description>
 <label x="157.48" y="109.22" size="1.778" layer="95"/>
 </segment>
 </net>
-<net name="PWRMNG_TX" class="2">
+<net name="PWRMNG_RX" class="2">
 <segment>
 <pinref part="IC12" gate="G$1" pin="PD1(TXD/PCINT17)"/>
 <wire x1="154.94" y1="121.92" x2="160.02" y2="121.92" width="0.1524" layer="91"/>
 <label x="157.48" y="121.92" size="1.778" layer="95"/>
-</segment>
-</net>
-<net name="PWRMNG_RX" class="2">
-<segment>
-<pinref part="IC12" gate="G$1" pin="PD0(RXD/PCINT16)"/>
-<wire x1="154.94" y1="124.46" x2="160.02" y2="124.46" width="0.1524" layer="91"/>
-<label x="157.48" y="124.46" size="1.778" layer="95"/>
 </segment>
 </net>
 <net name="PWRMNG_RES" class="2">
@@ -12387,6 +12380,13 @@ Source: 3M</description>
 <pinref part="IC12" gate="G$1" pin="PC5(ADC5/SCL/PCINT13)"/>
 <wire x1="154.94" y1="147.32" x2="160.02" y2="147.32" width="0.1524" layer="91"/>
 <label x="157.48" y="147.32" size="1.778" layer="95"/>
+</segment>
+</net>
+<net name="PWRMNG_TX" class="2">
+<segment>
+<pinref part="IC12" gate="G$1" pin="PD0(RXD/PCINT16)"/>
+<wire x1="154.94" y1="124.46" x2="160.02" y2="124.46" width="0.1524" layer="91"/>
+<label x="157.48" y="124.46" size="1.778" layer="95"/>
 </segment>
 </net>
 </nets>

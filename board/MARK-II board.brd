@@ -5019,7 +5019,7 @@ Please make sure your boards conform to these design rules.</description>
 <wire x1="92.71" y1="45.085" x2="109.22" y2="45.085" width="0.2032" layer="16"/>
 <wire x1="109.5375" y1="44.7675" x2="109.5375" y2="39.105" width="0.2032" layer="16"/>
 </signal>
-<signal name="#RES" class="2">
+<signal name="RES" class="2">
 <contactref element="IC3" pad="10"/>
 <contactref element="IC9" pad="77"/>
 <wire x1="54.86" y1="49.28" x2="56.35625" y2="49.28" width="0.2032" layer="1"/>
@@ -5308,7 +5308,7 @@ Please make sure your boards conform to these design rules.</description>
 <wire x1="112.87125" y1="64.92875" x2="112.87125" y2="66.7775" width="0.254" layer="1"/>
 <wire x1="112.87125" y1="64.29375" x2="112.87125" y2="64.92875" width="0.254" layer="16"/>
 </signal>
-<signal name="UART0_TXD" class="2">
+<signal name="UART0_RXD" class="2">
 <contactref element="IC2" pad="1"/>
 <contactref element="IC9" pad="81"/>
 <wire x1="54.86" y1="47.28" x2="53.47125" y2="47.28" width="0.2032" layer="1"/>
@@ -5326,7 +5326,7 @@ Please make sure your boards conform to these design rules.</description>
 <wire x1="111.4425" y1="59.84875" x2="110.074075" y2="59.84875" width="0.2032" layer="16"/>
 <wire x1="111.76" y1="54.61" x2="111.76" y2="59.53125" width="0.2032" layer="16"/>
 </signal>
-<signal name="UART0_RXD" class="2">
+<signal name="UART0_TXD" class="2">
 <contactref element="IC2" pad="4"/>
 <contactref element="IC9" pad="80"/>
 <wire x1="54.86" y1="47.78" x2="53.01875" y2="47.78" width="0.2032" layer="1"/>
@@ -6252,7 +6252,7 @@ Please make sure your boards conform to these design rules.</description>
 <wire x1="79.4725" y1="28.73375" x2="79.4725" y2="23.8728" width="0.2032" layer="1"/>
 <wire x1="69.6775" y1="29.05125" x2="79.155" y2="29.05125" width="0.2032" layer="1"/>
 </signal>
-<signal name="EX_DQ1" class="2">
+<signal name="EX_DQ0" class="2">
 <contactref element="IC9" pad="84"/>
 <wire x1="54.86" y1="45.78" x2="52.22875" y2="45.78" width="0.2032" layer="1"/>
 <wire x1="52.22875" y1="45.78" x2="51.91125" y2="46.0975" width="0.2032" layer="1"/>
@@ -6261,7 +6261,7 @@ Please make sure your boards conform to these design rules.</description>
 <contactref element="X9" pad="19"/>
 <wire x1="54.61" y1="70.12305" x2="54.61" y2="72.39" width="0.2032" layer="1"/>
 </signal>
-<signal name="EX_DQ2" class="2">
+<signal name="EX_DQ1" class="2">
 <contactref element="IC9" pad="85"/>
 <wire x1="54.86" y1="45.28" x2="51.7525" y2="45.28" width="0.2032" layer="1"/>
 <wire x1="51.7525" y1="45.28" x2="51.435" y2="45.5975" width="0.2032" layer="1"/>
@@ -6270,7 +6270,7 @@ Please make sure your boards conform to these design rules.</description>
 <contactref element="X9" pad="17"/>
 <wire x1="52.07" y1="68.53555" x2="52.07" y2="72.39" width="0.2032" layer="1"/>
 </signal>
-<signal name="EX_DQ4" class="2">
+<signal name="EX_DQ3" class="2">
 <contactref element="IC9" pad="88"/>
 <wire x1="54.86" y1="43.78" x2="50.32375" y2="43.78" width="0.2032" layer="1"/>
 <wire x1="50.00625" y1="44.0975" x2="50.32375" y2="43.78" width="0.2032" layer="1"/>
@@ -6281,7 +6281,7 @@ Please make sure your boards conform to these design rules.</description>
 <contactref element="X9" pad="14"/>
 <wire x1="46.99" y1="74.93" x2="47.9425" y2="74.93" width="0.2032" layer="1"/>
 </signal>
-<signal name="EX_DQ5" class="2">
+<signal name="EX_DQ4" class="2">
 <contactref element="IC9" pad="89"/>
 <wire x1="45.4025" y1="74.93" x2="45.72" y2="74.6125" width="0.2032" layer="1"/>
 <wire x1="54.86" y1="43.28" x2="49.8475" y2="43.28" width="0.2032" layer="1"/>
@@ -6294,7 +6294,7 @@ Please make sure your boards conform to these design rules.</description>
 <contactref element="X9" pad="12"/>
 <wire x1="44.45" y1="74.93" x2="45.4025" y2="74.93" width="0.2032" layer="1"/>
 </signal>
-<signal name="EX_DQ6" class="2">
+<signal name="EX_DQ5" class="2">
 <contactref element="IC9" pad="93"/>
 <wire x1="42.8625" y1="74.93" x2="43.18" y2="74.6125" width="0.2032" layer="1"/>
 <wire x1="42.8625" y1="67.15125" x2="43.18" y2="67.46875" width="0.2032" layer="1"/>
@@ -6309,7 +6309,7 @@ Please make sure your boards conform to these design rules.</description>
 <contactref element="X9" pad="10"/>
 <wire x1="41.91" y1="74.93" x2="42.8625" y2="74.93" width="0.2032" layer="1"/>
 </signal>
-<signal name="EX_DQ7" class="2">
+<signal name="EX_DQ6" class="2">
 <contactref element="IC9" pad="96"/>
 <wire x1="40.3225" y1="74.93" x2="40.64" y2="74.6125" width="0.2032" layer="1"/>
 <wire x1="40.64" y1="67.945" x2="40.3225" y2="67.6275" width="0.2032" layer="1"/>
@@ -6324,7 +6324,7 @@ Please make sure your boards conform to these design rules.</description>
 <contactref element="X9" pad="8"/>
 <wire x1="39.37" y1="74.93" x2="40.3225" y2="74.93" width="0.2032" layer="1"/>
 </signal>
-<signal name="EX_DQ8" class="2">
+<signal name="EX_DQ7" class="2">
 <contactref element="IC9" pad="97"/>
 <wire x1="36.5125" y1="68.10375" x2="36.83" y2="68.42125" width="0.2032" layer="1"/>
 <wire x1="35.08375" y1="68.10375" x2="34.76625" y2="67.78625" width="0.2032" layer="1"/>
@@ -6337,7 +6337,7 @@ Please make sure your boards conform to these design rules.</description>
 <contactref element="X9" pad="5"/>
 <wire x1="36.83" y1="68.42125" x2="36.83" y2="72.39" width="0.2032" layer="1"/>
 </signal>
-<signal name="EX_DQ3" class="2">
+<signal name="EX_DQ2" class="2">
 <contactref element="IC9" pad="86"/>
 <wire x1="54.86" y1="44.78" x2="51.27625" y2="44.78" width="0.2032" layer="1"/>
 <wire x1="51.27625" y1="44.78" x2="50.95875" y2="45.0975" width="0.2032" layer="1"/>
@@ -6348,7 +6348,7 @@ Please make sure your boards conform to these design rules.</description>
 <contactref element="X9" pad="16"/>
 <wire x1="49.53" y1="74.93" x2="50.4825" y2="74.93" width="0.2032" layer="1"/>
 </signal>
-<signal name="EX_CMD1" class="2">
+<signal name="EX_CMD0" class="2">
 <contactref element="IC9" pad="99"/>
 <wire x1="33.81375" y1="38.89375" x2="34.13125" y2="38.57625" width="0.2032" layer="1"/>
 <wire x1="50.4825" y1="38.57625" x2="34.13125" y2="38.57625" width="0.2032" layer="1"/>
@@ -6361,7 +6361,7 @@ Please make sure your boards conform to these design rules.</description>
 <contactref element="X9" pad="1"/>
 <wire x1="31.75" y1="68.42125" x2="31.75" y2="72.39" width="0.2032" layer="1"/>
 </signal>
-<signal name="EX_CMD2" class="2">
+<signal name="EX_CMD1" class="2">
 <contactref element="IC9" pad="98"/>
 <wire x1="34.29" y1="39.37" x2="34.6075" y2="39.0525" width="0.2032" layer="1"/>
 <wire x1="50.95875" y1="39.0525" x2="34.6075" y2="39.0525" width="0.2032" layer="1"/>
@@ -6370,7 +6370,7 @@ Please make sure your boards conform to these design rules.</description>
 <contactref element="X9" pad="3"/>
 <wire x1="34.29" y1="72.39" x2="34.29" y2="39.37" width="0.2032" layer="1"/>
 </signal>
-<signal name="EX_CMD4" class="2">
+<signal name="EX_CMD3" class="2">
 <contactref element="IC9" pad="87"/>
 <wire x1="54.86" y1="44.28" x2="50.8" y2="44.28" width="0.2032" layer="1"/>
 <wire x1="50.4825" y1="44.5975" x2="50.8" y2="44.28" width="0.2032" layer="1"/>
@@ -6379,7 +6379,7 @@ Please make sure your boards conform to these design rules.</description>
 <contactref element="X9" pad="15"/>
 <wire x1="49.53" y1="68.3768" x2="49.53" y2="72.39" width="0.2032" layer="1"/>
 </signal>
-<signal name="EX_CMD3" class="2">
+<signal name="EX_CMD2" class="2">
 <contactref element="IC9" pad="92"/>
 <wire x1="44.1325" y1="66.675" x2="44.45" y2="66.9925" width="0.2032" layer="1"/>
 <wire x1="36.5125" y1="66.675" x2="36.195" y2="66.3575" width="0.2032" layer="1"/>
@@ -6678,7 +6678,7 @@ Please make sure your boards conform to these design rules.</description>
 <wire x1="56.35625" y1="60.48375" x2="53.18125" y2="60.48375" width="0.2032" layer="16"/>
 <wire x1="52.86375" y1="60.80125" x2="52.86375" y2="68.2625" width="0.2032" layer="16"/>
 </signal>
-<signal name="PWRMNG_TX" class="2">
+<signal name="PWRMNG_RX" class="2">
 <contactref element="IC9" pad="101"/>
 <contactref element="IC12" pad="31"/>
 <wire x1="54.86" y1="37.28" x2="52.705" y2="37.28" width="0.2032" layer="1"/>
@@ -6687,13 +6687,11 @@ Please make sure your boards conform to these design rules.</description>
 <wire x1="52.07" y1="31.21" x2="50.0126" y2="31.21" width="0.2032" layer="1"/>
 <wire x1="52.3875" y1="36.9625" x2="52.3875" y2="31.5275" width="0.2032" layer="1"/>
 </signal>
-<signal name="PWRMNG_RX" class="2">
+<signal name="PWRMNG_RX00" class="2">
 <contactref element="IC9" pad="102"/>
-<contactref element="IC12" pad="30"/>
 <wire x1="54.86" y1="36.78" x2="53.18125" y2="36.78" width="0.2032" layer="1"/>
 <wire x1="53.18125" y1="36.78" x2="52.86375" y2="36.4625" width="0.2032" layer="1"/>
 <wire x1="52.86375" y1="30.7275" x2="52.54625" y2="30.41" width="0.2032" layer="1"/>
-<wire x1="52.54625" y1="30.41" x2="50.0126" y2="30.41" width="0.2032" layer="1"/>
 <wire x1="52.86375" y1="36.4625" x2="52.86375" y2="30.7275" width="0.2032" layer="1"/>
 </signal>
 <signal name="PWRMNG_RES" class="2">
@@ -7229,6 +7227,9 @@ Please make sure your boards conform to these design rules.</description>
 <wire x1="42.6025" y1="22.86" x2="42.92" y2="23.1775" width="0.2032" layer="1"/>
 <wire x1="42.92" y1="23.1775" x2="42.92" y2="24.9174" width="0.2032" layer="1"/>
 <wire x1="19.3675" y1="22.86" x2="42.6025" y2="22.86" width="0.2032" layer="1"/>
+</signal>
+<signal name="PWRMNG_TX" class="2">
+<contactref element="IC12" pad="30"/>
 </signal>
 </signals>
 </board>
