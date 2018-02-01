@@ -35,8 +35,8 @@ entity vga is
         clk_31M5: in std_logic;
         h_sync: out std_logic;
         v_sync: out std_logic;
-        red: out std_logic_vector(1 downto 0);
-        green: out std_logic_vector(1 downto 0);
+        red: out std_logic_vector(2 downto 0);
+        green: out std_logic_vector(2 downto 0);
         blue: out std_logic_vector(1 downto 0)
     );
 end entity vga;
@@ -276,16 +276,20 @@ begin
             when '1' =>
                 red(0)   <= fg_color(0) and not(blank);
                 green(0) <= fg_color(0) and not(blank);
-                blue(0)  <= fg_color(0) and not(blank);
-                red(1)   <= fg_color(1) and not(blank);
-                green(1) <= fg_color(2) and not(blank);
+                blue(0)  <= fg_color(0) and not(blank);                
+                red(1)   <= fg_color(0) and not(blank);
+                green(1) <= fg_color(0) and not(blank);                
+                red(2)   <= fg_color(1) and not(blank);
+                green(2) <= fg_color(2) and not(blank);
                 blue(1)  <= fg_color(3) and not(blank);
             when '0' =>
                 red(0)   <= bg_color(0) and not(blank);
                 green(0) <= bg_color(0) and not(blank);
-                blue(0)  <= bg_color(0) and not(blank);
-                red(1)   <= bg_color(1) and not(blank);
-                green(1) <= bg_color(2) and not(blank);
+                blue(0)  <= bg_color(0) and not(blank);                
+                red(1)   <= bg_color(0) and not(blank);
+                green(1) <= bg_color(0) and not(blank);                
+                red(2)   <= bg_color(1) and not(blank);
+                green(2) <= bg_color(2) and not(blank);
                 blue(1)  <= bg_color(3) and not(blank);
         end case;
     end process;

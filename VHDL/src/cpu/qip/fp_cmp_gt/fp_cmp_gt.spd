@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<simPackage>
+ <file path="fp_cmp_gt_sim/dspba_library_package.vhd" type="VHDL" />
+ <file path="fp_cmp_gt_sim/dspba_library.vhd" type="VHDL" />
+ <file path="fp_cmp_gt_sim/fp_cmp_gt.vhd" type="VHDL" />
+ <topLevel name="fp_cmp_gt" />
+ <deviceFamily name="max10" />
+</simPackage>

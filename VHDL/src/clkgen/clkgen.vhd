@@ -7,9 +7,6 @@ entity clkgen is
         res: in std_logic;
         clk_ext: in std_logic;
         res_out: out std_logic;
-        clk_sys: out std_logic;
-        clk_vga: out std_logic;
-        clk_uart: out std_logic;
         clk_sdram: out std_logic;
         clk_sdram_shift: out std_logic
     );
@@ -17,35 +14,22 @@ end entity clkgen;
 
 architecture clkgen_arch of clkgen is
 
-    component pll_peripherals is
+    component pll is
         port (
             inclk0  : in std_logic  := '0';
             c0      : out std_logic ;
             c1      : out std_logic ;
             locked  : out std_logic 
         );
-    end component pll_peripherals;
-    component pll_sdram is
-        port(
-            inclk0  : in std_logic  := '0';
-            c0      : out std_logic ;
-            c1      : out std_logic ;
-            locked  : out std_logic 
-        );
-    end component pll_sdram;
+    end component pll;
 
-    signal locked_sdram, locked_peripherals: std_logic;
+    signal locked: std_logic;
     
 begin
 
-    res_out <= not(res) or not(locked_peripherals) or not(locked_sdram);
+    res_out <= res or not(locked);
     
-    pll0: pll_peripherals 
-        port map( clk_ext, clk_vga, clk_uart, locked_peripherals);
-    
-    pll1: pll_sdram
-        port map( clk_ext, clk_sdram, clk_sdram_shift, locked_sdram);
-    
-    clk_sys <= clk_ext;
+    pll1: pll
+        port map( clk_ext, clk_sdram, clk_sdram_shift, locked);
     
 end architecture clkgen_arch;

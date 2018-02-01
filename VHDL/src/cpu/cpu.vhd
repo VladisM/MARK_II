@@ -60,35 +60,33 @@ architecture cpu_arch of cpu is
         dataout: buffer std_logic_vector(31 downto 0) );
     end component regfile_reg;
     component comparator is port(
-        res: in std_logic;
-        clk: in std_logic;
         opcode: in std_logic_vector(3 downto 0);
         data_a: in std_logic_vector(31 downto 0);
         data_b: in std_logic_vector(31 downto 0);
         output: out std_logic_vector(31 downto 0) );
     end component comparator;
-    component mul is port(
-        aclr        : in std_logic;
-        clock       : in std_logic;
-        dataa       : in std_logic_vector (31 downto 0);
-        datab       : in std_logic_vector (31 downto 0);
-        result      : out std_logic_vector (31 downto 0) );
-    end component mul;
-    component div is port(
-        aclr        : in std_logic;
-        clock       : in std_logic;
-        dataa       : in std_logic_vector (31 downto 0);
-        datab       : in std_logic_vector (31 downto 0);
-        result      : out std_logic_vector (31 downto 0) );
-    end component div;
-    component add is port(
-        aclr        : in std_logic ;
-        add_sub     : in std_logic ;
-        clock       : in std_logic ;
-        dataa       : in std_logic_vector (31 downto 0);
-        datab       : in std_logic_vector (31 downto 0);
-        result      : out std_logic_vector (31 downto 0) );
-    end component add;
+	component fp_mul is port(
+		clk    : in  std_logic                     := 'X';             -- clk
+		areset : in  std_logic                     := 'X';             -- reset
+		a      : in  std_logic_vector(31 downto 0) := (others => 'X'); -- a
+		b      : in  std_logic_vector(31 downto 0) := (others => 'X'); -- b
+		q      : out std_logic_vector(31 downto 0) );                  -- q 
+	end component fp_mul;
+	component fp_div is	port(
+		clk    : in  std_logic                     := 'X';             -- clk
+		areset : in  std_logic                     := 'X';             -- reset
+		a      : in  std_logic_vector(31 downto 0) := (others => 'X'); -- a
+		b      : in  std_logic_vector(31 downto 0) := (others => 'X'); -- b
+		q      : out std_logic_vector(31 downto 0) );                  -- q
+	end component fp_div;
+	component fp_addsub is port(
+		clk    : in  std_logic                     := 'X';             -- clk
+		areset : in  std_logic                     := 'X';             -- reset
+		a      : in  std_logic_vector(31 downto 0) := (others => 'X'); -- a
+		b      : in  std_logic_vector(31 downto 0) := (others => 'X'); -- b
+		q      : out std_logic_vector(31 downto 0);                    -- q
+		s      : out std_logic_vector(31 downto 0) );                  -- s
+	end component fp_addsub;
     component lpm_clshift
         generic (
             lpm_shifttype : string;
@@ -148,10 +146,6 @@ architecture cpu_arch of cpu is
     signal
         mulu_res, muls_res
     : std_logic_vector(63 downto 0) := x"0000000000000000" ;
-
-    signal
-        fp_addsub
-    : std_logic := '0';
 
     -- register values
     signal
@@ -221,22 +215,18 @@ begin
 
 
     -- Initialize FP cores
-    --   00 - subtraction    - 7 cycles
-    --   01 - multiplication - 5 cycles
-    --   10 - division       - 6 cycles
-    --   11 - addition       - 7 cycles
-    fpmul0: mul
-        port map(res_sync, clk, data_a, data_b, result_fpmul);
+    --   00 - subtraction    - 1 cycles
+    --   01 - multiplication - 2 cycles
+    --   10 - division       - 8 cycles
+    --   11 - addition       - 1 cycles
+    fpmul0: fp_mul
+        port map(clk, res_sync, data_a, data_b, result_fpmul);
 
-    fpdiv0: div
-        port map(res_sync, clk, data_a, data_b, result_fpdiv);
+    fpdiv0: fp_div
+        port map(clk, res_sync, data_a, data_b, result_fpdiv);
 
-    fpadd0: add
-        port map(res_sync, fp_addsub, clk, data_a, data_b, result_fpadd);
-
-    result_fpsub <= result_fpadd;
-
-    fp_addsub <= '0' when (instruction_word(21 downto 20) = "00") else '1';
+    fpadd0: fp_addsub
+        port map(clk, res_sync, data_a, data_b, result_fpadd, result_fpsub);
 
     fpu_result <=
         result_fpsub when (instruction_word(21 downto 20) = "00") else
@@ -325,7 +315,7 @@ begin
 
     -- FP and INT comparator
     comp0: comparator
-        port map(res_sync, clk, instruction_word(23 downto 20), data_a, data_b, comp_result);
+        port map(instruction_word(23 downto 20), data_a, data_b, comp_result);
 
     -- register file
     reg00_q <= (others => '0');
@@ -584,8 +574,6 @@ use ieee.std_logic_1164.all;
 
 entity comparator is
     port(
-        res: in std_logic;
-        clk: in std_logic;
         opcode: in std_logic_vector(3 downto 0);
         data_a: in std_logic_vector(31 downto 0);
         data_b: in std_logic_vector(31 downto 0);
@@ -595,19 +583,17 @@ end entity comparator;
 
 architecture comp_arch of comparator is
 
-    component fpcmp is port(
-        aclr  : in std_logic;
-        clock : in std_logic;
-        dataa : in std_logic_vector (31 downto 0);
-        datab : in std_logic_vector (31 downto 0);
-        aeb   : out std_logic;
-        agb   : out std_logic;
-        ageb  : out std_logic;
-        alb   : out std_logic;
-        aleb  : out std_logic;
-        aneb  : out std_logic );
-    end component fpcmp;
-
+	component fpcmp is port(
+		dataa: in std_logic_vector(31 downto 0);
+		datab:  in std_logic_vector(31 downto 0);
+		aeb: buffer std_logic;
+		aneb: out std_logic;
+		agb: buffer std_logic;
+		ageb: out std_logic;
+		alb: buffer std_logic;
+		aleb: out std_logic );
+	end component fpcmp;
+	
     component intcmp is port(
         dataa: in std_logic_vector(31 downto 0);
         datab:  in std_logic_vector(31 downto 0);
@@ -633,13 +619,15 @@ begin
 
     --initialize comparators
     fpcmp0: fpcmp
-        port map(res, clk, data_a, data_b, fp_aeb, fp_agb,
-        fp_ageb, fp_alb, fp_aleb, fp_aneb);
+        port map(
+			data_a, data_b, fp_aeb, fp_aneb, fp_agb, fp_ageb, fp_alb, fp_aleb
+		);
 
     intcmp0: intcmp
-        port map(data_a, data_b, int_aeb, int_aneb,
-        int_agb, int_ageb, int_alb, int_aleb, int_agb_u, int_ageb_u, int_alb_u,
-        int_aleb_u);
+        port map(
+			data_a, data_b, int_aeb, int_aneb, int_agb, int_ageb, int_alb, 
+			int_aleb, int_agb_u, int_ageb_u, int_alb_u, int_aleb_u
+		);
 
     -- result selector
     result <=
@@ -741,3 +729,68 @@ architecture intcmp_arch of intcmp is begin
     aleb_u <= alb_u or aeb;
 
 end architecture intcmp_arch;
+
+
+library ieee;
+use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
+
+entity fpcmp is
+    port(
+        dataa: in std_logic_vector(31 downto 0);
+        datab:  in std_logic_vector(31 downto 0);
+        aeb: buffer std_logic;
+        aneb: out std_logic;
+        agb: buffer std_logic;
+        ageb: out std_logic;
+        alb: buffer std_logic;
+        aleb: out std_logic
+    );
+end entity fpcmp;
+
+architecture fpcmp_arch of fpcmp is
+
+	component fp_cmp_eq is port(
+		clk    : in  std_logic                     := 'X';             -- clk
+		areset : in  std_logic                     := 'X';             -- reset
+		a      : in  std_logic_vector(31 downto 0) := (others => 'X'); -- a
+		b      : in  std_logic_vector(31 downto 0) := (others => 'X'); -- b
+		q      : out std_logic_vector(0 downto 0) );                   -- q
+	end component fp_cmp_eq;
+	component fp_cmp_gt is port(
+		clk    : in  std_logic                     := 'X';             -- clk
+		areset : in  std_logic                     := 'X';             -- reset
+		a      : in  std_logic_vector(31 downto 0) := (others => 'X'); -- a
+		b      : in  std_logic_vector(31 downto 0) := (others => 'X'); -- b
+		q      : out std_logic_vector(0 downto 0) );                   -- q
+	end component fp_cmp_gt;
+	component fp_cmp_lt is port(
+		clk    : in  std_logic                     := 'X';             -- clk
+		areset : in  std_logic                     := 'X';             -- reset
+		a      : in  std_logic_vector(31 downto 0) := (others => 'X'); -- a
+		b      : in  std_logic_vector(31 downto 0) := (others => 'X'); -- b
+		q      : out std_logic_vector(0 downto 0) );                   -- q
+	end component fp_cmp_lt;
+	
+	signal alb_v, agb_v, aeb_v: std_logic_vector(0 downto 0);
+	
+begin
+
+	fpcmplt0: fp_cmp_lt
+		port map('0', '0', dataa, datab, alb_v);
+		
+	fpcmpgt0: fp_cmp_gt
+		port map('0', '0', dataa, datab, agb_v);
+		
+	fpcmpeq0: fp_cmp_eq
+		port map('0', '0', dataa, datab, aeb_v);
+
+	alb <= alb_v(0);
+	agb <= agb_v(0);
+	aeb <= aeb_v(0);
+	
+	ageb <= agb or aeb;
+	aleb <= alb or aeb;
+	aneb <= not(aeb);
+
+end architecture fpcmp_arch;

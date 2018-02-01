@@ -2,6 +2,9 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
+library altera_mf;
+use altera_mf.all;
+
 entity sdram is
     generic(
         BASE_ADDRESS: unsigned(23 downto 0) := x"000000"
@@ -21,16 +24,12 @@ entity sdram is
         clk_sdram: in std_logic;
 
         -- sdram interface
-        addr: out std_logic_vector(12 downto 0);
-        bank_addr: out std_logic_vector(1 downto 0);
-        data: inout std_logic_vector(15 downto 0);
-        clock_enable: out std_logic;
-        cs_n: out std_logic;
-        ras_n: out std_logic;
-        cas_n: out std_logic;
-        we_n: out std_logic;
-        data_mask_low: out std_logic;
-        data_mask_high: out std_logic
+        sdram_a: out std_logic_vector(12 downto 0);
+        sdram_ba: out std_logic_vector(1 downto 0);
+        sdram_dq: inout std_logic_vector(7 downto 0);
+        sdram_ras: out std_logic;
+        sdram_cas: out std_logic;
+        sdram_we: out std_logic
     );
 end entity sdram;
 
@@ -51,57 +50,44 @@ architecture rtl of sdram is
             data_out_ready: out std_logic;
             ack: out std_logic;
             
-            sdram_cs_n: out std_logic;
             sdram_ras_n: out std_logic;
             sdram_cas_n: out std_logic;
             sdram_we_n: out std_logic;
             sdram_addr: out std_logic_vector(12 downto 0);
             sdram_ba: out std_logic_vector(1 downto 0);
-            sdram_data: inout std_logic_vector(15 downto 0)
+            sdram_data: inout std_logic_vector(7 downto 0)
 
-        );
-    end component;
-
-    component fifo
-        port (
-            aclr        : in std_logic  := '0';
-            data        : in std_logic_vector (54 downto 0);
-            rdclk       : in std_logic ;
-            rdreq       : in std_logic ;
-            wrclk       : in std_logic ;
-            wrreq       : in std_logic ;
-            q           : out std_logic_vector (54 downto 0);
-            rdempty     : out std_logic ;
-            wrempty     : out std_logic 
-        );
-    end component;
-    component fifo_rd_data
-        port (
-            aclr        : in std_logic  := '0';
-            data        : in std_logic_vector (31 downto 0);
-            rdclk       : in std_logic ;
-            rdreq       : in std_logic ;
-            wrclk       : in std_logic ;
-            wrreq       : in std_logic ;
-            q           : out std_logic_vector (31 downto 0);
-            rdempty     : out std_logic ;
-            wrempty     : out std_logic 
-        );
-    end component;
-    component fifo_rd_addr
-        port (
-            aclr        : in std_logic  := '0';
-            data        : in std_logic_vector (22 downto 0);
-            rdclk       : in std_logic ;
-            rdreq       : in std_logic ;
-            wrclk       : in std_logic ;
-            wrreq       : in std_logic ;
-            q           : out std_logic_vector (22 downto 0);
-            rdempty     : out std_logic ;
-            wrempty     : out std_logic 
         );
     end component;
     
+    component dcfifo
+		generic (
+			lpm_numwords: natural;
+			lpm_showahead: string := "OFF";
+			lpm_width: natural;
+			lpm_widthu: natural := 1;
+			overflow_checking: string := "ON";
+			rdsync_delaypipe: natural := 0;
+			read_aclr_synch: string := "OFF";
+			underflow_checking: string := "ON";
+			use_eab: string := "ON";
+			write_aclr_synch: string := "OFF";
+			wrsync_delaypipe: natural := 0;
+			lpm_type: string := "dcfifo"
+		);
+		port(
+			aclr: in std_logic := '0';
+			data: in std_logic_vector(lpm_width-1 downto 0);
+			rdclk: in std_logic;
+			rdreq: in std_logic;
+			wrclk: in std_logic;
+			wrreq: in std_logic;
+			q: out std_logic_vector(lpm_width-1 downto 0);
+			rdempty: out std_logic;
+			wrempty: out std_logic
+		);
+	end component;
+
     component bus_interface is
         generic(
             BASE_ADDRESS: unsigned(23 downto 0) := x"000000"
@@ -171,9 +157,7 @@ architecture rtl of sdram is
     signal rdfifo_data_dataout: std_logic_vector(31 downto 0);
     signal rdfifo_data_rdreq: std_logic;
     signal rdfifo_data_rdempty: std_logic;
-    
-    --~ constant clk_freq_mhz : natural := 100;
-    
+        
     
     type fsm_state_type is (idle, wrcmd_fifo, wrcmd_write, wrcmd_wait, rdcmd_fiforead, rdcmd_read, rdcmd_wait, rdcmd_fifowrite);
     signal fsm_state: fsm_state_type;
@@ -187,13 +171,9 @@ begin
     dram_driver0: sdram_driver
         port map(
             clk_sdram, res,
-            cmd_address, cmd_data_in, cmd_data_out, cmd_busy, cmd_wr_req, cmd_rd_req, cmd_data_out_ready, cmd_ack,
-            cs_n, ras_n, cas_n, we_n, addr, bank_addr, data
+            cmd_address, cmd_data_in, cmd_data_out, cmd_busy, cmd_wr_req, cmd_rd_req, cmd_data_out_ready, cmd_ack, 
+            sdram_ras, sdram_cas, sdram_we, sdram_a, sdram_ba, sdram_dq
         );
-        
-    clock_enable <= '1';
-    data_mask_low <= '0';
-    data_mask_high <= '0';
     
     rdfifo_data_datain <= cmd_data_out;
     cmd_data_in <= wrfifo_dataout(31 downto 0);
@@ -289,27 +269,36 @@ begin
     ----------------------------    
     -- CLK domain crossing
     
-    wrfifo0: fifo
+    wrfifo0: dcfifo
+        generic map(
+			4, "OFF", 55, 2, "ON", 5, "ON", "ON", "OFF", "ON", 5, "dcfifo"
+		)
         port map(
             res, wrfifo_datain, clk_sdram, wrfifo_read, clk, 
             wrfifo_write, wrfifo_dataout, wrfifo_rdempty, 
             wrfifo_wrempty
         );        
                 
-    rdfifo_address0: fifo_rd_addr
+    rdfifo_address0: dcfifo
+        generic map(
+			4, "OFF", 23, 2, "ON", 5, "ON", "ON", "OFF", "ON", 5, "dcfifo"
+		)
         port map(            
             res, rdfifo_address_datain, clk_sdram, rdfifo_address_rdreq, clk, 
             rdfifo_address_we, rdfifo_address_q, rdfifo_address_rdempty,
             rdfifo_address_wrempty
         );
         
-    rdfifo_data0: fifo_rd_data
+    rdfifo_data0: dcfifo
+		generic map(
+			4, "OFF", 32, 2, "ON", 5, "ON", "ON", "OFF", "ON", 5, "dcfifo"
+		)
         port map(
             res, rdfifo_data_datain, clk, rdfifo_data_rdreq, clk_sdram, 
             rdfifo_data_wrreq, rdfifo_data_dataout, rdfifo_data_rdempty,
             rdfifo_data_wremty        
         );
-    
+			
     ----------------------------    
     -- System CLK domain
 

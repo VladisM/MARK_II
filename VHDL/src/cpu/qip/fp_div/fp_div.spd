@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<simPackage>
+ <file
+   path="fp_div_sim/fp_div_memoryC0_uid113_invTables_lutmem.hex"
+   type="HEX" />
+ <file
+   path="fp_div_sim/fp_div_memoryC1_uid116_invTables_lutmem.hex"
+   type="HEX" />
+ <file
+   path="fp_div_sim/fp_div_memoryC2_uid120_invTables_lutmem.hex"
+   type="HEX" />
+ <file
+   path="fp_div_sim/fp_div_memoryC1_uid117_invTables_lutmem.hex"
+   type="HEX" />
+ <file
+   path="fp_div_sim/fp_div_memoryC0_uid112_invTables_lutmem.hex"
+   type="HEX" />
+ <file path="fp_div_sim/dspba_library_package.vhd" type="VHDL" />
+ <file path="fp_div_sim/dspba_library.vhd" type="VHDL" />
+ <file path="fp_div_sim/fp_div.vhd" type="VHDL" />
+ <topLevel name="fp_div" />
+ <deviceFamily name="max10" />
+</simPackage>

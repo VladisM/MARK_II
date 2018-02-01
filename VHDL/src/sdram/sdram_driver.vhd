@@ -17,13 +17,12 @@ entity sdram_driver is
         data_out_ready: out std_logic;
         ack: out std_logic;
         
-        sdram_cs_n: out std_logic;
         sdram_ras_n: out std_logic;
         sdram_cas_n: out std_logic;
         sdram_we_n: out std_logic;
         sdram_addr: out std_logic_vector(12 downto 0);
         sdram_ba: out std_logic_vector(1 downto 0);
-        sdram_data: inout std_logic_vector(15 downto 0)
+        sdram_data: inout std_logic_vector(7 downto 0)
 
     );
 end entity sdram_driver;
@@ -39,35 +38,34 @@ architecture sdram_driver_arch of sdram_driver is
     end component;
 
     --data from sdram (registered)
-    signal captured_data: std_logic_vector(15 downto 0);
+    signal captured_data: std_logic_vector(7 downto 0);
     --oe control signal for bidir buff
     signal bidir_buff_oe, bidir_buff_oe_buff: std_logic;
-    signal bidir_buff_oevector: std_logic_vector(15 downto 0);
     --datainput to bidir buff
-    signal bidir_buff_datain, bidir_buff_datain_buff: std_logic_vector(15 downto 0);
+    signal bidir_buff_datain, bidir_buff_datain_buff: std_logic_vector(7 downto 0);
     --unregistered output from bidirbuff
-    signal sdram_dataout: std_logic_vector(15 downto 0);
+    signal sdram_dataout: std_logic_vector(7 downto 0);
     --these signals are controling control outputs for sdram
     signal sdram_addr_unbuff: std_logic_vector(12 downto 0);
     signal sdram_ba_unbuff: std_logic_vector(1 downto 0);
-    signal sdram_control: std_logic_vector(3 downto 0);
+    signal sdram_control: std_logic_vector(2 downto 0);
     --comands for sdram maped into vectors
-    constant com_device_deselect: std_logic_vector(3 downto 0):= "1000";
-    constant com_no_operation: std_logic_vector(3 downto 0):= "0111";
-    constant com_burst_stop: std_logic_vector(3 downto 0):= "0110";
-    constant com_read: std_logic_vector(3 downto 0):= "0101"; --bank and A0..A9 must be valid; A10 must be low
-    constant com_read_precharge: std_logic_vector(3 downto 0):= "0101"; --A10 must be high
-    constant com_write: std_logic_vector(3 downto 0):= "0100"; --A10 must be low
-    constant com_write_precharge: std_logic_vector(3 downto 0):= "0100";--A10 must be high
-    constant com_bank_active: std_logic_vector(3 downto 0):= "0011"; --bank and addr must be valid
-    constant com_precharge_select_bank: std_logic_vector(3 downto 0):= "0010";--bank valid and A10 low; rest of addr dont care
-    constant com_precharge_all_banks: std_logic_vector(3 downto 0):= "0010"; --A10 high; others dont care
-    constant com_cbr_auto_refresh: std_logic_vector(3 downto 0):= "0001"; --everything dont care
-    constant com_mode_reg_set: std_logic_vector(3 downto 0):= "0000"; --bank low; A10 low; A0..A9 valid
+    constant com_device_deselect: std_logic_vector(2 downto 0):= "000";
+    constant com_no_operation: std_logic_vector(2 downto 0):= "111";
+    constant com_burst_stop: std_logic_vector(2 downto 0):= "110";
+    constant com_read: std_logic_vector(2 downto 0):= "101"; --bank and A0..A9 must be valid; A10 must be low
+    constant com_read_precharge: std_logic_vector(2 downto 0):= "101"; --A10 must be high
+    constant com_write: std_logic_vector(2 downto 0):= "100"; --A10 must be low
+    constant com_write_precharge: std_logic_vector(2 downto 0):= "100";--A10 must be high
+    constant com_bank_active: std_logic_vector(2 downto 0):= "011"; --bank and addr must be valid
+    constant com_precharge_select_bank: std_logic_vector(2 downto 0):= "010";--bank valid and A10 low; rest of addr dont care
+    constant com_precharge_all_banks: std_logic_vector(2 downto 0):= "010"; --A10 high; others dont care
+    constant com_cbr_auto_refresh: std_logic_vector(2 downto 0):= "001"; --everything dont care
+    constant com_mode_reg_set: std_logic_vector(2 downto 0):= "000"; --bank low; A10 low; A0..A9 valid
 
     --put this constant on address bus it is configuration register
-    -- CAS = 2; burst = 2words;
-    constant mode_register: std_logic_vector(12 downto 0) := "0000000100001";
+    -- CAS = 2; burst = 4 words;
+    constant mode_register: std_logic_vector(12 downto 0) := "0000000100010";
 
     --this signal is we into output register
     signal write_input_data_reg: std_logic;
@@ -95,8 +93,8 @@ architecture sdram_driver_arch of sdram_driver is
         init_mode_reg, init_mode_reg_wait, idle,
         autorefresh, autorefresh_wait,
         bank_active, bank_active_nop0, bank_active_nop1,
-        write_data, write_nop_0, write_nop_1, write_nop_2, write_nop_3, write_nop_4,
-        read_command, read_nop_0, read_nop_1, read_nop_2, read_nop_3, read_nop_4, read_completed
+        write_data, write_nop_0, write_nop_1, write_nop_2, write_nop_3, write_nop_4, write_nop_5, write_nop_6,
+        read_command, read_nop_0, read_nop_1, read_nop_2, read_nop_3, read_nop_4, read_nop_5, read_nop_6, read_completed
     );
     signal fsm_state: sdram_fsm_state_type := init_delay;
     attribute FSM_ENCODING : string;
@@ -122,20 +120,9 @@ begin
     address_col <= cmd_address(7 downto 0) & '0';
 
     --bidirectional buffer for DQ pins
-    bidir_buff0: data_io_buff
-        port map(
-            datain => bidir_buff_datain_buff,
-            oe => bidir_buff_oevector,
-            dataio => sdram_data,
-            dataout => sdram_dataout
-        );
-
-    --generate oe vector for buffer
-    iob_oe_g: for i in 15 downto 0 generate
-    begin
-        bidir_buff_oevector(i) <= bidir_buff_oe_buff;
-    end generate;
-
+    sdram_dataout <= sdram_data;
+	sdram_data <= bidir_buff_datain_buff when bidir_buff_oe_buff = '1' else (others => 'Z');
+	
     process(clk_100) is
         variable bidir_buff_oe_var: std_logic := '0';
     begin
@@ -150,7 +137,7 @@ begin
     end process;
 
     process(clk_100) is
-        variable bidir_buff_datain_var: std_logic_vector(15 downto 0) := x"0000";
+        variable bidir_buff_datain_var: std_logic_vector(7 downto 0) := x"00";
     begin
         if rising_edge(clk_100) then
             if res = '1' then
@@ -164,7 +151,7 @@ begin
 
     --register input data from sdram
     process(clk_100) is
-        variable captured_data_var: std_logic_vector(15 downto 0) := (others => '0');
+        variable captured_data_var: std_logic_vector(7 downto 0) := (others => '0');
     begin
         if rising_edge(clk_100) then
             if res = '1' then
@@ -178,24 +165,29 @@ begin
 
     --this is register for dataout
     process(clk_100) is
-        variable input_data_register_var_low: std_logic_vector(15 downto 0) := (others => '0');
-        variable input_data_register_var_high: std_logic_vector(15 downto 0) := (others => '0');
+        variable input_data_register_var_low: std_logic_vector(7 downto 0) := (others => '0');
+        variable input_data_register_var_mlow: std_logic_vector(7 downto 0) := (others => '0');
+        variable input_data_register_var_mhigh: std_logic_vector(7 downto 0) := (others => '0');
+        variable input_data_register_var_high: std_logic_vector(7 downto 0) := (others => '0');
     begin
         if rising_edge(clk_100) then
             if res = '1' then
-                input_data_register_var_low := (others => '0');
-                input_data_register_var_high := (others => '0');
+                input_data_register_var_low   := (others => '0');
+                input_data_register_var_mlow  := (others => '0');
+                input_data_register_var_mhigh := (others => '0');
+                input_data_register_var_high  := (others => '0');
             elsif write_input_data_reg = '1' then
-                input_data_register_var_high := input_data_register_var_low;
-                input_data_register_var_low := captured_data;
+                input_data_register_var_high  := input_data_register_var_mhigh;
+                input_data_register_var_mhigh := input_data_register_var_mlow;
+                input_data_register_var_mlow  := input_data_register_var_low;
+                input_data_register_var_low   := captured_data;
             end if;
         end if;
-        data_out <= input_data_register_var_high & input_data_register_var_low;
+        data_out <= input_data_register_var_high & input_data_register_var_mhigh & input_data_register_var_mlow & input_data_register_var_low;
     end process;
 
     --register all outputs
     process(clk_100) is
-        variable sdram_cs_n_var: std_logic := '1';
         variable sdram_ras_n_var: std_logic := '1';
         variable sdram_cas_n_var: std_logic := '1';
         variable sdram_we_n_var: std_logic := '1';
@@ -204,7 +196,6 @@ begin
     begin
         if rising_edge(clk_100) then
             if res = '1' then
-                sdram_cs_n_var := '1';
                 sdram_ras_n_var := '1';
                 sdram_cas_n_var := '1';
                 sdram_we_n_var := '1';
@@ -213,13 +204,11 @@ begin
             else
                 sdram_addr_var := sdram_addr_unbuff;
                 sdram_ba_var := sdram_ba_unbuff;
-                sdram_cs_n_var := sdram_control(3);
                 sdram_ras_n_var := sdram_control(2);
                 sdram_cas_n_var := sdram_control(1);
                 sdram_we_n_var := sdram_control(0);
             end if;
         end if;
-        sdram_cs_n <= sdram_cs_n_var;
         sdram_ras_n <= sdram_ras_n_var;
         sdram_cas_n <= sdram_cas_n_var;
         sdram_we_n <= sdram_we_n_var;
@@ -450,8 +439,14 @@ begin
                     
                     when write_nop_3 =>
                         fsm_state <= write_nop_4;
-                    
+                                        
                     when write_nop_4 =>
+                        fsm_state <= write_nop_5;
+                        
+                    when write_nop_5 =>
+                        fsm_state <= write_nop_6;
+                        
+                    when write_nop_6 =>
                         fsm_state <= idle;
 
                     --read data block
@@ -471,6 +466,12 @@ begin
                         fsm_state <= read_nop_4;
                     
                     when read_nop_4 =>
+                        fsm_state <= read_nop_5;
+                    
+                    when read_nop_5 =>
+                        fsm_state <= read_nop_6;
+                    
+                    when read_nop_6 =>
                         fsm_state <= read_completed;
                     
                     when read_completed =>
@@ -492,7 +493,7 @@ begin
                 sdram_control <= com_no_operation;
                 sdram_addr_unbuff <= "0000000000000";
                 sdram_ba_unbuff <= "00";
-                bidir_buff_datain <= x"0000";
+                bidir_buff_datain <= x"00";
                 busy <= '1';
                 write_input_data_reg <= '0';
                 data_out_ready <= '0';
@@ -506,7 +507,7 @@ begin
                 sdram_control <= com_precharge_all_banks;
                 sdram_addr_unbuff <= "0010000000000";
                 sdram_ba_unbuff <= "00";
-                bidir_buff_datain <= x"0000";
+                bidir_buff_datain <= x"00";
                 busy <= '1';
                 write_input_data_reg <= '0';
                 data_out_ready <= '0';
@@ -520,7 +521,7 @@ begin
                 sdram_control <= com_no_operation;
                 sdram_addr_unbuff <= "0000000000000";
                 sdram_ba_unbuff <= "00";
-                bidir_buff_datain <= x"0000";
+                bidir_buff_datain <= x"00";
                 busy <= '1';
                 write_input_data_reg <= '0';
                 data_out_ready <= '0';
@@ -534,7 +535,7 @@ begin
                 sdram_control <= com_cbr_auto_refresh;
                 sdram_addr_unbuff <= "0000000000000";
                 sdram_ba_unbuff <= "00";
-                bidir_buff_datain <= x"0000";
+                bidir_buff_datain <= x"00";
                 busy <= '1';
                 write_input_data_reg <= '0';
                 data_out_ready <= '0';
@@ -548,7 +549,7 @@ begin
                 sdram_control <= com_no_operation;
                 sdram_addr_unbuff <= "0000000000000";
                 sdram_ba_unbuff <= "00";
-                bidir_buff_datain <= x"0000";
+                bidir_buff_datain <= x"00";
                 busy <= '1';
                 write_input_data_reg <= '0';
                 data_out_ready <= '0';
@@ -562,7 +563,7 @@ begin
                 sdram_control <= com_cbr_auto_refresh;
                 sdram_addr_unbuff <= "0000000000000";
                 sdram_ba_unbuff <= "00";
-                bidir_buff_datain <= x"0000";
+                bidir_buff_datain <= x"00";
                 busy <= '1';
                 write_input_data_reg <= '0';
                 data_out_ready <= '0';
@@ -576,7 +577,7 @@ begin
                 sdram_control <= com_no_operation;
                 sdram_addr_unbuff <= "0000000000000";
                 sdram_ba_unbuff <= "00";
-                bidir_buff_datain <= x"0000";
+                bidir_buff_datain <= x"00";
                 busy <= '1';
                 write_input_data_reg <= '0';
                 data_out_ready <= '0';
@@ -590,7 +591,7 @@ begin
                 sdram_control <= com_cbr_auto_refresh;
                 sdram_addr_unbuff <= "0000000000000";
                 sdram_ba_unbuff <= "00";
-                bidir_buff_datain <= x"0000";
+                bidir_buff_datain <= x"00";
                 busy <= '1';
                 write_input_data_reg <= '0';
                 data_out_ready <= '0';
@@ -604,7 +605,7 @@ begin
                 sdram_control <= com_no_operation;
                 sdram_addr_unbuff <= "0000000000000";
                 sdram_ba_unbuff <= "00";
-                bidir_buff_datain <= x"0000";
+                bidir_buff_datain <= x"00";
                 busy <= '1';
                 write_input_data_reg <= '0';
                 data_out_ready <= '0';
@@ -618,7 +619,7 @@ begin
                 sdram_control <= com_cbr_auto_refresh;
                 sdram_addr_unbuff <= "0000000000000";
                 sdram_ba_unbuff <= "00";
-                bidir_buff_datain <= x"0000";
+                bidir_buff_datain <= x"00";
                 busy <= '1';
                 write_input_data_reg <= '0';
                 data_out_ready <= '0';
@@ -632,7 +633,7 @@ begin
                 sdram_control <= com_no_operation;
                 sdram_addr_unbuff <= "0000000000000";
                 sdram_ba_unbuff <= "00";
-                bidir_buff_datain <= x"0000";
+                bidir_buff_datain <= x"00";
                 busy <= '1';
                 write_input_data_reg <= '0';
                 data_out_ready <= '0';
@@ -646,7 +647,7 @@ begin
                 sdram_control <= com_cbr_auto_refresh;
                 sdram_addr_unbuff <= "0000000000000";
                 sdram_ba_unbuff <= "00";
-                bidir_buff_datain <= x"0000";
+                bidir_buff_datain <= x"00";
                 busy <= '1';
                 write_input_data_reg <= '0';
                 data_out_ready <= '0';
@@ -660,7 +661,7 @@ begin
                 sdram_control <= com_no_operation;
                 sdram_addr_unbuff <= "0000000000000";
                 sdram_ba_unbuff <= "00";
-                bidir_buff_datain <= x"0000";
+                bidir_buff_datain <= x"00";
                 busy <= '1';
                 write_input_data_reg <= '0';
                 data_out_ready <= '0';
@@ -674,7 +675,7 @@ begin
                 sdram_control <= com_cbr_auto_refresh;
                 sdram_addr_unbuff <= "0000000000000";
                 sdram_ba_unbuff <= "00";
-                bidir_buff_datain <= x"0000";
+                bidir_buff_datain <= x"00";
                 busy <= '1';
                 write_input_data_reg <= '0';
                 data_out_ready <= '0';
@@ -688,7 +689,7 @@ begin
                 sdram_control <= com_no_operation;
                 sdram_addr_unbuff <= "0000000000000";
                 sdram_ba_unbuff <= "00";
-                bidir_buff_datain <= x"0000";
+                bidir_buff_datain <= x"00";
                 busy <= '1';
                 write_input_data_reg <= '0';
                 data_out_ready <= '0';
@@ -702,7 +703,7 @@ begin
                 sdram_control <= com_cbr_auto_refresh;
                 sdram_addr_unbuff <= "0000000000000";
                 sdram_ba_unbuff <= "00";
-                bidir_buff_datain <= x"0000";
+                bidir_buff_datain <= x"00";
                 busy <= '1';
                 write_input_data_reg <= '0';
                 data_out_ready <= '0';
@@ -716,7 +717,7 @@ begin
                 sdram_control <= com_no_operation;
                 sdram_addr_unbuff <= "0000000000000";
                 sdram_ba_unbuff <= "00";
-                bidir_buff_datain <= x"0000";
+                bidir_buff_datain <= x"00";
                 busy <= '1';
                 write_input_data_reg <= '0';
                 data_out_ready <= '0';
@@ -730,7 +731,7 @@ begin
                 sdram_control <= com_cbr_auto_refresh;
                 sdram_addr_unbuff <= "0000000000000";
                 sdram_ba_unbuff <= "00";
-                bidir_buff_datain <= x"0000";
+                bidir_buff_datain <= x"00";
                 busy <= '1';
                 write_input_data_reg <= '0';
                 data_out_ready <= '0';
@@ -744,7 +745,7 @@ begin
                 sdram_control <= com_no_operation;
                 sdram_addr_unbuff <= "0000000000000";
                 sdram_ba_unbuff <= "00";
-                bidir_buff_datain <= x"0000";
+                bidir_buff_datain <= x"00";
                 busy <= '1';
                 write_input_data_reg <= '0';
                 data_out_ready <= '0';
@@ -758,7 +759,7 @@ begin
                 sdram_control <= com_mode_reg_set;
                 sdram_addr_unbuff <= mode_register;
                 sdram_ba_unbuff <= "00";
-                bidir_buff_datain <= x"0000";
+                bidir_buff_datain <= x"00";
                 busy <= '1';
                 write_input_data_reg <= '0';
                 data_out_ready <= '0';
@@ -772,7 +773,7 @@ begin
                 sdram_control <= com_no_operation;
                 sdram_addr_unbuff <= "0000000000000";
                 sdram_ba_unbuff <= "00";
-                bidir_buff_datain <= x"0000";
+                bidir_buff_datain <= x"00";
                 busy <= '1';
                 write_input_data_reg <= '0';
                 data_out_ready <= '0';
@@ -786,7 +787,7 @@ begin
                 sdram_control <= com_no_operation;
                 sdram_addr_unbuff <= "0000000000000";
                 sdram_ba_unbuff <= "00";
-                bidir_buff_datain <= x"0000";
+                bidir_buff_datain <= x"00";
                 busy <= '0';
                 write_input_data_reg <= '0';
                 data_out_ready <= '0';
@@ -800,7 +801,7 @@ begin
                 sdram_control <= com_cbr_auto_refresh;
                 sdram_addr_unbuff <= "0000000000000";
                 sdram_ba_unbuff <= "00";
-                bidir_buff_datain <= x"0000";
+                bidir_buff_datain <= x"00";
                 busy <= '1';
                 write_input_data_reg <= '0';
                 data_out_ready <= '0';
@@ -814,7 +815,7 @@ begin
                 sdram_control <= com_no_operation;
                 sdram_addr_unbuff <= "0000000000000";
                 sdram_ba_unbuff <= "00";
-                bidir_buff_datain <= x"0000";
+                bidir_buff_datain <= x"00";
                 busy <= '1';
                 write_input_data_reg <= '0';
                 data_out_ready <= '0';
@@ -828,7 +829,7 @@ begin
                 sdram_control <= com_bank_active;
                 sdram_addr_unbuff <= address_row;
                 sdram_ba_unbuff <= address_ba;
-                bidir_buff_datain <= x"0000";
+                bidir_buff_datain <= x"00";
                 busy <= '1';
                 write_input_data_reg <= '0';
                 data_out_ready <= '0';
@@ -842,7 +843,7 @@ begin
                 sdram_control <= com_no_operation;
                 sdram_addr_unbuff <= "0000000000000";
                 sdram_ba_unbuff <= "00";
-                bidir_buff_datain <= x"0000";
+                bidir_buff_datain <= x"00";
                 busy <= '1';
                 write_input_data_reg <= '0';
                 data_out_ready <= '0';
@@ -856,7 +857,7 @@ begin
                 sdram_control <= com_no_operation;
                 sdram_addr_unbuff <= "0000000000000";
                 sdram_ba_unbuff <= "00";
-                bidir_buff_datain <= x"0000";
+                bidir_buff_datain <= x"00";
                 busy <= '1';
                 write_input_data_reg <= '0';
                 data_out_ready <= '0';
@@ -870,7 +871,7 @@ begin
                 sdram_control <= com_write_precharge;
                 sdram_addr_unbuff <= "0010" & address_col;
                 sdram_ba_unbuff <= address_ba;
-                bidir_buff_datain <= cmd_data_in(31 downto 16);
+                bidir_buff_datain <= cmd_data_in(31 downto 24);
                 busy <= '1';
                 write_input_data_reg <= '0';
                 data_out_ready <= '0';
@@ -884,41 +885,41 @@ begin
                 sdram_control <= com_no_operation;
                 sdram_addr_unbuff <= "0000000000000";
                 sdram_ba_unbuff <= "00";
-                bidir_buff_datain <= cmd_data_in(15 downto 0);
+                bidir_buff_datain <= cmd_data_in(23 downto 16);
                 busy <= '1';
                 write_input_data_reg <= '0';
                 data_out_ready <= '0';
                 write_cmd_reg <= '0';
                 ack <= '0';
-
-            when write_nop_1 =>
+                
+			when write_nop_1 =>
                 init_counter_clean <= '0';
                 refresh_counter_clean <= '0';
-                bidir_buff_oe <= '0';
+                bidir_buff_oe <= '1';
                 sdram_control <= com_no_operation;
                 sdram_addr_unbuff <= "0000000000000";
                 sdram_ba_unbuff <= "00";
-                bidir_buff_datain <= x"0000";
+                bidir_buff_datain <= cmd_data_in(15 downto 8);
                 busy <= '1';
                 write_input_data_reg <= '0';
                 data_out_ready <= '0';
                 write_cmd_reg <= '0';
                 ack <= '0';
-
+                
             when write_nop_2 =>
                 init_counter_clean <= '0';
                 refresh_counter_clean <= '0';
-                bidir_buff_oe <= '0';
+                bidir_buff_oe <= '1';
                 sdram_control <= com_no_operation;
                 sdram_addr_unbuff <= "0000000000000";
                 sdram_ba_unbuff <= "00";
-                bidir_buff_datain <= x"0000";
+                bidir_buff_datain <= cmd_data_in(7 downto 0);
                 busy <= '1';
                 write_input_data_reg <= '0';
                 data_out_ready <= '0';
                 write_cmd_reg <= '0';
                 ack <= '0';
-
+                
             when write_nop_3 =>
                 init_counter_clean <= '0';
                 refresh_counter_clean <= '0';
@@ -926,13 +927,13 @@ begin
                 sdram_control <= com_no_operation;
                 sdram_addr_unbuff <= "0000000000000";
                 sdram_ba_unbuff <= "00";
-                bidir_buff_datain <= x"0000";
+                bidir_buff_datain <= x"00";
                 busy <= '1';
                 write_input_data_reg <= '0';
                 data_out_ready <= '0';
                 write_cmd_reg <= '0';
                 ack <= '0';
-            
+
             when write_nop_4 =>
                 init_counter_clean <= '0';
                 refresh_counter_clean <= '0';
@@ -940,7 +941,35 @@ begin
                 sdram_control <= com_no_operation;
                 sdram_addr_unbuff <= "0000000000000";
                 sdram_ba_unbuff <= "00";
-                bidir_buff_datain <= x"0000";
+                bidir_buff_datain <= x"00";
+                busy <= '1';
+                write_input_data_reg <= '0';
+                data_out_ready <= '0';
+                write_cmd_reg <= '0';
+                ack <= '0';
+
+            when write_nop_5 =>
+                init_counter_clean <= '0';
+                refresh_counter_clean <= '0';
+                bidir_buff_oe <= '0';
+                sdram_control <= com_no_operation;
+                sdram_addr_unbuff <= "0000000000000";
+                sdram_ba_unbuff <= "00";
+                bidir_buff_datain <= x"00";
+                busy <= '1';
+                write_input_data_reg <= '0';
+                data_out_ready <= '0';
+                write_cmd_reg <= '0';
+                ack <= '0';
+            
+            when write_nop_6 =>
+                init_counter_clean <= '0';
+                refresh_counter_clean <= '0';
+                bidir_buff_oe <= '0';
+                sdram_control <= com_no_operation;
+                sdram_addr_unbuff <= "0000000000000";
+                sdram_ba_unbuff <= "00";
+                bidir_buff_datain <= x"00";
                 busy <= '1';
                 write_input_data_reg <= '0';
                 data_out_ready <= '0';
@@ -954,7 +983,7 @@ begin
                 sdram_control <= com_read_precharge;
                 sdram_addr_unbuff <= "0010" & address_col;
                 sdram_ba_unbuff <= address_ba;
-                bidir_buff_datain <= x"0000";
+                bidir_buff_datain <= x"00";
                 busy <= '1';
                 write_input_data_reg <= '0';
                 data_out_ready <= '0';
@@ -968,7 +997,7 @@ begin
                 sdram_control <= com_no_operation;
                 sdram_addr_unbuff <= "0000000000000";
                 sdram_ba_unbuff <= "00";
-                bidir_buff_datain <= x"0000";
+                bidir_buff_datain <= x"00";
                 busy <= '1';
                 write_input_data_reg <= '0';
                 data_out_ready <= '0';
@@ -982,7 +1011,7 @@ begin
                 sdram_control <= com_no_operation;
                 sdram_addr_unbuff <= "0000000000000";
                 sdram_ba_unbuff <= "00";
-                bidir_buff_datain <= x"0000";
+                bidir_buff_datain <= x"00";
                 busy <= '1';
                 write_input_data_reg <= '0';
                 data_out_ready <= '0';
@@ -996,7 +1025,7 @@ begin
                 sdram_control <= com_no_operation;
                 sdram_addr_unbuff <= "0000000000000";
                 sdram_ba_unbuff <= "00";
-                bidir_buff_datain <= x"0000";
+                bidir_buff_datain <= x"00";
                 busy <= '1';
                 write_input_data_reg <= '0';
                 data_out_ready <= '0';
@@ -1010,7 +1039,7 @@ begin
                 sdram_control <= com_no_operation;
                 sdram_addr_unbuff <= "0000000000000";
                 sdram_ba_unbuff <= "00";
-                bidir_buff_datain <= x"0000";
+                bidir_buff_datain <= x"00";
                 busy <= '1';
                 write_input_data_reg <= '1';
                 data_out_ready <= '0';
@@ -1024,7 +1053,35 @@ begin
                 sdram_control <= com_no_operation;
                 sdram_addr_unbuff <= "0000000000000";
                 sdram_ba_unbuff <= "00";
-                bidir_buff_datain <= x"0000";
+                bidir_buff_datain <= x"00";
+                busy <= '1';
+                write_input_data_reg <= '1';
+                data_out_ready <= '0';
+                write_cmd_reg <= '0';
+                ack <= '0';
+            
+            when read_nop_5 =>
+                init_counter_clean <= '0';
+                refresh_counter_clean <= '0';
+                bidir_buff_oe <= '0';
+                sdram_control <= com_no_operation;
+                sdram_addr_unbuff <= "0000000000000";
+                sdram_ba_unbuff <= "00";
+                bidir_buff_datain <= x"00";
+                busy <= '1';
+                write_input_data_reg <= '1';
+                data_out_ready <= '0';
+                write_cmd_reg <= '0';
+                ack <= '0';
+                
+            when read_nop_6 =>
+                init_counter_clean <= '0';
+                refresh_counter_clean <= '0';
+                bidir_buff_oe <= '0';
+                sdram_control <= com_no_operation;
+                sdram_addr_unbuff <= "0000000000000";
+                sdram_ba_unbuff <= "00";
+                bidir_buff_datain <= x"00";
                 busy <= '1';
                 write_input_data_reg <= '1';
                 data_out_ready <= '0';
@@ -1038,7 +1095,7 @@ begin
                 sdram_control <= com_no_operation;
                 sdram_addr_unbuff <= "0000000000000";
                 sdram_ba_unbuff <= "00";
-                bidir_buff_datain <= x"0000";
+                bidir_buff_datain <= x"00";
                 busy <= '1';
                 write_input_data_reg <= '0';
                 data_out_ready <= '1';
