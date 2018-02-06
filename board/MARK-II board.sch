@@ -10942,16 +10942,16 @@ Source: 3M</description>
 </net>
 <net name="CLK_25M" class="2">
 <segment>
-<pinref part="IC9" gate="_BANK2" pin="PIN27"/>
-<wire x1="38.1" y1="127" x2="33.02" y2="127" width="0.1524" layer="91"/>
-<label x="35.56" y="127" size="1.778" layer="95" rot="MR0"/>
+<pinref part="IC9" gate="_BANK2" pin="PIN26"/>
+<wire x1="38.1" y1="129.54" x2="33.02" y2="129.54" width="0.1524" layer="91"/>
+<label x="35.56" y="129.54" size="1.778" layer="95" rot="MR0"/>
 </segment>
 </net>
 <net name="ENC_INT" class="2">
 <segment>
-<pinref part="IC9" gate="_BANK2" pin="PIN26"/>
-<wire x1="38.1" y1="129.54" x2="33.02" y2="129.54" width="0.1524" layer="91"/>
-<label x="35.56" y="129.54" size="1.778" layer="95" rot="MR0"/>
+<pinref part="IC9" gate="_BANK2" pin="PIN27"/>
+<wire x1="38.1" y1="127" x2="33.02" y2="127" width="0.1524" layer="91"/>
+<label x="35.56" y="127" size="1.778" layer="95" rot="MR0"/>
 </segment>
 </net>
 <net name="ENC_SO" class="2">
