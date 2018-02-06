@@ -13,13 +13,13 @@ toolchain/vbcc/machines/**/dt.h
 toolchain/vbcc/machines/**/dt.c
 toolchain/vbcc/machines/mark/version.h
 
-fpga/**
-!fpga/src/
-!fpga/src/**
-fpga/src/**/*.bak
-!fpga/Makefile
-!fpga/MARK_II.tcl
-!fpga/MARK_II.sdc
+VHDL/**
+!VHDL/src/
+!VHDL/src/**
+VHDL/src/**/*.bak
+!VHDL/Makefile
+!VHDL/MARK_II.tcl
+!VHDL/MARK_II.sdc
 
 doc/refman/**/*.aux
 doc/refman/**/*.log
@@ -40,9 +40,9 @@ refman.pdf
 vbcc.pdf
 spl_ref.pdf
 
-sw/**/*.o
-sw/**/*.ldm
-sw/**/*.asm
-sw/**/*.mif
-sw/**/*disasm
+doc/examples/**/*.o
+doc/examples/**/*.ldm
+doc/examples/**/*.asm
+doc/examples/**/*.mif
+doc/examples/**/*disasm
 
