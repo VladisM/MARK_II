@@ -9931,7 +9931,7 @@ Source: 3M</description>
 <label x="170.18" y="149.86" size="1.778" layer="95"/>
 </segment>
 </net>
-<net name="FLASH_#CS" class="2">
+<net name="FLASH_CS" class="2">
 <segment>
 <pinref part="IC8" gate="G$1" pin="#CS"/>
 <wire x1="241.3" y1="71.12" x2="236.22" y2="71.12" width="0.1524" layer="91"/>
@@ -11241,7 +11241,7 @@ Source: 3M</description>
 <label x="119.38" y="134.62" size="1.778" layer="95" rot="MR0"/>
 </segment>
 </net>
-<net name="FLASH_#CS" class="2">
+<net name="FLASH_CS" class="2">
 <segment>
 <wire x1="73.66" y1="160.02" x2="68.58" y2="160.02" width="0.1524" layer="91"/>
 <label x="71.12" y="160.02" size="1.778" layer="95"/>
@@ -11637,7 +11637,7 @@ Source: 3M</description>
 <label x="154.94" y="114.3" size="1.778" layer="95"/>
 </segment>
 </net>
-<net name="PWRMNG_RX00" class="2">
+<net name="PWRMNG_TX" class="2">
 <segment>
 <pinref part="IC9" gate="_BANK6" pin="PIN102"/>
 <wire x1="152.4" y1="109.22" x2="157.48" y2="109.22" width="0.1524" layer="91"/>
@@ -12420,9 +12420,6 @@ Source: 3M</description>
 <approved hash="104,4,198.12,152.4,Q4,VDD,+3V3,,,"/>
 <approved hash="104,4,198.12,71.12,Q6,VSS,GND,,,"/>
 <approved hash="104,4,198.12,81.28,Q6,VDD,+3V3,,,"/>
-<approved hash="104,6,81.28,116.84,IC12,VCC,+3V3_SB,,,"/>
-<approved hash="104,6,81.28,109.22,IC12,AVCC,+3V3_SB,,,"/>
-<approved hash="202,6,81.28,104.14,IC12,AREF,,,,"/>
 <approved hash="113,2,130.071,89.431,FRAME2,,,,,"/>
 <approved hash="113,3,130.071,89.431,FRAME3,,,,,"/>
 <approved hash="113,5,130.071,89.431,FRAME5,,,,,"/>

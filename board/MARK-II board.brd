@@ -5449,7 +5449,7 @@ Please make sure your boards conform to these design rules.</description>
 <wire x1="89.2175" y1="31.90875" x2="78.89875" y2="31.90875" width="0.2032" layer="1"/>
 <wire x1="78.89875" y1="31.90875" x2="78.58125" y2="32.22625" width="0.2032" layer="1"/>
 </signal>
-<signal name="FLASH_#CS" class="2">
+<signal name="FLASH_CS" class="2">
 <contactref element="IC8" pad="1"/>
 <contactref element="IC9" pad="13"/>
 <wire x1="82.4575" y1="39.145" x2="83.34375" y2="39.145" width="0.2032" layer="1"/>
@@ -6692,13 +6692,6 @@ Please make sure your boards conform to these design rules.</description>
 <wire x1="52.07" y1="31.21" x2="50.0126" y2="31.21" width="0.2032" layer="1"/>
 <wire x1="52.3875" y1="36.9625" x2="52.3875" y2="31.5275" width="0.2032" layer="1"/>
 </signal>
-<signal name="PWRMNG_RX00" class="2">
-<contactref element="IC9" pad="102"/>
-<wire x1="54.86" y1="36.78" x2="53.18125" y2="36.78" width="0.2032" layer="1"/>
-<wire x1="53.18125" y1="36.78" x2="52.86375" y2="36.4625" width="0.2032" layer="1"/>
-<wire x1="52.86375" y1="30.7275" x2="52.54625" y2="30.41" width="0.2032" layer="1"/>
-<wire x1="52.86375" y1="36.4625" x2="52.86375" y2="30.7275" width="0.2032" layer="1"/>
-</signal>
 <signal name="PWRMNG_RES" class="2">
 <contactref element="IC9" pad="100"/>
 <contactref element="IC12" pad="32"/>
@@ -7235,6 +7228,12 @@ Please make sure your boards conform to these design rules.</description>
 </signal>
 <signal name="PWRMNG_TX" class="2">
 <contactref element="IC12" pad="30"/>
+<contactref element="IC9" pad="102"/>
+<wire x1="54.86" y1="36.78" x2="53.18125" y2="36.78" width="0.2032" layer="1"/>
+<wire x1="53.18125" y1="36.78" x2="52.86375" y2="36.4625" width="0.2032" layer="1"/>
+<wire x1="52.54625" y1="30.41" x2="52.86375" y2="30.7275" width="0.2032" layer="1"/>
+<wire x1="52.86375" y1="36.4625" x2="52.86375" y2="30.7275" width="0.2032" layer="1"/>
+<wire x1="50.0126" y1="30.41" x2="52.54625" y2="30.41" width="0.2032" layer="1"/>
 </signal>
 </signals>
 </board>
