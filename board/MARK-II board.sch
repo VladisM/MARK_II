@@ -6,7 +6,7 @@
 <setting alwaysvectorfont="no"/>
 <setting verticaltext="up"/>
 </settings>
-<grid distance="0.1" unitdist="inch" unit="inch" style="lines" multiple="1" display="yes" altdistance="0.01" altunitdist="inch" altunit="inch"/>
+<grid distance="0.1" unitdist="inch" unit="inch" style="lines" multiple="1" display="no" altdistance="0.01" altunitdist="inch" altunit="inch"/>
 <layers>
 <layer number="1" name="Top" color="4" fill="1" visible="no" active="no"/>
 <layer number="2" name="Route2" color="1" fill="3" visible="no" active="no"/>
@@ -1925,20 +1925,19 @@ MAGNETIC BUZZER INDICATOR</description>
 <library name="con">
 <packages>
 <package name="MINIDIN_6_3GND">
-<pad name="3" x="-4.3" y="-8.5" drill="1" shape="octagon"/>
-<pad name="5" x="-4.3" y="-11" drill="1" shape="octagon"/>
-<pad name="4" x="4.3" y="-8.5" drill="1" shape="octagon"/>
-<pad name="6" x="4.3" y="-11" drill="1" shape="octagon"/>
+<pad name="3" x="-3.4" y="-8.5" drill="1" shape="octagon"/>
+<pad name="5" x="-3.4" y="-11" drill="1" shape="octagon"/>
+<pad name="4" x="3.4" y="-8.5" drill="1" shape="octagon"/>
+<pad name="6" x="3.4" y="-11" drill="1" shape="octagon"/>
 <pad name="CASE2" x="6.7" y="-5.5" drill="2.4" shape="octagon"/>
 <pad name="CASE1" x="-6.7" y="-5.5" drill="2.4" shape="octagon"/>
 <pad name="SHIELDING" x="0" y="-4.7" drill="2.4" shape="octagon"/>
-<wire x1="0" y1="0" x2="7" y2="0" width="0.127" layer="21"/>
 <wire x1="7" y1="0" x2="7" y2="-1.8" width="0.127" layer="21"/>
 <wire x1="7" y1="-1.8" x2="7" y2="-13" width="0.127" layer="21"/>
 <wire x1="7" y1="-13" x2="-7" y2="-13" width="0.127" layer="21"/>
 <wire x1="-7" y1="-13" x2="-7" y2="-1.8" width="0.127" layer="21"/>
 <wire x1="-7" y1="-1.8" x2="-7" y2="0" width="0.127" layer="21"/>
-<wire x1="-7" y1="0" x2="0" y2="0" width="0.127" layer="21"/>
+<wire x1="-7" y1="0" x2="7" y2="0" width="0.127" layer="21"/>
 <wire x1="-7" y1="-1.8" x2="7" y2="-1.8" width="0.127" layer="21"/>
 <pad name="1" x="-1.3" y="-8.5" drill="1" shape="octagon"/>
 <pad name="2" x="1.3" y="-8.5" drill="1" shape="octagon"/>
@@ -2189,16 +2188,16 @@ Source: http://www.hirose.co.jp/cataloge_hp/e24000019.pdf</description>
 <wire x1="8.255" y1="-15.526" x2="8.001" y2="-15.526" width="0.1524" layer="21"/>
 <wire x1="8.255" y1="-15.526" x2="8.763" y2="-15.018" width="0.1524" layer="21" curve="90"/>
 <wire x1="-8.763" y1="-15.018" x2="-8.255" y2="-15.526" width="0.1524" layer="21" curve="90"/>
-<wire x1="8.382" y1="-9.684" x2="8.382" y2="-15.018" width="0.1524" layer="21"/>
-<wire x1="8.382" y1="-9.684" x2="-8.382" y2="-9.684" width="0.1524" layer="21"/>
-<wire x1="-8.382" y1="-9.684" x2="-8.382" y2="-15.018" width="0.1524" layer="21"/>
+<wire x1="8.382" y1="-9.5" x2="8.382" y2="-15.018" width="0.1524" layer="21"/>
+<wire x1="8.382" y1="-9.5" x2="-8.382" y2="-9.5" width="0.1524" layer="21"/>
+<wire x1="-8.382" y1="-9.5" x2="-8.382" y2="-15.018" width="0.1524" layer="21"/>
 <wire x1="15.494" y1="-5.62" x2="10.414" y2="-5.62" width="0.1524" layer="21"/>
 <wire x1="15.494" y1="-5.62" x2="15.494" y2="-8.668" width="0.1524" layer="21"/>
 <wire x1="15.494" y1="-5.62" x2="15.494" y2="-5.493" width="0.1524" layer="21"/>
 <wire x1="15.494" y1="-8.668" x2="12.954" y2="-8.668" width="0.1524" layer="21"/>
 <wire x1="15.494" y1="-8.668" x2="15.494" y2="-9.176" width="0.1524" layer="21"/>
-<wire x1="15.494" y1="-9.176" x2="15.494" y2="-9.684" width="0.1524" layer="21"/>
-<wire x1="-15.494" y1="-9.684" x2="-15.494" y2="-9.176" width="0.1524" layer="21"/>
+<wire x1="15.494" y1="-9.176" x2="15.494" y2="-9.5" width="0.1524" layer="21"/>
+<wire x1="-15.494" y1="-9.5" x2="-15.494" y2="-9.176" width="0.1524" layer="21"/>
 <wire x1="-15.494" y1="-9.176" x2="-15.494" y2="-8.668" width="0.1524" layer="21"/>
 <wire x1="-15.494" y1="-8.668" x2="-15.494" y2="-5.62" width="0.1524" layer="21"/>
 <wire x1="-15.494" y1="-5.62" x2="-15.494" y2="-5.493" width="0.1524" layer="21"/>
@@ -2272,12 +2271,14 @@ Source: http://www.hirose.co.jp/cataloge_hp/e24000019.pdf</description>
 <wire x1="2.794" y1="-14.256" x2="2.794" y2="-11.97" width="0.1524" layer="21"/>
 <wire x1="-10.414" y1="-5.493" x2="-10.414" y2="-5.62" width="0.1524" layer="21"/>
 <wire x1="-10.414" y1="-5.62" x2="-15.494" y2="-5.62" width="0.1524" layer="21"/>
-<wire x1="-8.382" y1="-9.684" x2="-15.494" y2="-9.684" width="0.1524" layer="21"/>
+<wire x1="-8.382" y1="-9.5" x2="-9.398" y2="-9.5" width="0.1524" layer="21"/>
+<wire x1="-9.398" y1="-9.5" x2="-15.494" y2="-9.5" width="0.1524" layer="21"/>
 <wire x1="-8.763" y1="-10.319" x2="-8.763" y2="-15.018" width="0.1524" layer="21"/>
-<wire x1="-9.398" y1="-9.684" x2="-8.763" y2="-10.319" width="0.1524" layer="21" curve="-90"/>
-<wire x1="15.494" y1="-9.684" x2="8.382" y2="-9.684" width="0.1524" layer="21"/>
+<wire x1="-9.398" y1="-9.5" x2="-8.763" y2="-10.319" width="0.1524" layer="21" curve="-90"/>
+<wire x1="15.494" y1="-9.5" x2="9.398" y2="-9.5" width="0.1524" layer="21"/>
+<wire x1="9.398" y1="-9.5" x2="8.382" y2="-9.5" width="0.1524" layer="21"/>
 <wire x1="8.763" y1="-10.319" x2="8.763" y2="-15.018" width="0.1524" layer="21"/>
-<wire x1="8.763" y1="-10.319" x2="9.398" y2="-9.684" width="0.1524" layer="21" curve="-90"/>
+<wire x1="8.763" y1="-10.319" x2="9.398" y2="-9.5" width="0.1524" layer="21" curve="-90"/>
 <wire x1="-8.001" y1="-10.192" x2="-8.001" y2="-15.526" width="0.1524" layer="21"/>
 <wire x1="-8.001" y1="-15.526" x2="-8.255" y2="-15.526" width="0.1524" layer="21"/>
 <wire x1="8.001" y1="-10.192" x2="8.001" y2="-15.526" width="0.1524" layer="21"/>
@@ -2316,7 +2317,6 @@ Source: http://www.hirose.co.jp/cataloge_hp/e24000019.pdf</description>
 <rectangle x1="12.0142" y1="-5.62" x2="13.0302" y2="-3.969" layer="21"/>
 <rectangle x1="-13.0302" y1="-5.62" x2="-12.0142" y2="-3.969" layer="21"/>
 <rectangle x1="-9.271" y1="-5.62" x2="9.271" y2="-4.858" layer="21"/>
-<rectangle x1="-15.494" y1="-9.684" x2="15.494" y2="-9.176" layer="21"/>
 </package>
 <package name="HDF15H">
 <description>&lt;b&gt;SUB-D&lt;/b&gt;</description>
@@ -2463,8 +2463,8 @@ Source: http://www.hirose.co.jp/cataloge_hp/e24000019.pdf</description>
 <wire x1="-5" y1="4.5" x2="9.8" y2="4.5" width="0.127" layer="21"/>
 <wire x1="9.8" y1="4.5" x2="9.8" y2="-4.5" width="0.127" layer="21"/>
 <wire x1="9.8" y1="-4.5" x2="-5" y2="-4.5" width="0.127" layer="21"/>
-<hole x="0" y="0" drill="1"/>
-<hole x="4.5" y="0" drill="1"/>
+<hole x="0" y="0" drill="1.6"/>
+<hole x="4.5" y="0" drill="1.8"/>
 <wire x1="-5" y1="-2.5" x2="6" y2="-2.5" width="0.127" layer="51"/>
 <wire x1="6" y1="-2.5" x2="6" y2="-1.5" width="0.127" layer="51"/>
 <wire x1="6" y1="-1.5" x2="6" y2="1.5" width="0.127" layer="51"/>
@@ -6988,9 +6988,8 @@ Source: 3M</description>
 <part name="X1" library="con" deviceset="MINI-USB" device="UX60A-MB-5ST">
 <attribute name="MOUSER" value="798-UX60A-MB-5ST"/>
 </part>
-<part name="X2" library="con" deviceset="M09" device="" value="L717SDE09P1ACH4F">
-<attribute name="FARNELL" value="2401240"/>
-<attribute name="MOUSER" value="523-L717SDE09P1ACH4F"/>
+<part name="X2" library="con" deviceset="M09" device="" value="5504F1-09P-02A-03">
+<attribute name="FARNELL" value="1848368"/>
 </part>
 <part name="X3" library="con" deviceset="HF15" device="H" value="L77HDE15SD1CH4R">
 <attribute name="FARNELL" value="2401183"/>
@@ -7270,7 +7269,7 @@ Source: 3M</description>
 <part name="GND80" library="supply1" library_urn="urn:adsk.eagle:library:371" deviceset="GND" device=""/>
 <part name="GND81" library="supply1" library_urn="urn:adsk.eagle:library:371" deviceset="GND" device=""/>
 <part name="GND79" library="supply1" library_urn="urn:adsk.eagle:library:371" deviceset="GND" device=""/>
-<part name="C64" library="misc" deviceset="C-POL" device="E3.5-8" value="1000u">
+<part name="C64" library="misc" deviceset="C-POL" device="E3.5-8" value="470u">
 <attribute name="MOUSER" value="667-EEU-FR1C102L"/>
 </part>
 <part name="P+10" library="supply1" library_urn="urn:adsk.eagle:library:371" deviceset="VCC" device=""/>
@@ -7671,7 +7670,6 @@ Source: 3M</description>
 <attribute name="MOUSER" x="231.14" y="63.5" size="1.778" layer="96" display="off"/>
 </instance>
 <instance part="X2" gate="G$1" x="104.14" y="154.94">
-<attribute name="MOUSER" x="104.14" y="154.94" size="1.778" layer="96" display="off"/>
 <attribute name="FARNELL" x="104.14" y="154.94" size="1.778" layer="96" display="off"/>
 </instance>
 <instance part="X3" gate="G$1" x="231.14" y="149.86">
