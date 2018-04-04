@@ -3135,11 +3135,13 @@ Please make sure your boards conform to these design rules.</description>
 <attribute name="NAME" x="74.6125" y="39.6875" size="1.27" layer="26" font="vector" rot="MR0" align="center"/>
 <attribute name="VALUE" x="72.39" y="37.7825" size="1.27" layer="28" rot="MR0"/>
 </element>
-<element name="FB1" library="misc" package="R0603" value="" x="118.11" y="40.005" smashed="yes" rot="MR270">
+<element name="FB1" library="misc" package="R0603" value="BLM18AG601SN1D" x="118.11" y="40.005" smashed="yes" rot="MR270">
+<attribute name="MOUSER" value="81-BLM11A601S" x="118.11" y="40.005" size="1.778" layer="28" rot="MR270" display="off"/>
 <attribute name="NAME" x="118.11" y="36.83" size="1.27" layer="26" font="vector" rot="MR270" align="center"/>
 <attribute name="VALUE" x="120.015" y="40.64" size="1.27" layer="28" rot="MR270"/>
 </element>
-<element name="FB2" library="misc" package="R0603" value="" x="73.3425" y="42.2275" smashed="yes" rot="MR0">
+<element name="FB2" library="misc" package="R0603" value="BLM18AG601SN1D" x="73.3425" y="42.2275" smashed="yes" rot="MR0">
+<attribute name="MOUSER" value="81-BLM11A601S" x="73.3425" y="42.2275" size="1.778" layer="28" rot="MR0" display="off"/>
 <attribute name="NAME" x="75.8825" y="42.2275" size="1.27" layer="26" font="vector" rot="MR90" align="center"/>
 <attribute name="VALUE" x="73.9775" y="40.3225" size="1.27" layer="28" rot="MR0"/>
 </element>

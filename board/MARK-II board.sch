@@ -7535,8 +7535,12 @@ Source: 3M</description>
 <part name="+3V3_A3" library="misc" deviceset="+3V3_A" device=""/>
 <part name="GND26" library="supply1" library_urn="urn:adsk.eagle:library:371" deviceset="GND" device=""/>
 <part name="+3V315" library="supply1" library_urn="urn:adsk.eagle:library:371" deviceset="+3V3" device=""/>
-<part name="FB1" library="misc" deviceset="FERRITE_BEAD" device="603"/>
-<part name="FB2" library="misc" deviceset="FERRITE_BEAD" device="603"/>
+<part name="FB1" library="misc" deviceset="FERRITE_BEAD" device="603" value="BLM18AG601SN1D">
+<attribute name="MOUSER" value="81-BLM11A601S"/>
+</part>
+<part name="FB2" library="misc" deviceset="FERRITE_BEAD" device="603" value="BLM18AG601SN1D">
+<attribute name="MOUSER" value="81-BLM11A601S"/>
+</part>
 <part name="C59" library="misc" deviceset="C" device="C0603" value="100n">
 <attribute name="MOUSER" value="710-885012206046"/>
 </part>
@@ -8687,7 +8691,11 @@ Source: 3M</description>
 <instance part="+3V315" gate="G$1" x="121.92" y="27.94" smashed="yes">
 <attribute name="VALUE" x="124.46" y="30.48" size="1.778" layer="96" rot="MR0"/>
 </instance>
-<instance part="FB1" gate="G$1" x="134.62" y="22.86"/>
+<instance part="FB1" gate="G$1" x="134.62" y="22.86" smashed="yes">
+<attribute name="NAME" x="121.92" y="15.24" size="1.778" layer="95"/>
+<attribute name="VALUE" x="121.92" y="12.7" size="1.778" layer="96"/>
+<attribute name="MOUSER" x="134.62" y="22.86" size="1.778" layer="96" display="off"/>
+</instance>
 </instances>
 <busses>
 </busses>
@@ -10714,7 +10722,9 @@ Source: 3M</description>
 </instance>
 <instance part="+3V341" gate="G$1" x="15.24" y="55.88"/>
 <instance part="GND63" gate="1" x="15.24" y="10.16"/>
-<instance part="FB2" gate="G$1" x="15.24" y="43.18" rot="R270"/>
+<instance part="FB2" gate="G$1" x="15.24" y="43.18" rot="R270">
+<attribute name="MOUSER" x="15.24" y="43.18" size="1.778" layer="96" rot="R270" display="off"/>
+</instance>
 <instance part="C59" gate="G$1" x="233.68" y="43.18">
 <attribute name="MOUSER" x="233.68" y="43.18" size="1.778" layer="96" display="off"/>
 </instance>
