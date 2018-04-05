@@ -7180,7 +7180,7 @@ Source: 3M</description>
 <part name="IC9" library="MAX" deviceset="10M25SAE144" device="">
 <attribute name="MOUSER" value="989-10M25SAE144C8G"/>
 </part>
-<part name="IC5" library="ic" deviceset="IS42S83200" device="">
+<part name="IC5" library="ic" deviceset="IS42S83200" device="" value="AS4C32M8SA">
 <attribute name="MOUSER" value="913-AS4C32M8SA6TIN"/>
 </part>
 <part name="FRAME4" library="frames" deviceset="A4L-LOC" device=""/>
@@ -7270,7 +7270,7 @@ Source: 3M</description>
 <part name="GND81" library="supply1" library_urn="urn:adsk.eagle:library:371" deviceset="GND" device=""/>
 <part name="GND79" library="supply1" library_urn="urn:adsk.eagle:library:371" deviceset="GND" device=""/>
 <part name="C64" library="misc" deviceset="C-POL" device="E3.5-8" value="470u">
-<attribute name="MOUSER" value="667-EEU-FR1C102L"/>
+<attribute name="MOUSER" value="667-EEU-FR1E471Y"/>
 </part>
 <part name="P+10" library="supply1" library_urn="urn:adsk.eagle:library:371" deviceset="VCC" device=""/>
 <part name="GND70" library="supply1" library_urn="urn:adsk.eagle:library:371" deviceset="GND" device=""/>
@@ -10102,7 +10102,7 @@ Source: 3M</description>
 <instance part="Q5" gate="A" x="210.82" y="111.76">
 <attribute name="MOUSER" x="210.82" y="111.76" size="1.778" layer="96" display="off"/>
 </instance>
-<instance part="GND55" gate="1" x="121.92" y="88.9"/>
+<instance part="GND55" gate="1" x="121.92" y="91.44"/>
 <instance part="+3V334" gate="G$1" x="124.46" y="149.86" smashed="yes">
 <attribute name="VALUE" x="124.46" y="149.86" size="1.778" layer="96" rot="R90"/>
 </instance>
@@ -10190,8 +10190,10 @@ Source: 3M</description>
 <instance part="LED3" gate="G$1" x="121.92" y="20.32" rot="MR270">
 <attribute name="MOUSER" x="121.92" y="20.32" size="1.778" layer="96" rot="MR270" display="off"/>
 </instance>
-<instance part="X9" gate="-1" x="111.76" y="144.78">
+<instance part="X9" gate="-1" x="111.76" y="144.78" smashed="yes">
 <attribute name="FARNELL" x="111.76" y="144.78" size="1.778" layer="96" display="off"/>
+<attribute name="NAME" x="110.49" y="145.669" size="1.778" layer="95" rot="R180"/>
+<attribute name="VALUE" x="101.473" y="113.03" size="1.778" layer="96" rot="R90"/>
 </instance>
 <instance part="X9" gate="-2" x="111.76" y="142.24"/>
 <instance part="X9" gate="-3" x="111.76" y="139.7"/>
@@ -10246,7 +10248,7 @@ Source: 3M</description>
 <wire x1="121.92" y1="124.46" x2="121.92" y2="101.6" width="0.1524" layer="91"/>
 <pinref part="GND55" gate="1" pin="GND"/>
 <wire x1="121.92" y1="101.6" x2="121.92" y2="96.52" width="0.1524" layer="91"/>
-<wire x1="121.92" y1="96.52" x2="121.92" y2="91.44" width="0.1524" layer="91"/>
+<wire x1="121.92" y1="96.52" x2="121.92" y2="93.98" width="0.1524" layer="91"/>
 <wire x1="116.84" y1="96.52" x2="121.92" y2="96.52" width="0.1524" layer="91"/>
 <junction x="121.92" y="96.52"/>
 <wire x1="116.84" y1="101.6" x2="121.92" y2="101.6" width="0.1524" layer="91"/>

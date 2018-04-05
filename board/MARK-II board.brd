@@ -2691,7 +2691,7 @@ Please make sure your boards conform to these design rules.</description>
 <attribute name="NAME" x="76.61" y="30.895" size="1.27" layer="25" font="vector" rot="R180" align="center"/>
 <attribute name="VALUE" x="76.61" y="55.435" size="1.27" layer="27" rot="R180"/>
 </element>
-<element name="IC5" library="ic" package="TSOP54" value="IS42S83200" x="93.8675" y="65.39" smashed="yes" rot="R180">
+<element name="IC5" library="ic" package="TSOP54" value="AS4C32M8SA" x="93.8675" y="65.39" smashed="yes" rot="R180">
 <attribute name="MOUSER" value="913-AS4C32M8SA6TIN" x="93.8675" y="65.39" size="1.778" layer="27" rot="R180" display="off"/>
 <attribute name="NAME" x="106.25" y="69.2" size="1.27" layer="25" font="vector" rot="R270" align="center"/>
 <attribute name="VALUE" x="96.09" y="67.295" size="0.8128" layer="27" ratio="10" rot="R180"/>
@@ -2782,7 +2782,7 @@ Please make sure your boards conform to these design rules.</description>
 <attribute name="VALUE" x="19.812" y="46.99" size="1.27" layer="27" ratio="10" rot="R180"/>
 </element>
 <element name="C64" library="misc" package="E3,5-8" value="470u" x="8.89" y="34.925" smashed="yes">
-<attribute name="MOUSER" value="667-EEU-FR1C102L" x="8.89" y="34.925" size="1.778" layer="27" display="off"/>
+<attribute name="MOUSER" value="667-EEU-FR1E471Y" x="8.89" y="34.925" size="1.778" layer="27" display="off"/>
 <attribute name="NAME" x="3.302" y="32.512" size="1.27" layer="25" font="vector" rot="R270" align="center"/>
 <attribute name="VALUE" x="6.604" y="31.877" size="1.27" layer="27" ratio="10"/>
 </element>
