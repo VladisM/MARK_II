@@ -4,6 +4,7 @@
 
 #include <avr/io.h>
 #include <util/delay.h>
+#include <avr/interrupt.h>
 
 /*
  * Macro definitions
@@ -26,6 +27,18 @@
 #define BTN_PRESS 1
 #define BTN_UNPRESS 0
 
+#define CMD_READ_VBAT           0b10000000
+#define CMD_BEEP_SHORT          0b10000001
+#define CMD_BEEP_LONG           0b10000010
+#define CMD_LED_ON              0b10000011
+#define CMD_LED_OFF             0b10000100
+#define CMD_LED_BLINK_SHORT     0b10000101
+#define CMD_LED_BLINK_LONG      0b10000110
+#define CMD_POWEROFF            0b10000111
+#define CMD_RESET               0b10001000
+#define CMD_AUDIO_MUTE          0b10001001
+#define CMD_AUDIO_UNMUTE        0b10001010
+
 /*
  * Function prototypes
  */
@@ -35,17 +48,28 @@ uint8_t get_reset_btn();
 uint8_t get_power_btn();
 void start_sequence();
 void shutdown_sequence();
+void reset_sequence();
+uint8_t read_vbat();
+void exec_command();
+void send_byte(uint8_t data);
+
+/*
+ * Global variables
+ */
+
+static volatile uint8_t cmd_byte = 0;
+static volatile uint8_t uart_recieved = 0;
+static uint8_t state = HALT;
 
 /*
  * Main program
  */
 
 int main(){
-
-    uint8_t state = HALT;
-
+    
     init_peripherals();
-
+    sei();
+    
     while(1){
 
         if(state == HALT){
@@ -68,9 +92,32 @@ int main(){
                 shutdown_sequence();
                 state = HALT;
             }
+            
+            //if reset btn is pressed then go to reset sequence
+            else if(get_reset_btn() == BTN_PRESS){
+                _delay_ms(100);
+                if(get_reset_btn() != BTN_PRESS) continue;
+                reset_sequence();
+            }
+            
+            //else, check for task from uart interface
+            else if(uart_recieved != 0){
+                uart_recieved = 0;
+                exec_command();
+            }
         }
     }
     return 0;
+}
+
+/*
+ * ISR vectors
+ */
+
+ISR(USART_RX_vect){
+    //interrupt from UART
+    cmd_byte = UDR0;
+    uart_recieved = 1;
 }
 
 /*
@@ -130,16 +177,35 @@ void init_peripherals(){
     /*
      * ADC configuration
      *
-     *
+     * ADMUX register
+     *  VREF = AVcc
+     *  result left adjusted
+     *  MUX = ADC4
+     * 
+     * ADCSRA register
+     *  enable adc
+     *  prescaler = 8
+     * 
+     * ADCSRB register
+     *  default state
+     * 
+     * DIDR0 register
+     *  disable PC4
      */
-    //TODO: add ADC for Vbat
+         
+    ADMUX |= (1 << MUX2) | (1 << ADLAR) | (1 << REFS0);
+    ADCSRA |= (1 << ADEN) | (1 << ADPS1) | (1 << ADPS0);
+    DIDR0 |= (1 << ADC4D);
 
     /*
      * UART configuration
      *
-     *
+     * 8N1 9600baud
+     * Enable RX interrupt, reciever and transmitter
      */
-     //TODO: add uart
+    
+    UBRR0 = 6;
+    UCSR0B |= (1 << RXCIE0) | (1 << RXEN0) | (1 << TXEN0); 
 
     /*
      * Set control pins defaults
@@ -200,3 +266,78 @@ void shutdown_sequence(){
     POWER_OFF;
 }
 
+void reset_sequence(){
+    CPULED_ON;
+    SPEAKER_ON;
+    RESET_HI;
+    _delay_ms(100);
+    SPEAKER_OFF;
+    _delay_ms(100);
+    RESET_LOW;
+    CPULED_OFF;
+}
+
+uint8_t read_vbat(){
+    //start single conversion and return ADCH value 
+    ADCSRA |= (1 << ADSC);  
+    while( ADCSRA & (1 << ADSC) );
+    return ADCH;
+}
+
+void exec_command(){
+    switch(cmd_byte){
+        case CMD_READ_VBAT:
+            send_byte(read_vbat());
+            break;
+        case CMD_BEEP_SHORT:
+            SPEAKER_ON;
+            _delay_ms(100);
+            SPEAKER_OFF;
+            _delay_ms(100);
+            break;
+        case CMD_BEEP_LONG:
+            SPEAKER_ON;
+            _delay_ms(300);
+            SPEAKER_OFF;
+            _delay_ms(100);
+            break;
+        case CMD_LED_ON:
+            CPULED_ON;
+            break;
+        case CMD_LED_OFF:
+            CPULED_OFF;
+            break;
+        case CMD_LED_BLINK_SHORT:
+            CPULED_ON;
+            _delay_ms(100);
+            CPULED_OFF;
+            _delay_ms(100);
+            break;
+        case CMD_LED_BLINK_LONG:
+            CPULED_ON;
+            _delay_ms(300);
+            CPULED_OFF;
+            _delay_ms(100);
+            break;
+        case CMD_POWEROFF:
+            state = HALT;
+            shutdown_sequence();
+            break;
+        case CMD_RESET:
+            reset_sequence();
+            break;
+        case CMD_AUDIO_MUTE:
+            AUDIO_MUTE;
+            break;
+        case CMD_AUDIO_UNMUTE:
+            AUDIO_UNMUTE;           
+            break;
+        default:
+            break;
+    }
+}
+
+void send_byte(uint8_t data){
+    while ( !(UCSR0A & (1<<UDRE)) );
+    UDR0 = data;
+}
