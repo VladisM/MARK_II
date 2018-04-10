@@ -7222,11 +7222,11 @@ Source: 3M</description>
 </part>
 <part name="GND54" library="supply1" library_urn="urn:adsk.eagle:library:371" deviceset="GND" device=""/>
 <part name="+3V332" library="supply1" library_urn="urn:adsk.eagle:library:371" deviceset="+3V3" device=""/>
-<part name="IC10" library="vreg" deviceset="IFX1963" device="TBV">
-<attribute name="MOUSER" value="726-IFX1963TBV"/>
+<part name="IC10" library="vreg" deviceset="IFX1963" device="TBV" value="MIC29302A">
+<attribute name="MOUSER" value="998-MIC29302AWU"/>
 </part>
-<part name="IC11" library="vreg" deviceset="IFX1963" device="TBV">
-<attribute name="MOUSER" value="726-IFX1963TBV"/>
+<part name="IC11" library="vreg" deviceset="IFX1963" device="TBV" value="MIC29302A">
+<attribute name="MOUSER" value="998-MIC29302AWU"/>
 </part>
 <part name="GND72" library="supply1" library_urn="urn:adsk.eagle:library:371" deviceset="GND" device=""/>
 <part name="GND74" library="supply1" library_urn="urn:adsk.eagle:library:371" deviceset="GND" device=""/>

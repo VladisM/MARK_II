@@ -2731,13 +2731,13 @@ Please make sure your boards conform to these design rules.</description>
 <attribute name="NAME" x="99.06" y="52.705" size="1.27" layer="25" font="vector" rot="R90" align="center"/>
 <attribute name="VALUE" x="100.965" y="48.895" size="1.27" layer="27" rot="R90"/>
 </element>
-<element name="IC10" library="vreg" package="D2PAK-5" value="IFX1963TBV" x="8.89" y="57.15" smashed="yes">
-<attribute name="MOUSER" value="726-IFX1963TBV" x="8.89" y="57.15" size="1.778" layer="27" display="off"/>
+<element name="IC10" library="vreg" package="D2PAK-5" value="MIC29302A" x="8.89" y="57.15" smashed="yes">
+<attribute name="MOUSER" value="998-MIC29302AWU" x="8.89" y="57.15" size="1.778" layer="27" display="off"/>
 <attribute name="NAME" x="8.89" y="48.26" size="1.27" layer="25" font="vector" align="center"/>
 <attribute name="VALUE" x="16.51" y="56.515" size="1.27" layer="27" rot="R90"/>
 </element>
-<element name="IC11" library="vreg" package="D2PAK-5" value="IFX1963TBV" x="22.86" y="57.15" smashed="yes">
-<attribute name="MOUSER" value="726-IFX1963TBV" x="22.86" y="57.15" size="1.778" layer="27" display="off"/>
+<element name="IC11" library="vreg" package="D2PAK-5" value="MIC29302A" x="22.86" y="57.15" smashed="yes">
+<attribute name="MOUSER" value="998-MIC29302AWU" x="22.86" y="57.15" size="1.778" layer="27" display="off"/>
 <attribute name="NAME" x="22.86" y="48.26" size="1.27" layer="25" font="vector" align="center"/>
 <attribute name="VALUE" x="30.48" y="56.515" size="1.27" layer="27" rot="R90"/>
 </element>
