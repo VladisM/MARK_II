@@ -71,7 +71,7 @@ int main(){
     sei();
     
     while(1){
-
+				
         if(state == HALT){
 
             //check if pwrbtn is pressed; if so go to start sequence
@@ -200,11 +200,11 @@ void init_peripherals(){
     /*
      * UART configuration
      *
-     * 8N1 9600baud
+     * 8N1 4800baud
      * Enable RX interrupt, reciever and transmitter
      */
     
-    UBRR0 = 6;
+    UBRR0 = 12;
     UCSR0B |= (1 << RXCIE0) | (1 << RXEN0) | (1 << TXEN0); 
 
     /*
@@ -338,6 +338,6 @@ void exec_command(){
 }
 
 void send_byte(uint8_t data){
-    while ( !(UCSR0A & (1<<UDRE)) );
+    while ( !(UCSR0A & (1<<UDRE0)) );
     UDR0 = data;
 }
