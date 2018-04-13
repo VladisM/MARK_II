@@ -27,6 +27,9 @@
 #define BTN_PRESS 1
 #define BTN_UNPRESS 0
 
+#define SD_INSERTED 1
+#define SD_NOT_INSERTED 0
+
 #define CMD_READ_VBAT           0b10000000
 #define CMD_BEEP_SHORT          0b10000001
 #define CMD_BEEP_LONG           0b10000010
@@ -38,6 +41,7 @@
 #define CMD_RESET               0b10001000
 #define CMD_AUDIO_MUTE          0b10001001
 #define CMD_AUDIO_UNMUTE        0b10001010
+#define CMD_GET_SD_STATE        0b10001011
 
 /*
  * Function prototypes
@@ -46,6 +50,7 @@
 void init_peripherals();
 uint8_t get_reset_btn();
 uint8_t get_power_btn();
+uint8_t get_sd_state();
 void start_sequence();
 void shutdown_sequence();
 void reset_sequence();
@@ -71,7 +76,7 @@ int main(){
     sei();
     
     while(1){
-				
+                
         if(state == HALT){
 
             //check if pwrbtn is pressed; if so go to start sequence
@@ -226,6 +231,10 @@ uint8_t get_power_btn(){
     return !((PIND & (1 << PD6)) >> PD6);
 }
 
+uint8_t get_sd_state(){
+    return !((PINB & (1 << PB6)) >> PB6);
+}
+
 void start_sequence(){
     //enable voltage regulators and wait a bit
     POWER_ON;
@@ -331,6 +340,9 @@ void exec_command(){
             break;
         case CMD_AUDIO_UNMUTE:
             AUDIO_UNMUTE;           
+            break;
+        case CMD_GET_SD_STATE:
+            send_byte(get_sd_state());
             break;
         default:
             break;
