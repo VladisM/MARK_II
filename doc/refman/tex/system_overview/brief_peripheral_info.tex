@@ -5,11 +5,6 @@
 On-chip ROM is small memory for your program, it can be initialized with content
  at the synthesizing design into FPGA. This memory have only 1kB (256 words).
 
-\subsubsection{GPIO}
-
-Really simple peripheral but widely used. GPIO consist from two eight bit ports.
- Each pin in port can be configured as output or input.
-
 \subsubsection{SysTimer}
 
 Simple 24b timer. It will generate interrupt on compare match and then start
@@ -25,11 +20,6 @@ setting theirs address. Also take care about priorities.
 Universal asynchronous receiver/transmitter is intended for serial communication
 with many devices like computers, another micro-controllers, modules and so on.
 It has build in baud rate generator and also provide configurable interrupt sources.
-
-\subsubsection{Timers}
-
-Basic 16b timers with PWM output generation and interrupts. Timer can generate
-interrupt on compare match like SysTimer, on overflow or on both.
 
 \subsubsection{On-chip RAM}
 

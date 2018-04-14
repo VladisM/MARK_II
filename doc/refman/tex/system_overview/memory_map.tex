@@ -4,8 +4,8 @@ In the table \ref{tab:memory_map} is simple memory map. There are listed all
 peripherals implemented in MARK II SoC. Each peripheral have one or more registers at different
 addresses.
 
-Lets say, GPIO have 0x00100 as base address, one of the GPIO register
-is DDRB register with offset +3, so address of DDRB register is 0x00103. For
+Lets say, UART0 have 0x00130 as base address, one of the UART0 register
+is UCR register with offset +3, so address of UCR register is 0x00103. For
 informations about individual register please see corresponding peripheral sections.
 
 \begin{table}[h]
@@ -14,14 +14,10 @@ informations about individual register please see corresponding peripheral secti
         \hline
         \textbf{Peripheral} & \textbf{Base} & \textbf{Size} & \textbf{End} & \textbf{Note}                                  \\ \hline
         ROM                 & 0x000000      & $2^{8}$       & 0x0000FF     & Read only memory                               \\ \hline
-        GPIO                & 0x000100      & $2^{2}$       & 0x000103     & General purpose inputs and outputs             \\ \hline
         System Timer        & 0x000104      & $2^{1}$       & 0x000105     & 24b system timer                               \\ \hline
-        PS2 Keyboard        & 0x000106      & $2^{0}$       & 0x000106     & PS2 interface driver                           \\ \hline
+        PS2 0               & 0x000106      & $2^{0}$       & 0x000106     & PS2 0 interface driver                         \\ \hline
+        PS2 1               & 0x000107      & $2^{0}$       & 0x000107     & PS2 1 interface driver                         \\ \hline
         Interrupt driver    & 0x00010F      & $2^{4} + 1$   & 0x00011F     & Control interrupts                             \\ \hline
-        Timer 0             & 0x000120      & $2^{2}$       & 0x000123     & General purpose timer 0                        \\ \hline
-        Timer 1             & 0x000124      & $2^{2}$       & 0x000127     & General purpose timer 1                        \\ \hline
-        Timer 2             & 0x000128      & $2^{2}$       & 0x00012B     & General purpose timer 2                        \\ \hline
-        Timer 3             & 0x00012C      & $2^{2}$       & 0x00012F     & General purpose timer 3                        \\ \hline
         UART 0              & 0x000130      & $2^{2}$       & 0x000133     & Serial port 0                                  \\ \hline
         UART 1              & 0x000134      & $2^{2}$       & 0x000137     & Serial port 1                                  \\ \hline
         UART 2              & 0x000138      & $2^{2}$       & 0x00013B     & Serial port 2                                  \\ \hline
