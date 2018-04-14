@@ -70,15 +70,12 @@ if {$make_assignments} {
 
 	set_global_assignment -name VHDL_FILE ./src/cpu/cpu.vhd
 	set_global_assignment -name VHDL_FILE ./src/cpu/id.vhd
-	set_global_assignment -name VHDL_FILE ./src/gpio/gpio.vhd
 	set_global_assignment -name VHDL_FILE ./src/interruptControl/intController.vhd
 	set_global_assignment -name VHDL_FILE ./src/ps2/ps2core.vhd
 	set_global_assignment -name VHDL_FILE ./src/ps2/ps2.vhd
 	set_global_assignment -name VHDL_FILE ./src/ram/ram.vhd
 	set_global_assignment -name VHDL_FILE ./src/systimer/systim.vhd
 	set_global_assignment -name VHDL_FILE ./src/rom/rom.vhd
-	set_global_assignment -name VHDL_FILE ./src/timer/timer.vhd
-	set_global_assignment -name VHDL_FILE ./src/timer/core.vhd
 	set_global_assignment -name VHDL_FILE ./src/uart/uart_core.vhd
 	set_global_assignment -name VHDL_FILE ./src/uart/uart.vhd
 	set_global_assignment -name VHDL_FILE ./src/uart/transmitter.vhd
