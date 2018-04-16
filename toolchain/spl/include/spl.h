@@ -16,5 +16,6 @@
 #include "vga.h"
 #include "cpu.h"
 #include "sdram.h"
+#include "pwrmng.h"
 
 #endif
