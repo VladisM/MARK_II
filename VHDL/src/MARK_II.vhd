@@ -233,7 +233,7 @@ architecture MARK_II_arch of MARK_II is
             RD: in std_logic;
             ack: out std_logic;
             --device
-            clk_31M5: in std_logic;
+            clk_vga: in std_logic;
             h_sync: out std_logic;
             v_sync: out std_logic;
             red: out std_logic_vector(2 downto 0);
