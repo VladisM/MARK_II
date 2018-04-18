@@ -16,7 +16,7 @@ entity sdram_driver is
         rd_req: in std_logic;
         data_out_ready: out std_logic;
         ack: out std_logic;
-        
+
         sdram_ras_n: out std_logic;
         sdram_cas_n: out std_logic;
         sdram_we_n: out std_logic;
@@ -103,26 +103,26 @@ architecture sdram_driver_arch of sdram_driver is
     --address parts
     signal address_ba: std_logic_vector(1 downto 0);
     signal address_row: std_logic_vector(12 downto 0);
-    signal address_col: std_logic_vector(8 downto 0);
+    signal address_col: std_logic_vector(9 downto 0);
 
     --signals from command register
     signal cmd_wr_req: std_logic;
     --~ signal cmd_rd_req: std_logic;
     signal cmd_address: std_logic_vector(22 downto 0);
     signal cmd_data_in: std_logic_vector(31 downto 0);
-    
+
     signal write_cmd_reg: std_logic;
 begin
 
     --split address into multiple parts
     address_ba <= cmd_address(22 downto 21);
     address_row <= cmd_address(20 downto 8);
-    address_col <= cmd_address(7 downto 0) & '0';
+    address_col <= cmd_address(7 downto 0) & "00";
 
     --bidirectional buffer for DQ pins
     sdram_dataout <= sdram_data;
-	sdram_data <= bidir_buff_datain_buff when bidir_buff_oe_buff = '1' else (others => 'Z');
-	
+    sdram_data <= bidir_buff_datain_buff when bidir_buff_oe_buff = '1' else (others => 'Z');
+
     process(clk_100) is
         variable bidir_buff_oe_var: std_logic := '0';
     begin
@@ -248,7 +248,7 @@ begin
     end process;
 
     --register for command
-    process(clk_100) is 
+    process(clk_100) is
         variable wr_req_var: std_logic := '0';
         --~ variable rd_req_var: std_logic := '0';
         variable address_var: std_logic_vector(22 downto 0) := (others => '0');
@@ -272,7 +272,7 @@ begin
         cmd_address <= address_var;
         cmd_data_in <= data_in_var;
     end process;
-    
+
     --main fsm
     process(clk_100) is
     begin
@@ -436,16 +436,16 @@ begin
 
                     when write_nop_2 =>
                         fsm_state <= write_nop_3;
-                    
+
                     when write_nop_3 =>
                         fsm_state <= write_nop_4;
-                                        
+
                     when write_nop_4 =>
                         fsm_state <= write_nop_5;
-                        
+
                     when write_nop_5 =>
                         fsm_state <= write_nop_6;
-                        
+
                     when write_nop_6 =>
                         fsm_state <= idle;
 
@@ -461,19 +461,19 @@ begin
 
                     when read_nop_2 =>
                         fsm_state <= read_nop_3;
-                    
+
                     when read_nop_3 =>
                         fsm_state <= read_nop_4;
-                    
+
                     when read_nop_4 =>
                         fsm_state <= read_nop_5;
-                    
+
                     when read_nop_5 =>
                         fsm_state <= read_nop_6;
-                    
+
                     when read_nop_6 =>
                         fsm_state <= read_completed;
-                    
+
                     when read_completed =>
                         fsm_state <= idle;
 
@@ -821,7 +821,7 @@ begin
                 data_out_ready <= '0';
                 write_cmd_reg <= '0';
                 ack <= '0';
-                
+
             when bank_active =>
                 init_counter_clean <= '0';
                 refresh_counter_clean <= '0';
@@ -869,7 +869,7 @@ begin
                 refresh_counter_clean <= '0';
                 bidir_buff_oe <= '1';
                 sdram_control <= com_write_precharge;
-                sdram_addr_unbuff <= "0010" & address_col;
+                sdram_addr_unbuff <= "001" & address_col;
                 sdram_ba_unbuff <= address_ba;
                 bidir_buff_datain <= cmd_data_in(31 downto 24);
                 busy <= '1';
@@ -891,8 +891,8 @@ begin
                 data_out_ready <= '0';
                 write_cmd_reg <= '0';
                 ack <= '0';
-                
-			when write_nop_1 =>
+
+            when write_nop_1 =>
                 init_counter_clean <= '0';
                 refresh_counter_clean <= '0';
                 bidir_buff_oe <= '1';
@@ -905,7 +905,7 @@ begin
                 data_out_ready <= '0';
                 write_cmd_reg <= '0';
                 ack <= '0';
-                
+
             when write_nop_2 =>
                 init_counter_clean <= '0';
                 refresh_counter_clean <= '0';
@@ -919,7 +919,7 @@ begin
                 data_out_ready <= '0';
                 write_cmd_reg <= '0';
                 ack <= '0';
-                
+
             when write_nop_3 =>
                 init_counter_clean <= '0';
                 refresh_counter_clean <= '0';
@@ -961,7 +961,7 @@ begin
                 data_out_ready <= '0';
                 write_cmd_reg <= '0';
                 ack <= '0';
-            
+
             when write_nop_6 =>
                 init_counter_clean <= '0';
                 refresh_counter_clean <= '0';
@@ -975,13 +975,13 @@ begin
                 data_out_ready <= '0';
                 write_cmd_reg <= '0';
                 ack <= '0';
-                
+
             when read_command =>
                 init_counter_clean <= '0';
                 refresh_counter_clean <= '0';
                 bidir_buff_oe <= '0';
                 sdram_control <= com_read_precharge;
-                sdram_addr_unbuff <= "0010" & address_col;
+                sdram_addr_unbuff <= "001" & address_col;
                 sdram_ba_unbuff <= address_ba;
                 bidir_buff_datain <= x"00";
                 busy <= '1';
@@ -1045,7 +1045,7 @@ begin
                 data_out_ready <= '0';
                 write_cmd_reg <= '0';
                 ack <= '0';
-            
+
             when read_nop_4 =>
                 init_counter_clean <= '0';
                 refresh_counter_clean <= '0';
@@ -1059,7 +1059,7 @@ begin
                 data_out_ready <= '0';
                 write_cmd_reg <= '0';
                 ack <= '0';
-            
+
             when read_nop_5 =>
                 init_counter_clean <= '0';
                 refresh_counter_clean <= '0';
@@ -1073,7 +1073,7 @@ begin
                 data_out_ready <= '0';
                 write_cmd_reg <= '0';
                 ack <= '0';
-                
+
             when read_nop_6 =>
                 init_counter_clean <= '0';
                 refresh_counter_clean <= '0';
@@ -1087,7 +1087,7 @@ begin
                 data_out_ready <= '0';
                 write_cmd_reg <= '0';
                 ack <= '0';
-                    
+
             when read_completed =>
                 init_counter_clean <= '0';
                 refresh_counter_clean <= '0';
@@ -1101,7 +1101,7 @@ begin
                 data_out_ready <= '1';
                 write_cmd_reg <= '0';
                 ack <= '0';
-                
+
         end case;
     end process;
 end architecture sdram_driver_arch;

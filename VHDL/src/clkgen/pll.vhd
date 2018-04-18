@@ -43,6 +43,7 @@ USE altera_mf.all;
 ENTITY pll IS
 	PORT
 	(
+		areset		: IN STD_LOGIC  := '0';
 		inclk0		: IN STD_LOGIC  := '0';
 		c0		: OUT STD_LOGIC ;
 		c1		: OUT STD_LOGIC ;
@@ -127,6 +128,7 @@ ARCHITECTURE SYN OF pll IS
 		width_clock		: NATURAL
 	);
 	PORT (
+			areset	: IN STD_LOGIC ;
 			inclk	: IN STD_LOGIC_VECTOR (1 DOWNTO 0);
 			clk	: OUT STD_LOGIC_VECTOR (4 DOWNTO 0);
 			locked	: OUT STD_LOGIC 
@@ -154,7 +156,7 @@ BEGIN
 		clk1_divide_by => 1,
 		clk1_duty_cycle => 50,
 		clk1_multiply_by => 4,
-		clk1_phase_shift => "5000",
+		clk1_phase_shift => "833",
 		compensate_clock => "CLK0",
 		inclk0_input_frequency => 40000,
 		intended_device_family => "MAX 10",
@@ -163,7 +165,7 @@ BEGIN
 		operation_mode => "NORMAL",
 		pll_type => "AUTO",
 		port_activeclock => "PORT_UNUSED",
-		port_areset => "PORT_UNUSED",
+		port_areset => "PORT_USED",
 		port_clkbad0 => "PORT_UNUSED",
 		port_clkbad1 => "PORT_UNUSED",
 		port_clkloss => "PORT_UNUSED",
@@ -203,10 +205,11 @@ BEGIN
 		port_extclk1 => "PORT_UNUSED",
 		port_extclk2 => "PORT_UNUSED",
 		port_extclk3 => "PORT_UNUSED",
-		self_reset_on_loss_lock => "OFF",
+		self_reset_on_loss_lock => "ON",
 		width_clock => 5
 	)
 	PORT MAP (
+		areset => areset,
 		inclk => sub_wire5,
 		clk => sub_wire0,
 		locked => sub_wire3
@@ -277,12 +280,12 @@ END SYN;
 -- Retrieval info: PRIVATE: PHASE_RECONFIG_FEATURE_ENABLED STRING "1"
 -- Retrieval info: PRIVATE: PHASE_RECONFIG_INPUTS_CHECK STRING "0"
 -- Retrieval info: PRIVATE: PHASE_SHIFT0 STRING "0.00000000"
--- Retrieval info: PRIVATE: PHASE_SHIFT1 STRING "180.00000000"
+-- Retrieval info: PRIVATE: PHASE_SHIFT1 STRING "30.00000000"
 -- Retrieval info: PRIVATE: PHASE_SHIFT_STEP_ENABLED_CHECK STRING "0"
 -- Retrieval info: PRIVATE: PHASE_SHIFT_UNIT0 STRING "ns"
 -- Retrieval info: PRIVATE: PHASE_SHIFT_UNIT1 STRING "deg"
 -- Retrieval info: PRIVATE: PLL_ADVANCED_PARAM_CHECK STRING "0"
--- Retrieval info: PRIVATE: PLL_ARESET_CHECK STRING "0"
+-- Retrieval info: PRIVATE: PLL_ARESET_CHECK STRING "1"
 -- Retrieval info: PRIVATE: PLL_AUTOPLL_CHECK NUMERIC "1"
 -- Retrieval info: PRIVATE: PLL_ENHPLL_CHECK NUMERIC "0"
 -- Retrieval info: PRIVATE: PLL_FASTPLL_CHECK NUMERIC "0"
@@ -294,7 +297,7 @@ END SYN;
 -- Retrieval info: PRIVATE: RECONFIG_FILE STRING "pll_sdram.mif"
 -- Retrieval info: PRIVATE: SACN_INPUTS_CHECK STRING "0"
 -- Retrieval info: PRIVATE: SCAN_FEATURE_ENABLED STRING "1"
--- Retrieval info: PRIVATE: SELF_RESET_LOCK_LOSS STRING "0"
+-- Retrieval info: PRIVATE: SELF_RESET_LOCK_LOSS STRING "1"
 -- Retrieval info: PRIVATE: SHORT_SCAN_RADIO STRING "0"
 -- Retrieval info: PRIVATE: SPREAD_FEATURE_ENABLED STRING "0"
 -- Retrieval info: PRIVATE: SPREAD_FREQ STRING "50.000"
@@ -325,7 +328,7 @@ END SYN;
 -- Retrieval info: CONSTANT: CLK1_DIVIDE_BY NUMERIC "1"
 -- Retrieval info: CONSTANT: CLK1_DUTY_CYCLE NUMERIC "50"
 -- Retrieval info: CONSTANT: CLK1_MULTIPLY_BY NUMERIC "4"
--- Retrieval info: CONSTANT: CLK1_PHASE_SHIFT STRING "5000"
+-- Retrieval info: CONSTANT: CLK1_PHASE_SHIFT STRING "833"
 -- Retrieval info: CONSTANT: COMPENSATE_CLOCK STRING "CLK0"
 -- Retrieval info: CONSTANT: INCLK0_INPUT_FREQUENCY NUMERIC "40000"
 -- Retrieval info: CONSTANT: INTENDED_DEVICE_FAMILY STRING "MAX 10"
@@ -333,7 +336,7 @@ END SYN;
 -- Retrieval info: CONSTANT: OPERATION_MODE STRING "NORMAL"
 -- Retrieval info: CONSTANT: PLL_TYPE STRING "AUTO"
 -- Retrieval info: CONSTANT: PORT_ACTIVECLOCK STRING "PORT_UNUSED"
--- Retrieval info: CONSTANT: PORT_ARESET STRING "PORT_UNUSED"
+-- Retrieval info: CONSTANT: PORT_ARESET STRING "PORT_USED"
 -- Retrieval info: CONSTANT: PORT_CLKBAD0 STRING "PORT_UNUSED"
 -- Retrieval info: CONSTANT: PORT_CLKBAD1 STRING "PORT_UNUSED"
 -- Retrieval info: CONSTANT: PORT_CLKLOSS STRING "PORT_UNUSED"
@@ -373,14 +376,16 @@ END SYN;
 -- Retrieval info: CONSTANT: PORT_extclk1 STRING "PORT_UNUSED"
 -- Retrieval info: CONSTANT: PORT_extclk2 STRING "PORT_UNUSED"
 -- Retrieval info: CONSTANT: PORT_extclk3 STRING "PORT_UNUSED"
--- Retrieval info: CONSTANT: SELF_RESET_ON_LOSS_LOCK STRING "OFF"
+-- Retrieval info: CONSTANT: SELF_RESET_ON_LOSS_LOCK STRING "ON"
 -- Retrieval info: CONSTANT: WIDTH_CLOCK NUMERIC "5"
 -- Retrieval info: USED_PORT: @clk 0 0 5 0 OUTPUT_CLK_EXT VCC "@clk[4..0]"
 -- Retrieval info: USED_PORT: @inclk 0 0 2 0 INPUT_CLK_EXT VCC "@inclk[1..0]"
+-- Retrieval info: USED_PORT: areset 0 0 0 0 INPUT GND "areset"
 -- Retrieval info: USED_PORT: c0 0 0 0 0 OUTPUT_CLK_EXT VCC "c0"
 -- Retrieval info: USED_PORT: c1 0 0 0 0 OUTPUT_CLK_EXT VCC "c1"
 -- Retrieval info: USED_PORT: inclk0 0 0 0 0 INPUT_CLK_EXT GND "inclk0"
 -- Retrieval info: USED_PORT: locked 0 0 0 0 OUTPUT GND "locked"
+-- Retrieval info: CONNECT: @areset 0 0 0 0 areset 0 0 0 0
 -- Retrieval info: CONNECT: @inclk 0 0 1 1 GND 0 0 0 0
 -- Retrieval info: CONNECT: @inclk 0 0 1 0 inclk0 0 0 0 0
 -- Retrieval info: CONNECT: c0 0 0 0 0 @clk 0 0 1 0
