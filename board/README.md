@@ -11,8 +11,6 @@ directory.
 Firmware for power management IC is in fw directory. You can found 
 settings for FT230X in this directory.
 
-![board photo](https://user-images.githubusercontent.com/17781503/38455173-8274c1d6-3a74-11e8-95c2-0bc5e3296400.jpg)
-
 
 Manufacturing
 -----

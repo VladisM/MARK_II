@@ -1,6 +1,5 @@
 toolchain/vbcc/* linguist-vendored=true
 toolchain/vbcc/machines/mark/* linguist-vendored=false
 VHDL/src/cpu/qip/* linguist-vendored=true
-VHDL/src/sdram/fifo/* linguist-vendored=true
-VHDL/src/sdram/bidir_buff/* linguist-vendored=true
 doc/* linguist-vendored=false
+board/* linguist-vendored=false

@@ -20,6 +20,7 @@ VHDL/src/**/*.bak
 !VHDL/Makefile
 !VHDL/MARK_II.tcl
 !VHDL/MARK_II.sdc
+!VHDL/MARK_II.srf
 
 doc/refman/**/*.aux
 doc/refman/**/*.log
@@ -44,5 +45,11 @@ doc/examples/**/*.o
 doc/examples/**/*.ldm
 doc/examples/**/*.asm
 doc/examples/**/*.mif
-doc/examples/**/*disasm
+doc/examples/**/*.disasm
 
+board/fw/*.elf
+board/fw/*.hex
+board/fw/*.o
+
+board/hw_design/*.b#*
+board/hw_design/*.s#*

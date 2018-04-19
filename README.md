@@ -1,8 +1,11 @@
-# MARK-II SoC
+# MARK-II
 
-MARK II is system on chip written in VHDL, it have custom 32bit CPU and 
+MARK-II is system on chip written in VHDL, it have custom 32bit CPU and 
 few custom peripherals. Also there is full featured toolchain including 
-assembler, linker, emulator, c compiler and serial port loader.
+assembler, linker, emulator, c compiler and serial port loader. And, 
+also there is custom FPGA board for it based on Intel MAX10 FPGA.
+
+![board photo](https://user-images.githubusercontent.com/17781503/38455173-8274c1d6-3a74-11e8-95c2-0bc5e3296400.jpg)
 
 ## Prerequisites
 	
@@ -15,6 +18,7 @@ assembler, linker, emulator, c compiler and serial port loader.
 * python 2.7
 * make
 * quartus
+* eagle
 
 ## Get more documentation
 
@@ -44,6 +48,7 @@ them.
 * **VHDL/** In this directory is all HDL sources for MARK-II SoC.
 * **toolchain/** MARK-II toolchain.
 * **doc/** Documentation for MARK-II.
+* **board/** Board design files.
 
 ## License
 
