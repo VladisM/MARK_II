@@ -1,8 +1,7 @@
 /*
  * This is example of using SPL library on MARK-II.
  *
- * This example program will blink with LEDs connected on
- * PORTA (8 green LEDs on DE0 Nano board).
+ * This example program will blink with LED connected to pwrmng.
  */
 
 // include MARK-II Standart Peripheral Library
@@ -14,19 +13,19 @@
 static void delay(int time);
 
 int main(){
-
-    // set PORTA as output (8 LEDs on DE0 Nano board)
-    DDRA = 0xFF;
-
+	
+	// initialize pwrmng connection 
+	pwrmng_init();
+	
     while(1){
-        // write value 0xAA into PORTA (light on all even LEDs)
-        PORTA = 0xAA;
+		// set CPU_LED on 
+        pwrmng_led_on();
 
         // delay some time
         delay(TIME);
-
-        // light on all odd LEDs
-        PORTA = 0x55;
+		
+		// set CPU_LED off
+        pwrmng_led_off();
 
         // delay again
         delay(TIME);

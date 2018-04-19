@@ -51,7 +51,7 @@ start:
     .MVI R11 MODE_SYNC
 
     ;config uart0 to 9600 baud 8n1
-    .MVI R1 0x002700F9
+    .MVI R1 0x00270077
     ST R1 UCR0
 
     ;enable interrupt

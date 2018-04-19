@@ -42,13 +42,12 @@ architecture id_arch of id is
         ld, ldi, st, sti,
         bz_bnz_set, bzi_bnzi_set,
         mvil, mvih, mvia, barrel, alu,
-        cmpi, cmpf, cmpf_2,
+        cmp,
         div, div_w0, div_w1, div_w2, div_w3, div_w4, div_w5, div_w6, div_w7,
         div_w8, div_w9, div_w10, div_w11, div_w12, div_w13, div_w14, div_done,
-        faddsub, faddsub_w0, faddsub_w1, faddsub_w2, faddsub_w3, faddsub_w4,
-        faddsub_w5, faddsub_done,
-        fdiv, fdiv_w0, fdiv_w1, fdiv_w2, fdiv_w3, fdiv_w4, fdiv_done,
-        fmul, fmul_w0, fmul_w1, fmul_w2, fmul_w3, fmul_done
+        faddsub, faddsub_done,
+        fdiv, fdiv_w0, fdiv_w1, fdiv_w2, fdiv_w3, fdiv_w4, fdiv_w5, fdiv_w6, fdiv_done,
+        fmul, fmul_w0, fmul_done
     );
 
     signal id_state: id_state_type;
@@ -185,8 +184,8 @@ begin
                                                 end case;
                                         end case;
 
-                                    when "01010" => id_state <= cmpi;
-                                    when "01011" => id_state <= cmpf;
+                                    when "01010" => id_state <= cmp;
+                                    when "01011" => id_state <= cmp;
                                     when "01100" => id_state <= alu;
                                     when "01101" => id_state <= div;
                                     when "01110" => id_state <= barrel;
@@ -364,18 +363,12 @@ begin
                             when others => id_state <= start;
                         end case;
 
-                    when cmpi =>
+                    when cmp =>
                         case int is
                             when '1' => id_state <= intrq;
                             when others => id_state <= start;
                         end case;
-                    when cmpf => id_state <= cmpf_2;
-                    when cmpf_2 =>
-                        case int is
-                            when '1' => id_state <= intrq;
-                            when others => id_state <= start;
-                        end case;
-
+                    
                     when div     => id_state <= div_w0;
                     when div_w0  => id_state <= div_w1;
                     when div_w1  => id_state <= div_w2;
@@ -399,13 +392,7 @@ begin
                             when others => id_state <= start;
                         end case;
 
-                    when faddsub      => id_state <= faddsub_w0;
-                    when faddsub_w0   => id_state <= faddsub_w1;
-                    when faddsub_w1   => id_state <= faddsub_w2;
-                    when faddsub_w2   => id_state <= faddsub_w3;
-                    when faddsub_w3   => id_state <= faddsub_w4;
-                    when faddsub_w4   => id_state <= faddsub_w5;
-                    when faddsub_w5   => id_state <= faddsub_done;
+                    when faddsub      => id_state <= faddsub_done;
                     when faddsub_done =>
                         case int is
                             when '1' => id_state <= intrq;
@@ -413,10 +400,7 @@ begin
                         end case;
 
                     when fmul      => id_state <= fmul_w0;
-                    when fmul_w0   => id_state <= fmul_w1;
-                    when fmul_w1   => id_state <= fmul_w2;
-                    when fmul_w2   => id_state <= fmul_w3;
-                    when fmul_w3   => id_state <= fmul_done;
+                    when fmul_w0   => id_state <= fmul_done;
                     when fmul_done =>
                         case int is
                             when '1' => id_state <= intrq;
@@ -428,7 +412,9 @@ begin
                     when fdiv_w1   => id_state <= fdiv_w2;
                     when fdiv_w2   => id_state <= fdiv_w3;
                     when fdiv_w3   => id_state <= fdiv_w4;
-                    when fdiv_w4   => id_state <= fdiv_done;
+                    when fdiv_w4   => id_state <= fdiv_w5;
+                    when fdiv_w5   => id_state <= fdiv_w6;
+                    when fdiv_w6   => id_state <= fdiv_done;
                     when fdiv_done =>
                         case int is
                             when '1' => id_state <= intrq;
@@ -674,25 +660,7 @@ begin
                 data_c_sel <= data_c_alu;
                 regfile_c_we <= '1';
 
-            when cmpi =>
-                we <= '0'; oe <= '0'; int_accept <= '0'; int_completed <= '0';
-                swirq <= '0'; instruction_we <= '0'; force_we_reg_14 <= '0';
-                inc_r14 <= '0'; inc_r15 <= '0'; dec_r15 <= '0';
-                data_a_sel <= data_a_regfile;
-                data_b_sel <= data_b_regfile;
-                data_c_sel <= data_c_cmp;
-                regfile_c_we <= '1';
-
-            when cmpf =>
-                we <= '0'; oe <= '0'; int_accept <= '0'; int_completed <= '0';
-                swirq <= '0'; instruction_we <= '0'; force_we_reg_14 <= '0';
-                inc_r14 <= '0'; inc_r15 <= '0'; dec_r15 <= '0';
-                data_a_sel <= data_a_regfile;
-                data_b_sel <= data_b_regfile;
-                data_c_sel <= data_c_cmp;
-                regfile_c_we <= '1';
-
-            when cmpf_2 =>
+            when cmp =>
                 we <= '0'; oe <= '0'; int_accept <= '0'; int_completed <= '0';
                 swirq <= '0'; instruction_we <= '0'; force_we_reg_14 <= '0';
                 inc_r14 <= '0'; inc_r15 <= '0'; dec_r15 <= '0';
@@ -863,60 +831,6 @@ begin
                 data_c_sel <= data_c_fpu;
                 regfile_c_we <= '0';
 
-            when faddsub_w0 =>
-                we <= '0'; oe <= '0'; int_accept <= '0'; int_completed <= '0';
-                swirq <= '0'; instruction_we <= '0'; force_we_reg_14 <= '0';
-                inc_r14 <= '0'; inc_r15 <= '0'; dec_r15 <= '0';
-                data_a_sel <= data_a_regfile;
-                data_b_sel <= data_b_regfile;
-                data_c_sel <= data_c_fpu;
-                regfile_c_we <= '0';
-
-            when faddsub_w1 =>
-                we <= '0'; oe <= '0'; int_accept <= '0'; int_completed <= '0';
-                swirq <= '0'; instruction_we <= '0'; force_we_reg_14 <= '0';
-                inc_r14 <= '0'; inc_r15 <= '0'; dec_r15 <= '0';
-                data_a_sel <= data_a_regfile;
-                data_b_sel <= data_b_regfile;
-                data_c_sel <= data_c_fpu;
-                regfile_c_we <= '0';
-
-            when faddsub_w2 =>
-                we <= '0'; oe <= '0'; int_accept <= '0'; int_completed <= '0';
-                swirq <= '0'; instruction_we <= '0'; force_we_reg_14 <= '0';
-                inc_r14 <= '0'; inc_r15 <= '0'; dec_r15 <= '0';
-                data_a_sel <= data_a_regfile;
-                data_b_sel <= data_b_regfile;
-                data_c_sel <= data_c_fpu;
-                regfile_c_we <= '0';
-
-            when faddsub_w3 =>
-                we <= '0'; oe <= '0'; int_accept <= '0'; int_completed <= '0';
-                swirq <= '0'; instruction_we <= '0'; force_we_reg_14 <= '0';
-                inc_r14 <= '0'; inc_r15 <= '0'; dec_r15 <= '0';
-                data_a_sel <= data_a_regfile;
-                data_b_sel <= data_b_regfile;
-                data_c_sel <= data_c_fpu;
-                regfile_c_we <= '0';
-
-            when faddsub_w4 =>
-                we <= '0'; oe <= '0'; int_accept <= '0'; int_completed <= '0';
-                swirq <= '0'; instruction_we <= '0'; force_we_reg_14 <= '0';
-                inc_r14 <= '0'; inc_r15 <= '0'; dec_r15 <= '0';
-                data_a_sel <= data_a_regfile;
-                data_b_sel <= data_b_regfile;
-                data_c_sel <= data_c_fpu;
-                regfile_c_we <= '0';
-
-            when faddsub_w5 =>
-                we <= '0'; oe <= '0'; int_accept <= '0'; int_completed <= '0';
-                swirq <= '0'; instruction_we <= '0'; force_we_reg_14 <= '0';
-                inc_r14 <= '0'; inc_r15 <= '0'; dec_r15 <= '0';
-                data_a_sel <= data_a_regfile;
-                data_b_sel <= data_b_regfile;
-                data_c_sel <= data_c_fpu;
-                regfile_c_we <= '0';
-
             when faddsub_done =>
                 we <= '0'; oe <= '0'; int_accept <= '0'; int_completed <= '0';
                 swirq <= '0'; instruction_we <= '0'; force_we_reg_14 <= '0';
@@ -980,6 +894,24 @@ begin
                 data_c_sel <= data_c_fpu;
                 regfile_c_we <= '0';
 
+			when fdiv_w5 =>
+                we <= '0'; oe <= '0'; int_accept <= '0'; int_completed <= '0';
+                swirq <= '0'; instruction_we <= '0'; force_we_reg_14 <= '0';
+                inc_r14 <= '0'; inc_r15 <= '0'; dec_r15 <= '0';
+                data_a_sel <= data_a_regfile;
+                data_b_sel <= data_b_regfile;
+                data_c_sel <= data_c_fpu;
+                regfile_c_we <= '0';
+                
+            when fdiv_w6 =>
+                we <= '0'; oe <= '0'; int_accept <= '0'; int_completed <= '0';
+                swirq <= '0'; instruction_we <= '0'; force_we_reg_14 <= '0';
+                inc_r14 <= '0'; inc_r15 <= '0'; dec_r15 <= '0';
+                data_a_sel <= data_a_regfile;
+                data_b_sel <= data_b_regfile;
+                data_c_sel <= data_c_fpu;
+                regfile_c_we <= '0';
+
             when fdiv_done =>
                 we <= '0'; oe <= '0'; int_accept <= '0'; int_completed <= '0';
                 swirq <= '0'; instruction_we <= '0'; force_we_reg_14 <= '0';
@@ -999,33 +931,6 @@ begin
                 regfile_c_we <= '0';
 
             when fmul_w0 =>
-                we <= '0'; oe <= '0'; int_accept <= '0'; int_completed <= '0';
-                swirq <= '0'; instruction_we <= '0'; force_we_reg_14 <= '0';
-                inc_r14 <= '0'; inc_r15 <= '0'; dec_r15 <= '0';
-                data_a_sel <= data_a_regfile;
-                data_b_sel <= data_b_regfile;
-                data_c_sel <= data_c_fpu;
-                regfile_c_we <= '0';
-
-            when fmul_w1 =>
-                we <= '0'; oe <= '0'; int_accept <= '0'; int_completed <= '0';
-                swirq <= '0'; instruction_we <= '0'; force_we_reg_14 <= '0';
-                inc_r14 <= '0'; inc_r15 <= '0'; dec_r15 <= '0';
-                data_a_sel <= data_a_regfile;
-                data_b_sel <= data_b_regfile;
-                data_c_sel <= data_c_fpu;
-                regfile_c_we <= '0';
-
-            when fmul_w2 =>
-                we <= '0'; oe <= '0'; int_accept <= '0'; int_completed <= '0';
-                swirq <= '0'; instruction_we <= '0'; force_we_reg_14 <= '0';
-                inc_r14 <= '0'; inc_r15 <= '0'; dec_r15 <= '0';
-                data_a_sel <= data_a_regfile;
-                data_b_sel <= data_b_regfile;
-                data_c_sel <= data_c_fpu;
-                regfile_c_we <= '0';
-
-            when fmul_w3 =>
                 we <= '0'; oe <= '0'; int_accept <= '0'; int_completed <= '0';
                 swirq <= '0'; instruction_we <= '0'; force_we_reg_14 <= '0';
                 inc_r14 <= '0'; inc_r15 <= '0'; dec_r15 <= '0';

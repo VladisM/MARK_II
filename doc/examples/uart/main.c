@@ -19,10 +19,10 @@ char hello[] = "Hello world!\n";
 
 int main(){
 
-    // enable transmitter on UART0; set baudrate to 1200
+    // enable transmitter on UART0; set baudrate to 9600
     // UCR is configuration register there you can set baudrate, enable UART, enable interrupts..
     // use UCRX_xxx macros
-    UCR0 |= (UCR0_txen|(UCR0_N & 0x7CF));
+    UCR0 |= (UCR0_txen|(UCR0_N & 0x0077));
 
     while(1){
         // write string and delay

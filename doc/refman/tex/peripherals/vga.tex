@@ -4,8 +4,8 @@ VGA driver is the most complex peripheral of MARK II. It is display driver with
 VGA output, working in text mode. Its parameters are:
 
 \begin{itemize}
-    \item Pixel clock: 31.5MHz
-    \item Resolution: 640x480 @ 73Hz
+    \item Pixel clock: 25MHz
+    \item Resolution: 640x480 @ 60Hz
     \item Text resolution: 80x30 chars
     \item Char resolution: 16x8 pixels
     \item Colors: 16 collors
@@ -113,7 +113,7 @@ entity vga is
         WR: in std_logic;
         RD: in std_logic;
         ack: out std_logic;
-        clk_31M5: in std_logic;
+        clk_vga: in std_logic;
         h_sync: out std_logic;
         v_sync: out std_logic;
         red: out std_logic_vector(1 downto 0);
@@ -126,7 +126,7 @@ end entity vga;
 Entity vga have standard bus interface for connecting to the system bus, plus
 some extra special signals. These special signals are output to the VGA connector,
 and clock input for pixel generator. Part of VGA driver is running at another
-clock domain. This domain have to be clocked at $31,5MHz$. Input named clk\_bus
+clock domain. This domain have to be clocked at $25MHz$. Input named clk\_bus
 is standard system clock.
 
 Signals h\_sync and v\_sync are horizontal and vertical synchronizations. Signals

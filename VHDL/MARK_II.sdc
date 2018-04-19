@@ -1,12 +1,7 @@
-create_clock -name "clk" -period 20.000ns [get_ports {clk}]
+create_clock -name "clk_25M" -period 40.000ns [get_ports {clk_25M}]
+create_clock -name "clk_18M432" -period 54.000ns [get_ports {clk_18M432}]
+create_clock -name "clk_22M5792" -period 44.000ns [get_ports {clk_22M5792}]
 
 derive_pll_clocks -create_base_clocks
 derive_clock_uncertainty
 
-set vga_clk clkgen0|pll0|altpll_component|auto_generated|pll1|clk[0]
-set uart_clk clkgen0|pll0|altpll_component|auto_generated|pll1|clk[1]
-set sdram_clk clkgen0|pll1|altpll_component|auto_generated|pll1|clk[0]
-set sdram_ext_clk clkgen0|pll1|altpll_component|auto_generated|pll1|clk[1]
-
-set_false_path -from [get_clocks {clk}] -to $uart_clk
-set_false_path -from $uart_clk -to [get_clocks {clk}]

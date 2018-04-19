@@ -37,7 +37,7 @@ STDLIBC = $(HOME)/m2_toolchain/stdlibc
 #---------------
 # flags
 CFLAGS = -I$(SPL) -quiet -c99
-LDFLAGS = -o $(PRG).ldm $(STDLIBC)/__startup.o
+LDFLAGS = -o $(PRG).ldm -l $(SPL)/lib $(STDLIBC)/__startup.o
 
 #---------------
 # define tools
@@ -76,3 +76,6 @@ install: $(PRG).mif
 
 disasm: $(PRG).mif
 	$(DAS) -o $(PRG).disasm $(PRG).mif
+
+load_sram: $(PRG).ldm
+	$(LD) -b 0x100000 -p $(LOADER_PORT) $(PRG).ldm

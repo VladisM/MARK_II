@@ -7,7 +7,7 @@ loader.ldm: loader.asm
 	m2-assembler --skip-linker loader.asm
 
 install: loader.mif
-	cp loader.mif ./../../fpga/src/rom/rom.mif
+	cp loader.mif ./../../VHDL/src/rom/rom.mif 
 
 clean:
 	rm -f *.ldm

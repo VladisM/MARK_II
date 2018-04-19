@@ -1,16 +1,17 @@
 \section{Introduction}
 
-MARK II is simple SoC written in VHDL for synthesization into Altera Cyclone
-FPGA. SoC consist of simple RISC like CPU and a few peripherals. There is also
-full featured toolchain for writing programs that can run on MARK-II CPU.
+MARK II is simple SoC written in VHDL for synthesization into Intel 
+MAX10 FPGA. SoC consist of simple RISC like CPU and a few peripherals. 
+There is also full featured toolchain for writing programs that can run 
+on MARK-II CPU. And PC like custom board.
 
 CPU is 32 bits wide and following Von Neumann architecture, can address up to
 $2^{24}$ words, has 16 interrupt sources, 16 registers including three special
 ones.
 
-To the CPU can be connected memory mapped peripherals, following peripherals
-are available: UART, PS/2, VGA driver, general purpose timers, system timer,
-GPIO, onchip RAM and ROM, interrupt controller and driver for external SDRAM.
+To the CPU can be connected memory mapped peripherals, following 
+peripherals are available: UART, PS/2, VGA driver, system timer, onchip 
+RAM and ROM, interrupt controller and driver for external SDRAM.
 
 Thanks to toolchain, you can write programs in human way. Toolchain consist of
 Assembler, Linker, Emulator, Disassembler, Loader and ldm2mif converter. There is

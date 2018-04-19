@@ -6,8 +6,8 @@
 -- author: Vladislav Mlejnecký
 -- email: v.mlejnecky@seznam.cz
 --
--- Pixel clock:     31.5MHz
--- Resolution:      640x480 @ 73Hz
+-- Pixel clock:     25MHz
+-- Resolution:      640x480 @ 60Hz
 -- Text resolution: 80x30 chars
 -- Char resolution: 16x8 px
 --
@@ -32,11 +32,11 @@ entity vga is
         RD: in std_logic;
         ack: out std_logic;
         --device
-        clk_31M5: in std_logic;
+        clk_vga: in std_logic;
         h_sync: out std_logic;
         v_sync: out std_logic;
-        red: out std_logic_vector(1 downto 0);
-        green: out std_logic_vector(1 downto 0);
+        red: out std_logic_vector(2 downto 0);
+        green: out std_logic_vector(2 downto 0);
         blue: out std_logic_vector(1 downto 0)
     );
 end entity vga;
@@ -96,29 +96,29 @@ architecture vga_arch of vga is
     signal ack_fsm_state: ack_fsm;
 begin
 
-    process(clk_31M5) is
-        variable h_pos: integer range 0 to 832;
-        variable v_pos: integer range 0 to 520;
+    process(clk_vga) is
+        variable h_pos: integer range 0 to 800;
+        variable v_pos: integer range 0 to 525;
 
         variable posx_v: unsigned(9 downto 0);
         variable posy_v: unsigned(8 downto 0);
 
     begin
 
-        if rising_edge(clk_31M5) then
+        if rising_edge(clk_vga) then
 
-            if h_pos < 832 then
+            if h_pos < 800 then
                 h_pos := h_pos + 1;
             else
                 h_pos := 0;
-                if v_pos < 520 then
+                if v_pos < 525 then
                     v_pos := v_pos + 1;
                 else
                     v_pos := 0;
                 end if;
             end if;
 
-            if h_pos < 40 then
+            if h_pos < 96 then
                 h_sync_r <= '0';
             else
                 h_sync_r <= '1';
@@ -130,20 +130,20 @@ begin
                 v_sync_r <= '1';
             end if;
 
-            if (h_pos > 168 and h_pos <= 808) and (v_pos > 31 and v_pos < 511) then
+            if (h_pos > 144 and h_pos <= 784) and (v_pos > 35 and v_pos < 515) then
                 blank_r <= '0';
             else
                 blank_r <= '1';
             end if;
 
-            if h_pos > 168 and h_pos < 808 then
+            if h_pos > 144 and h_pos < 784 then
                 posx_v := posx_v + 1;
             else
                 posx_v := (others => '0');
             end if;
 
-            if v_pos > 31 and v_pos < 511 then
-                if h_pos = 808 then
+            if v_pos > 35 and v_pos < 515 then
+                if h_pos = 784 then
                     posy_v := posy_v + 1;
                 end if;
             else
@@ -160,11 +160,11 @@ begin
 
     end process;
 
-    process(clk_31M5, cell_line) is
+    process(clk_vga, cell_line) is
         variable cell_line_var: unsigned(3 downto 0);
         variable cell_line_var_2: unsigned(3 downto 0);
     begin
-        if rising_edge(clk_31M5) then
+        if rising_edge(clk_vga) then
             cell_line_var_2 := cell_line_var;
             cell_line_var := cell_line;            
         end if;
@@ -172,18 +172,18 @@ begin
         cell_line_ss <= cell_line_var_2;
     end process;
 
-    process(clk_31M5, cell_col) is
+    process(clk_vga, cell_col) is
         variable cell_col_s1_var: unsigned(2 downto 0);
         variable cell_col_s2_var: unsigned(2 downto 0);
     begin
-        if rising_edge(clk_31M5) then
+        if rising_edge(clk_vga) then
             cell_col_s2_var := cell_col_s1_var;
             cell_col_s1_var := cell_col;
         end if;
         cell_col_s <= cell_col_s2_var;
     end process;
 
-    process(clk_31M5, h_sync_r, v_sync_r) is
+    process(clk_vga, h_sync_r, v_sync_r) is
         variable h_sync_s1: std_logic;
         variable h_sync_s2: std_logic;
         variable v_sync_s1: std_logic;
@@ -191,7 +191,7 @@ begin
         variable blank_s1: std_logic;
         variable blank_s2: std_logic;
     begin
-        if rising_edge(clk_31M5) then
+        if rising_edge(clk_vga) then
             h_sync_s2 := h_sync_s1;
             h_sync_s1 := h_sync_r;
 
@@ -207,14 +207,14 @@ begin
         blank <= blank_s2;
     end process;
 
-    vram0: vram port map(clk_bus, addr_a, data_a, we_a, q_a, clk_31M5, tile_line & tile_col, char_from_vram);
+    vram0: vram port map(clk_bus, addr_a, data_a, we_a, q_a, clk_vga, tile_line & tile_col, char_from_vram);
 
-    font_rom0: font_rom port map(clk_31M5, char_from_vram(6 downto 0) & cell_line_s, line_from_charrom);
+    font_rom0: font_rom port map(clk_vga, char_from_vram(6 downto 0) & cell_line_s, line_from_charrom);
 
-    process(clk_31M5) is 
+    process(clk_vga) is 
         variable cursor_timer_var: unsigned(24 downto 0);
     begin
-        if rising_edge(clk_31M5) then
+        if rising_edge(clk_vga) then
             if res = '1' then
                 cursor_timer_var := (others => '0');
             else
@@ -256,11 +256,11 @@ begin
         end if;
     end process;
 
-    process(clk_31M5, char_from_vram) is
+    process(clk_vga, char_from_vram) is
         variable fg_color_v, bg_color_v: unsigned(3 downto 0);
         variable cursor_v: std_logic;
     begin
-        if rising_edge(clk_31M5) then
+        if rising_edge(clk_vga) then
             fg_color_v := char_from_vram(10 downto 7);
             bg_color_v := char_from_vram(14 downto 11);
             cursor_v := char_from_vram(15);
@@ -276,16 +276,20 @@ begin
             when '1' =>
                 red(0)   <= fg_color(0) and not(blank);
                 green(0) <= fg_color(0) and not(blank);
-                blue(0)  <= fg_color(0) and not(blank);
-                red(1)   <= fg_color(1) and not(blank);
-                green(1) <= fg_color(2) and not(blank);
+                blue(0)  <= fg_color(0) and not(blank);                
+                red(1)   <= fg_color(0) and not(blank);
+                green(1) <= fg_color(0) and not(blank);                
+                red(2)   <= fg_color(1) and not(blank);
+                green(2) <= fg_color(2) and not(blank);
                 blue(1)  <= fg_color(3) and not(blank);
             when '0' =>
                 red(0)   <= bg_color(0) and not(blank);
                 green(0) <= bg_color(0) and not(blank);
-                blue(0)  <= bg_color(0) and not(blank);
-                red(1)   <= bg_color(1) and not(blank);
-                green(1) <= bg_color(2) and not(blank);
+                blue(0)  <= bg_color(0) and not(blank);                
+                red(1)   <= bg_color(0) and not(blank);
+                green(1) <= bg_color(0) and not(blank);                
+                red(2)   <= bg_color(1) and not(blank);
+                green(2) <= bg_color(2) and not(blank);
                 blue(1)  <= bg_color(3) and not(blank);
         end case;
     end process;

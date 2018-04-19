@@ -13,8 +13,7 @@ __interrupt void swi_isr();
 
 int main(){
     // configure LEDs
-	DDRA = 0xFF;
-	PORTA = 0x00;
+	pwrmng_init();
 
     // enable interrupt from software 
 	INTMR |= INTMR_swi_en;
@@ -32,5 +31,5 @@ int main(){
 // definition of ISR; keyword __interrupt is mandatory because ISR 
 // functions have to use RETI instruction instead RET
 __interrupt void swi_isr(){
-	PORTA = ~(PORTA);
+	pwrmng_led_blink_short();
 }
