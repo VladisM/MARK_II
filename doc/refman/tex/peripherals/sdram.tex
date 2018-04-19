@@ -1,8 +1,8 @@
 \subsection{SDRAM}
 
 This is simple peripheral like any others on-chip RAM but it use 
-external memory device. Used memory is IS42S16160B that can be found on 
-board DE0 Nano.
+external memory device. Used memory is AS4C32M8SA that can be found on 
+the board.
 
 \subsubsection{Function}
 
@@ -14,5 +14,5 @@ it take about $200 \mu s$ to configure sdram chip.
 
 Unlike on-chip RAM, you are not able to initialize addition SDRAM driver. 
 Used memory chip is also hardwired into driver and if you want use 
-different, you have to modify FSM in file 
-fpga/src/sdram/sdram\_driver.vhd.
+different, you pobably have to modify driver in file
+VHDL/src/sdram/sdram\_driver.vhd.
