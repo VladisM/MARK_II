@@ -1,0 +1,109 @@
+\subsection{16bit Timer}
+
+This timer is more complex than SysTimer, but is only 16bit wide. It 
+can also generate interrupt on compare match and have pre-scaler. Clock 
+is hard-wired to CPU clock.
+
+\subsubsection{Function}
+
+Timer are clocked at same frequency as CPU and this cannot be changed. It
+is counting from zero to up, until compare match with specified top occur. Then
+interrupt request is generated, counter is set to zero and counting are restarted.
+
+Timer have two registers, one for controlling and one with actual counter value. Reading
+from registers are possible, writing too but when write is performed at counter
+value register, counting is restarted from zero.
+
+With control register you can set top value, enable and disable timer or interrupt.
+
+\subsubsection{Registers}
+
+All registers are listed in table \ref{tab:timer_reg_map}. Register TVRx is 16
+bits wide and  contains  actual value of counter. 
+
+\begin{table}[h]
+    \centering
+    \begin{tabular}{|l|l|l|}
+        \hline
+        \textbf{Offset} & \textbf{Name} & \textbf{Purpose}            \\ \hline
+        $+0$            & TCRx          & Timer X control register.    \\ \hline
+        $+1$            & TVRx          & Timer X value register.      \\ \hline
+    \end{tabular}
+    \caption{16bit timer register map}
+    \label{tab:timer_reg_map}
+\end{table}
+
+\begin{figure}[H]
+    \centering
+    \begin{tikzpicture}
+        \bitrect{16}{32-\bit}        
+        \robits{0}{11}{}
+        \rwbits{11}{3}{DIV}
+        \rwbits{14}{1}{ien}
+        \rwbits{15}{1}{ten}
+    \end{tikzpicture}
+    \begin{tikzpicture}
+        \bitrect{16}{16-\bit}
+        \rwbits{0}{16}{CMPM}
+    \end{tikzpicture}
+    \caption{TCRx register}
+    \label{fig:tcr_reg}
+\end{figure}
+
+Register TCRx is control register of Timer X. You can set CMPM value, 
+to set top value of counting, you can enable whole timer here, enable 
+interrupts and set pre-scaler. In TCRx bits have following meaning:
+
+\begin{itemize}
+	\item \textbf{CMPM} 16bit TOP value
+	\item \textbf{ten} enable timer
+	\item \textbf{ien} enable interrupt
+	\item \textbf{DIV} 3bit wide prescaler select
+\end{itemize}
+
+All possible configurations for pre-scaler are listed in table \ref{tab:tim_pres}.
+
+\begin{table}[H]
+    \centering
+    \begin{tabular}{|l|l|l|l|}
+        \hline
+        \textbf{$DIV_2$} & \textbf{$DIV_1$} & \textbf{$DIV_0$} & \textbf{pre-scaler} \\ \hline
+        0 & 0 & 0 & $F_{clk}$ \\ \hline
+		0 & 0 & 1 & $\frac{1}{2} * F_{CLK}$  \\ \hline        
+		0 & 1 & 0 & $\frac{1}{4} * F_{CLK}$  \\ \hline        
+		0 & 1 & 1 & $\frac{1}{8} * F_{CLK}$  \\ \hline
+		1 & 0 & 0 & $\frac{1}{16} * F_{CLK}$ \\ \hline
+		1 & 0 & 1 & \textit{reserved}    \\ \hline        
+		1 & 1 & 0 & \textit{reserved}    \\ \hline        
+		1 & 1 & 1 & \textit{reserved}    \\ \hline        
+    \end{tabular}
+    \caption{16bit timer pre-scaler}
+    \label{tab:tim_pres}
+\end{table}
+
+\subsubsection{Hacking}
+
+One can simply add another instances of 16bit timer if needed. 
+Interface consist from bus interface and one interrupt request signal. 
+When you wand add another timer, just remember to connect intrq to the 
+interrupt controller.
+
+\begin{lstlisting}[language=VHDL, frame=single]
+entity timer is
+    generic(
+        BASE_ADDRESS: unsigned(23 downto 0) := x"000000"
+    );
+    port(
+        clk: in std_logic;
+        res: in std_logic;
+        address: in std_logic_vector(23 downto 0);
+        data_mosi: in std_logic_vector(31 downto 0);
+        data_miso: out std_logic_vector(31 downto 0);
+        WR: in std_logic;
+        RD: in std_logic;
+        ack: out std_logic;
+        intrq: out std_logic
+    );
+end entity timer;
+\end{lstlisting}
+
