@@ -17,5 +17,6 @@
 #include "cpu.h"
 #include "sdram.h"
 #include "pwrmng.h"
+#include "timer.h"
 
 #endif
