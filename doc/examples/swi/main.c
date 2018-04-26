@@ -6,7 +6,9 @@
  */
 
 // include MARK-II Standart Peripheral Library
-#include <spl.h>
+#include <cpu.h>
+#include <intdrv.h>
+#include <pwrmng.h>
 
 // declare interrupt service routine
 __interrupt void swi_isr();

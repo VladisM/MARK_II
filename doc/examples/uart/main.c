@@ -6,7 +6,7 @@
  */
 
 // include MARK-II Standart Peripheral Library
-#include <spl.h>
+#include <uart.h>
 
 // function that will write given string into buffer
 void write_uart0(char text[]);

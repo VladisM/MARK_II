@@ -35,11 +35,15 @@ export PATH=$PATH:$DIR/bin
 
 echo "Install spl..."
 mkdir $DIR/spl
-mkdir $DIR/spl/lib
-cd toolchain/spl
+cp toolchain/spl/include/*.h $DIR/spl/
+
+echo "Install bsp..."
+mkdir $DIR/bsp
+mkdir $DIR/bsp/lib
+cd toolchain/bsp/
 make
-cp build/*.o $DIR/spl/lib
-cp include/*.h $DIR/spl/
+cp build/*.o $DIR/bsp/lib
+cp include/*.h $DIR/bsp
 make clean
 cd ../..
 
@@ -55,7 +59,9 @@ cd ../..
 echo "\n\nDone!\n"
 echo "You have to add following path into your PATH variable:"
 echo $DIR/bin
-echo "SPL are stored in:"
+echo "SPL is stored in:"
 echo $DIR/spl/
+echo "BPS is stored in:"
+echo $DIR/bsp/
 echo "stdlibc is stored in:"
 echo $DIR/stdlibc/

@@ -35,7 +35,9 @@ toolchain/vbcc/doc/vbcc.log
 toolchain/vbcc/doc/vbcc.toc
 
 toolchain/spl/latex/
-toolchain/spl/build/
+
+toolchain/bsp/latex/
+toolchain/bsp/build/
 
 refman.pdf
 vbcc.pdf

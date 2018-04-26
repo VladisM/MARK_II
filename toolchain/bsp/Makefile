@@ -3,7 +3,7 @@ AS = m2-assembler
 
 BUILDDIR = build
 SRCDIR   = src
-CFLAGS   = -Iinclude -quiet -c99
+CFLAGS   = -quiet -c99
 
 SRCS = $(shell find $(SRCDIR) -name '*.c')
 OBJS = $(notdir $(SRCS:%.c=%.o))
@@ -13,7 +13,7 @@ OBJS = $(notdir $(SRCS:%.c=%.o))
 all: $(BUILDDIR) $(addprefix $(BUILDDIR)/,$(OBJS))
 
 $(BUILDDIR):
-	mkdir $(BUILDDIR)
+	mkdir -p $(BUILDDIR)
 
 $(BUILDDIR)/%.o: $(SRCDIR)/%.c include/*.h
 	$(CC) $(CFLAGS) -o=$(@:.o=.asm) $<

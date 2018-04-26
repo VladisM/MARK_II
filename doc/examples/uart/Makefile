@@ -32,12 +32,13 @@ MIF_REL = 0x0000
 #---------------
 # library paths
 SPL = $(HOME)/m2_toolchain/spl
+BSP = $(HOME)/m2_toolchain/bsp
 STDLIBC = $(HOME)/m2_toolchain/stdlibc
 
 #---------------
 # flags
-CFLAGS = -I$(SPL) -quiet -c99
-LDFLAGS = -o $(PRG).ldm -l $(SPL)/lib $(STDLIBC)/__startup.o
+CFLAGS = -I$(SPL) -I$(BSP) -quiet -c99
+LDFLAGS = -o $(PRG).ldm -l $(BSP)/lib $(STDLIBC)/__startup.o
 
 #---------------
 # define tools

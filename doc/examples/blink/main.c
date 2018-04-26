@@ -4,8 +4,8 @@
  * This example program will blink with LED connected to pwrmng.
  */
 
-// include MARK-II Standart Peripheral Library
-#include <spl.h>
+// include MARK-II Board Support Package 
+#include <pwrmng.h>
 
 // define constant for delay
 #define TIME 0x2FFFF

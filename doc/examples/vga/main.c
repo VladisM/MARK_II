@@ -7,7 +7,7 @@
  */
 
 // include MARK-II Standard Peripheral Library
-#include <spl.h>
+#include <vga.h>
 
 // this is function that will write text on monitor
 void write(int row, int column, int color, char text[]);

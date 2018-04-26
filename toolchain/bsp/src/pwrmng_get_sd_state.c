@@ -1,6 +1,6 @@
-#include <pwrmng.h>
-#include <pwrmng_cmd.h>
-#include <uart.h>
+#include "../include/pwrmng.h"
+#include "../include/pwrmng_cmd.h"
+#include "../../spl/include/uart.h"
 
 int pwrmng_get_sd_state(int* state){
 	if(initialized != 1)		
