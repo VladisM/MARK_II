@@ -8,9 +8,9 @@
 #define SPL_TIMER_included
 
 #define TIMER0_BASE 0x000140 /**< @brief Base address of timer0 */
-#define TIMER0_BASE 0x000144 /**< @brief Base address of timer0 */
-#define TIMER0_BASE 0x000148 /**< @brief Base address of timer0 */
-#define TIMER0_BASE 0x00014C /**< @brief Base address of timer0 */
+#define TIMER1_BASE 0x000144 /**< @brief Base address of timer0 */
+#define TIMER2_BASE 0x000148 /**< @brief Base address of timer0 */
+#define TIMER3_BASE 0x00014C /**< @brief Base address of timer0 */
 
 #define TCR0 (*(unsigned int *)(TIMER0_BASE + 0)) /**< @brief Register TCR0 */
 #define TCR1 (*(unsigned int *)(TIMER1_BASE + 0)) /**< @brief Register TCR1 */
