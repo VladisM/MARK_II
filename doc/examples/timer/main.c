@@ -4,7 +4,9 @@
  */
 
 // include MARK-II Standart Peripheral Library
-#include <spl.h>
+#include <pwrmng.h>
+#include <intdrv.h>
+#include <timer.h>
 
 // declare interrupt service routine
 __interrupt void timer_isr();
