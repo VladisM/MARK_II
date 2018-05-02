@@ -298,6 +298,26 @@ architecture MARK_II_arch of MARK_II is
 		);
 	end component sdram;
     
+    component timer is
+		generic(
+			BASE_ADDRESS: unsigned(23 downto 0) := x"000000"
+		);
+		port(
+			--bus
+			clk: in std_logic;
+			res: in std_logic;
+			address: in std_logic_vector(23 downto 0);
+			data_mosi: in std_logic_vector(31 downto 0);
+			data_miso: out std_logic_vector(31 downto 0);
+			WR: in std_logic;
+			RD: in std_logic;
+			ack: out std_logic;
+			--device
+			intrq: out std_logic
+		);
+	end component timer;
+    
+    
     --signal for internal bus
     signal bus_address: std_logic_vector(23 downto 0);
     signal bus_data_mosi, bus_data_miso: std_logic_vector(31 downto 0);
@@ -309,7 +329,7 @@ architecture MARK_II_arch of MARK_II is
     signal intCPUReq: std_logic;
     signal intAddress: std_logic_vector(23 downto 0);
 
-    signal rom_ack, ram0_ack, ram1_ack, int_ack, systim_ack, vga_ack, uart0_ack, uart1_ack, uart2_ack, ps2_0_ack, ps2_1_ack, dram0_ack: std_logic;
+    signal rom_ack, ram0_ack, ram1_ack, int_ack, systim_ack, vga_ack, uart0_ack, uart1_ack, uart2_ack, ps2_0_ack, ps2_1_ack, dram0_ack, tim0_ack, tim1_ack, tim2_ack, tim3_ack: std_logic;
 	
     signal clk_uart, clk_vga, clk_sys, clk_audio, clk_sdram: std_logic;
 	
@@ -416,9 +436,38 @@ begin
 			dram0_ack, clk_sdram,
 			sdram_a, sdram_ba, sdram_dq, sdram_ras, sdram_cas, sdram_we
 		);		
+	
+	timer0: timer
+		generic map(x"000140")
+		port map(
+			clk_sys, res, bus_address, bus_data_mosi, bus_data_miso, bus_WR, bus_RD,
+			tim0_ack, int_req(4)
+		);
+	
+	timer1: timer
+		generic map(x"000144")
+		port map(
+			clk_sys, res, bus_address, bus_data_mosi, bus_data_miso, bus_WR, bus_RD,
+			tim1_ack, int_req(5)
+		);
 		
+	timer2: timer
+		generic map(x"000148")
+		port map(
+			clk_sys, res, bus_address, bus_data_mosi, bus_data_miso, bus_WR, bus_RD,
+			tim2_ack, int_req(6)
+		);
+		
+	timer3: timer
+		generic map(x"00014C")
+		port map(
+			clk_sys, res, bus_address, bus_data_mosi, bus_data_miso, bus_WR, bus_RD,
+			tim3_ack, int_req(7)
+		);
+	
     bus_ack <=
 		rom_ack or ram0_ack or ram1_ack or int_ack or systim_ack or vga_ack or 
-		uart0_ack or uart1_ack or uart2_ack or ps2_0_ack or ps2_1_ack or dram0_ack;
+		uart0_ack or uart1_ack or uart2_ack or ps2_0_ack or ps2_1_ack or dram0_ack or
+		tim0_ack or tim1_ack or tim2_ack or tim3_ack;
 
 end architecture MARK_II_arch;

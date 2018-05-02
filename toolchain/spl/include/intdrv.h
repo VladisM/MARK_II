@@ -27,20 +27,28 @@
 #define INTVEC14 (*(unsigned int *)(INTDRV_BASE + 15)) /**< @brief Register INTVEC14 */
 #define INTVEC15 (*(unsigned int *)(INTDRV_BASE + 16)) /**< @brief Register INTVEC15 */
 
-#define SWI_VECTOR_REG INTVEC0
+#define SWI_VECTOR_REG    INTVEC0
 #define SYSTIM_VECTOR_REG INTVEC1
-#define UART0_VECTOR_REG INTVEC8
-#define UART1_VECTOR_REG INTVEC9
-#define UART2_VECTOR_REG INTVEC10
-#define PS2_0_VECTOR_REG INTVEC11
-#define PS2_1_VECTOR_REG INTVEC12
+#define TIMER0_VECTOR_REG INTVEC4
+#define TIMER1_VECTOR_REG INTVEC5
+#define TIMER2_VECTOR_REG INTVEC6
+#define TIMER3_VECTOR_REG INTVEC7
+#define UART0_VECTOR_REG  INTVEC8
+#define UART1_VECTOR_REG  INTVEC9
+#define UART2_VECTOR_REG  INTVEC10
+#define PS2_0_VECTOR_REG  INTVEC11
+#define PS2_1_VECTOR_REG  INTVEC12
 
-#define INTMR_swi_en    0x0001 /**< @brief Bit mask for interrupt by swi instruction*/
-#define INTMR_systim_en 0x0002 /**< @brief Bit mask for interrupt by system timer*/
-#define INTMR_uart0_en  0x0100 /**< @brief Bit mask for interrupt by uart0*/
-#define INTMR_uart1_en  0x0200 /**< @brief Bit mask for interrupt by uart1*/
-#define INTMR_uart2_en  0x0400 /**< @brief Bit mask for interrupt by uart2*/
-#define INTMR_PS2_0_en  0x0800 /**< @brief Bit mask for interrupt by PS2_0 interface*/
-#define INTMR_PS2_1_en  0x1000 /**< @brief Bit mask for interrupt by PS2_1 interface*/
+#define INTMR_swi_en     0x0001 /**< @brief Bit mask for interrupt by swi instruction*/
+#define INTMR_systim_en  0x0002 /**< @brief Bit mask for interrupt by system timer*/
+#define INTMR_timer0_en  0x0010 /**< @brief Bit mask for interrupt by timer0*/
+#define INTMR_timer1_en  0x0020 /**< @brief Bit mask for interrupt by timer1*/
+#define INTMR_timer2_en  0x0040 /**< @brief Bit mask for interrupt by timer2*/
+#define INTMR_timer3_en  0x0080 /**< @brief Bit mask for interrupt by timer3*/
+#define INTMR_uart0_en   0x0100 /**< @brief Bit mask for interrupt by uart0*/
+#define INTMR_uart1_en   0x0200 /**< @brief Bit mask for interrupt by uart1*/
+#define INTMR_uart2_en   0x0400 /**< @brief Bit mask for interrupt by uart2*/
+#define INTMR_PS2_0_en   0x0800 /**< @brief Bit mask for interrupt by PS2_0 interface*/
+#define INTMR_PS2_1_en   0x1000 /**< @brief Bit mask for interrupt by PS2_1 interface*/
 
 #endif
