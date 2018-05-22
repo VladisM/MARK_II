@@ -317,7 +317,22 @@ architecture MARK_II_arch of MARK_II is
 		);
 	end component timer;
     
-    
+    component lfsr is
+		generic(
+			BASE_ADDRESS: unsigned(23 downto 0) := x"000000"
+		);
+		port(
+			clk: in std_logic;
+			res: in std_logic;
+			address: in std_logic_vector(23 downto 0);
+			data_mosi: in std_logic_vector(31 downto 0);
+			data_miso: out std_logic_vector(31 downto 0);
+			WR: in std_logic;
+			RD: in std_logic;
+			ack: out std_logic
+		);    
+	end component lfsr;
+        
     --signal for internal bus
     signal bus_address: std_logic_vector(23 downto 0);
     signal bus_data_mosi, bus_data_miso: std_logic_vector(31 downto 0);
@@ -329,7 +344,7 @@ architecture MARK_II_arch of MARK_II is
     signal intCPUReq: std_logic;
     signal intAddress: std_logic_vector(23 downto 0);
 
-    signal rom_ack, ram0_ack, ram1_ack, int_ack, systim_ack, vga_ack, uart0_ack, uart1_ack, uart2_ack, ps2_0_ack, ps2_1_ack, dram0_ack, tim0_ack, tim1_ack, tim2_ack, tim3_ack: std_logic;
+    signal rom_ack, ram0_ack, ram1_ack, int_ack, systim_ack, vga_ack, uart0_ack, uart1_ack, uart2_ack, ps2_0_ack, ps2_1_ack, dram0_ack, tim0_ack, tim1_ack, tim2_ack, tim3_ack, lfsr_ack: std_logic;
 	
     signal clk_uart, clk_vga, clk_sys, clk_audio, clk_sdram: std_logic;
 	
@@ -465,9 +480,16 @@ begin
 			tim3_ack, int_req(7)
 		);
 	
+	lfsr0: lfsr
+		generic map(x"00010E")
+		port map(
+			clk_sys, res, bus_address, bus_data_mosi, bus_data_miso, bus_WR, bus_RD,
+			lfsr_ack
+		);
+		
     bus_ack <=
 		rom_ack or ram0_ack or ram1_ack or int_ack or systim_ack or vga_ack or 
 		uart0_ack or uart1_ack or uart2_ack or ps2_0_ack or ps2_1_ack or dram0_ack or
-		tim0_ack or tim1_ack or tim2_ack or tim3_ack;
+		tim0_ack or tim1_ack or tim2_ack or tim3_ack or lfsr_ack;
 
 end architecture MARK_II_arch;

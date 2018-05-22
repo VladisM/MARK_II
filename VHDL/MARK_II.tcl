@@ -90,6 +90,7 @@ if {$make_assignments} {
 	set_global_assignment -name VHDL_FILE ./src/sdram/bus_interface.vhd
 	set_global_assignment -name VHDL_FILE ./src/sdram/sdram_driver.vhd
 	set_global_assignment -name VHDL_FILE ./src/timer/timer.vhd	
+	set_global_assignment -name VHDL_FILE ./src/lfsr/lfsr.vhd
 
 	set_global_assignment -name QIP_FILE ./src/clkgen/pll.qip
 
