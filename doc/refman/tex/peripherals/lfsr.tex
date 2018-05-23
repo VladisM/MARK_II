@@ -1,0 +1,26 @@
+\subsection{LFSR}
+
+Very primitive peripheral containing free running shift register with 
+linear feedback that can be used for generating pseudo random numbers.
+
+\subsubsection{Function}
+
+You simply read data register and that is. There is nothing to set-up. 
+Feedback is $x^{32} + x^{22} + x^{2} + x^{1} + 1$, that is sequence 
+with 4294967295 states.
+
+\subsubsection{Registers}
+
+There is only one register, called LFSR\_RN, and it have offset $+0$. It 
+is read only and contain pseudonymous number.
+
+\begin{table}[h]
+    \centering
+    \begin{tabular}{|l|l|l|}
+        \hline
+        \textbf{Offset} & \textbf{Name} & \textbf{Purpose}                 \\ \hline
+        $+0$            & PSBR          & Last received byte from PS2 bus. \\ \hline
+    \end{tabular}
+    \caption{LFSR register map}
+    \label{tab:lfsr_reg_map}
+\end{table}
