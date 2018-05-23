@@ -16,6 +16,7 @@ from ram import ram
 from systim import systim
 from intControler import intControler
 from uart import uart
+from lfsr import lfsr
 
 import sys
 
@@ -29,6 +30,7 @@ class MARK():
         self.systim0 = systim(0x000104, self.interrupt, "systim0")
         self.intControler0 = intControler(0x00010F, self.cpu0, "intControler0")
         self.uart0 = uart(0x000130, self.interrupt, uart0_map, "uart0")
+        self.lfsr0 = lfsr(0x00010E, "lfsr0")
 
     def readFunction(self, address):
         """CPU (master on bus) call this function to read data from specified address"""
@@ -49,6 +51,9 @@ class MARK():
         if value != None: return value
 
         value = self.uart0.read(address)
+        if value != None: return value
+
+        value = self.lfsr0.read(address)
         if value != None: return value
 
         print "Read mem error. Address <" + hex(address) + "> is undefined. Aborting emulation!"
