@@ -1150,7 +1150,13 @@ void load_into_reg(FILE *f, int dest_reg, struct obj *o, int type, int tmp_reg){
                     break;
                 default: //this is pointless storage_class can be only static or extern with VARADR
                     ierror(0);
+            }            
+            //this is useful when object is array and we want adres of nonfirst element
+            if(o->val.vmax > 0){
+                load_cons(f, tmp_reg, o->val.vmax);
+                emit(f, "\tADD \t %s %s %s\n", regnames[dest_reg], regnames[tmp_reg], regnames[dest_reg]);              
             }
+            
             break;
         default:
             #ifdef DEBUG_MARK
