@@ -267,6 +267,10 @@ class object_buffer():
 
         for file_item in self.files:
             for label_item in file_item.symbols.exports:
+                for sym in self.export_table:
+                    if label_item.name == sym.name:
+                        print "Symbol '" + sym.name + "' is exported more than once!"
+                        sys.exit(1)            
                 self.export_table.append(label_item)
 
     def __find_exported_label(self, key):
