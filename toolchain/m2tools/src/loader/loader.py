@@ -112,7 +112,7 @@ Arguments:
                         this address.
     -p <port>           Port where MARK-II is connected. For example
                         /dev/ttyUSB0.
-       --baudrate       Set baudrate for port. Default value is 9600.
+       --baudrate       Set baudrate for port. Default value is 38400.
        --version        Print version number and exit.
     -e --emulator       Add this option if you are connecting to emulator.
 """
@@ -128,7 +128,7 @@ def get_args():
     input_file = None
     base_address = None
     port = None
-    baudrate = 9600
+    baudrate = 38400
     emulator = False
 
     for option, value in opts:

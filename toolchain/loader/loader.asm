@@ -50,8 +50,8 @@ start:
     OR R0 R0 R10
     .MVI R11 MODE_SYNC
 
-    ;config uart0 to 9600 baud 8n1
-    .MVI R1 0x00270077
+    ;config uart0 to 38400 baud 8n1
+    .MVI R1 0x0027001D
     ST R1 UCR0
 
     ;enable interrupt
