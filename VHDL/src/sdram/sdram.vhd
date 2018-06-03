@@ -67,12 +67,11 @@ architecture rtl of sdram is
 			lpm_width: natural;
 			lpm_widthu: natural := 1;
 			overflow_checking: string := "ON";
-			rdsync_delaypipe: natural := 0;
 			read_aclr_synch: string := "OFF";
 			underflow_checking: string := "ON";
 			use_eab: string := "ON";
 			write_aclr_synch: string := "OFF";
-			wrsync_delaypipe: natural := 0;
+			clocks_are_synchronized: string := "FALSE";
 			lpm_type: string := "dcfifo"
 		);
 		port(
@@ -271,7 +270,7 @@ begin
     
     wrfifo0: dcfifo
         generic map(
-			4, "OFF", 55, 2, "ON", 5, "ON", "ON", "OFF", "ON", 5, "dcfifo"
+			4, "OFF", 55, 2, "ON", "ON", "ON", "OFF", "ON", "TRUE", "dcfifo"
 		)
         port map(
             res, wrfifo_datain, clk_sdram, wrfifo_read, clk, 
@@ -281,7 +280,7 @@ begin
                 
     rdfifo_address0: dcfifo
         generic map(
-			4, "OFF", 23, 2, "ON", 5, "ON", "ON", "OFF", "ON", 5, "dcfifo"
+			4, "OFF", 23, 2, "ON", "ON", "ON", "OFF", "ON", "TRUE", "dcfifo"
 		)
         port map(            
             res, rdfifo_address_datain, clk_sdram, rdfifo_address_rdreq, clk, 
@@ -291,7 +290,7 @@ begin
         
     rdfifo_data0: dcfifo
 		generic map(
-			4, "OFF", 32, 2, "ON", 5, "ON", "ON", "OFF", "ON", 5, "dcfifo"
+			4, "OFF", 32, 2, "ON", "ON", "ON", "OFF", "ON", "TRUE", "dcfifo"
 		)
         port map(
             res, rdfifo_data_datain, clk, rdfifo_data_rdreq, clk_sdram, 

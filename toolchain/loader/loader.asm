@@ -12,6 +12,7 @@
 ; R1 - universal register using in main program
 ; R2 - universal register using in interrupt
 ; R3 - universal register using in interrupt
+; R4 - temp variable used in interrupt
 ;
 ; R6 - temp variable
 ; R7 - bytenum variable
@@ -29,10 +30,10 @@
 .CONS USR0  0x132
 .CONS UCR0  0x133
 
-.CONS MODE_SYNC  0x01
-.CONS MODE_BASE  0x02
-.CONS MODE_COUNT 0x03
-.CONS MODE_DATA  0x04
+.CONS MODE_DATA  0x01
+.CONS MODE_SYNC  0x02
+.CONS MODE_BASE  0x03
+.CONS MODE_COUNT 0x04
 .CONS MODE_DONE  0x05
 .CONS MODE_ERROR 0x06
 
@@ -48,16 +49,16 @@ start:
     OR R0 R0 R8
     OR R0 R0 R9
     OR R0 R0 R10
-    .MVI R11 MODE_SYNC
+    MVIA R11 MODE_SYNC
 
-    ;config uart0 to 9600 baud 8n1
-    .MVI R1 0x00270077
+    ;config uart0 to 38400 baud 8n1
+    .MVI R1 0x0027001D
     ST R1 UCR0
 
     ;enable interrupt
     MVIA R1 UART_ISR
     ST R1 INTVEC8
-    .MVI R1 0x0100
+    MVIA R1 0x0100
     ST R1 INTMR
 
     ;goto main program
@@ -67,22 +68,23 @@ UART_ISR:
     LD USR0 R2
 
     ;decide what code branch to execute - this is something like FSM
-    .MVI R2 MODE_SYNC
-    CMPI EQ R2 R11 R2
-    BNZ R2 mode_sync_code
+    ;INC is used instead MVI for speedup
+    INC R0 R2 ;R2 <= MODE_DATA 
+    CMPI EQ R2 R11 R4
+    BNZ R4 mode_data_code
+    
+    INC R2 R2 ;R2 <= MODE_SYNC
+    CMPI EQ R2 R11 R4
+    BNZ R4 mode_sync_code
 
-    .MVI R2 MODE_BASE
-    CMPI EQ R2 R11 R2
-    BNZ R2 mode_base_code
+    INC R2 R2 ;R2 <= MODE_BASE
+    CMPI EQ R2 R11 R4
+    BNZ R4 mode_base_code
 
-    .MVI R2 MODE_COUNT
-    CMPI EQ R2 R11 R2
-    BNZ R2 mode_count_code
-
-    .MVI R2 MODE_DATA
-    CMPI EQ R2 R11 R2
-    BNZ R2 mode_data_code
-
+    INC R2 R2 ;R2 <= MODE_COUNT
+    CMPI EQ R2 R11 R4
+    BNZ R4 mode_count_code
+    
     ;something is wrong if we are there :(
     RETI
 
@@ -91,21 +93,21 @@ mode_sync_code:
 
     ;if UDR0 != 0x55 then goto mode_sync_code_error
     LD URDR0 R2
-    .MVI R3 0x55
+    MVIA R3 0x55
     CMPI EQ R2 R3 R2
     BZ R2 mode_sync_code_error
 
     ;send 0xAA responde for loader
-    .MVI R3 0xAA
+    MVIA R3 0xAA
     ST R3 UTDR0
 
     ;mode = mode_base
-    .MVI R11 MODE_BASE
+    MVIA R11 MODE_BASE
     RETI
 
 mode_sync_code_error:
     ;mode = MODE_ERROR
-    .MVI R11 MODE_ERROR
+    MVIA R11 MODE_ERROR
     RETI
 
 
@@ -113,7 +115,7 @@ mode_sync_code_error:
 mode_base_code:
 
     ;tmp << 8
-    .MVI R4 8
+    MVIA R4 8
     LSL R6 R4 R6
 
     ;tmp |= udr0
@@ -124,7 +126,7 @@ mode_base_code:
     INC R7 R7
 
     ;if bytenum == 3 then goto mode_base_code_wordcomplete else RETI
-    .MVI R2 0x03
+    MVIA R2 0x03
     CMPI EQ R2 R7 R2
     BNZ R2 mode_base_code_wordcomplete
 
@@ -135,7 +137,7 @@ mode_base_code_wordcomplete:
     OR R0 R6 R10 ;base = tmp
     OR R0 R0 R7 ;bytenum = 0
     OR R0 R0 R6 ;tmp = 0
-    .MVI R11 MODE_COUNT ;mode = MODE_COUNT
+    MVIA R11 MODE_COUNT ;mode = MODE_COUNT
 
     BZ R0 signalize_and_reti
 
@@ -143,7 +145,7 @@ mode_base_code_wordcomplete:
 mode_count_code:
 
     ;tmp << 8
-    .MVI R4 8
+    MVIA R4 8
     LSL R6 R4 R6
 
     ;tmp |= udr0
@@ -154,7 +156,7 @@ mode_count_code:
     INC R7 R7
 
     ;if bytenum == 3 then goto mode_count_code_wordcomplete else RETI
-    .MVI R2 0x03
+    MVIA R2 0x03
     CMPI EQ R2 R7 R2
     BNZ R2 mode_count_code_wordcomplete
 
@@ -164,7 +166,7 @@ mode_count_code_wordcomplete:
     OR R0 R6 R9 ;count = tmp
     OR R0 R0 R7 ;bytenum = 0
     OR R0 R0 R6 ;tmp = 0
-    .MVI R11 MODE_DATA ;mode = MODE_DATA
+    MVIA R11 MODE_DATA ;mode = MODE_DATA
 
     BZ R0 signalize_and_reti
 
@@ -173,7 +175,7 @@ mode_count_code_wordcomplete:
 mode_data_code:
 
     ;tmp << 8
-    .MVI R4 8
+    MVIA R4 8
     LSL R6 R4 R6
 
     ;tmp |= udr0
@@ -184,7 +186,7 @@ mode_data_code:
     INC R7 R7
 
     ;if bytenum == 4 then goto mode_data_code_wordcomplete else RETI
-    .MVI R2 0x04
+    MVIA R2 0x04
     CMPI EQ R2 R7 R2
     BNZ R2 mode_data_code_wordcomplete
 
@@ -209,11 +211,11 @@ mode_data_code_wordcomplete:
 
 mode_data_code_complete:
     ;mode = MODE_DONE
-    .MVI R11 MODE_DONE
+    MVIA R11 MODE_DONE
     BZ R0 signalize_and_reti
 
 signalize_and_reti:
-    .MVI R2 0xBB
+    MVIA R2 0xBB
     ST R2 UTDR0
     RETI
 
@@ -221,12 +223,12 @@ signalize_and_reti:
 
 main:
     ; if mode == MODE_DONE then goto base
-    .MVI R1 MODE_DONE
+    MVIA R1 MODE_DONE
     CMPI EQ R1 R11 R1
     BNZ R1 start_loaded
 
     ; if mode == MODE_ERROR make horrible things!
-    .MVI R1 MODE_ERROR
+    MVIA R1 MODE_ERROR
     CMPI EQ R1 R11 R1
     BNZ R1 error_sig
 
@@ -240,7 +242,7 @@ error_sig:
 start_loaded:
 
     ;wait a bit
-    .MVI R1 0xFFFFF
+    MVIA R1 0xFFFFF
 start_loaded_loop:
     DEC R1 R1
     BNZ R1 start_loaded_loop
