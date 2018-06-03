@@ -114,12 +114,13 @@ Arguments:
                         /dev/ttyUSB0.
        --baudrate       Set baudrate for port. Default value is 38400.
        --version        Print version number and exit.
+       --fileout		Generate C file for fast loading.
     -e --emulator       Add this option if you are connecting to emulator.
 """
 
 def get_args():
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "hb:p:e", ["help","version","baudrate=","emulator"])
+        opts, args = getopt.getopt(sys.argv[1:], "hb:p:e", ["fileout","help","version","baudrate=","emulator"])
     except getopt.GetoptError as err:
         print str(err)
         usage()
@@ -130,7 +131,8 @@ def get_args():
     port = None
     baudrate = 38400
     emulator = False
-
+    fileout = False
+    
     for option, value in opts:
         if option in ("-h", "--help"):
             usage()
@@ -146,6 +148,8 @@ def get_args():
             baudrate = int(value)
         elif option in ("-e", "--emulator"):
             emulator = True
+        elif option == "--fileout":
+            fileout = True
         else:
             print "Unrecognized option " + option
             print "Type 'loader -h' for more informations."
@@ -169,7 +173,7 @@ def get_args():
     input_file = args[0]
 
 
-    return [input_file, base_address, port, baudrate, emulator]
+    return [input_file, base_address, port, baudrate, emulator, fileout]
 
 def send_char(char_to_send, port):
     port.write(char_to_send)
@@ -181,7 +185,7 @@ def send_char(char_to_send, port):
 
 def main():
 
-    input_file, base_address, port, baudrate, emulator = get_args()
+    input_file, base_address, port, baudrate, emulator, fileout = get_args()
 
     try:
         f = file(input_file, "r")
@@ -214,57 +218,201 @@ def main():
         tmpbuff[item.address - base_address] = item.value
 
     buff = tmpbuff
-
-    #send everithing
-
-    if emulator == True:
-        ser = serial.Serial(port, baudrate, rtscts=True, dsrdtr=True)
-    else:
-        ser = serial.Serial(port, baudrate)
-
-    #try connect to loader in MARK
     
-    print "Trying to connect..."
-    
-    ser.write(chr(0x55))
-    time.sleep(2)
+    if fileout == False:
+        
+        #send everithing
 
-    if ser.in_waiting > 0:
-        response = int((ser.read(1)).encode('hex'), 16)
-        if response != 0xAA:
+        if emulator == True:
+            ser = serial.Serial(port, baudrate, rtscts=True, dsrdtr=True)
+        else:
+            ser = serial.Serial(port, baudrate)
+
+        #try connect to loader in MARK
+        
+        print "Trying to connect..."
+        
+        ser.write(chr(0x55))
+        time.sleep(2)
+
+        if ser.in_waiting > 0:
+            response = int((ser.read(1)).encode('hex'), 16)
+            if response != 0xAA:
+                print "Can't connect to MARK II Loader. Aborting..."
+                return 1
+            else:
+                print "Connected, sending " + str(size * 4) + " bytes of data. Please wait..."
+        else:
             print "Can't connect to MARK II Loader. Aborting..."
             return 1
-        else:
-            print "Connected, sending " + str(size * 4) + " bytes of data. Please wait..."
-    else:
-        print "Can't connect to MARK II Loader. Aborting..."
-        return 1
 
-    #send data
-
-    send_char(chr((base_address >> 16) & 0xFF), ser)
-    send_char(chr((base_address >> 8) & 0xFF), ser)
-    send_char(chr(base_address & 0xFF), ser)
-
-    send_char(chr((size >> 16) & 0xFF), ser)
-    send_char(chr((size >> 8) & 0xFF), ser)
-    send_char(chr(size & 0xFF), ser)
-
-    counter = 1
-    for value in buff:
-        send_char(chr((value >> 24) & 0xFF), ser)
-        send_char(chr((value >> 16) & 0xFF), ser)
-        send_char(chr((value >> 8) & 0xFF), ser)
-        send_char(chr(value & 0xFF), ser)
+        #send data
         
-        sys.stdout.write("\rSent: " + str(counter * 4) + "/" + str(size * 4) + " ")
+        send_char(chr((base_address >> 16) & 0xFF), ser)
+        send_char(chr((base_address >> 8) & 0xFF), ser)
+        send_char(chr(base_address & 0xFF), ser)
+
+        send_char(chr((size >> 16) & 0xFF), ser)
+        send_char(chr((size >> 8) & 0xFF), ser)
+        send_char(chr(size & 0xFF), ser)
+
+        counter = 1
+        for value in buff:
+            send_char(chr((value >> 24) & 0xFF), ser)
+            send_char(chr((value >> 16) & 0xFF), ser)
+            send_char(chr((value >> 8) & 0xFF), ser)
+            send_char(chr(value & 0xFF), ser)
+            
+            sys.stdout.write("\rSent: " + str(counter * 4) + "/" + str(size * 4) + " ")
+            sys.stdout.flush()
+            counter = counter + 1
+            
+        sys.stdout.write("\nDone...\n")
         sys.stdout.flush()
-        counter = counter + 1
+        ser.close()
+    
+    else:
+        f = open("fast_load.c", "w")
         
-    sys.stdout.write("\nDone...\n")
-    sys.stdout.flush()
-    ser.close()
+        f.write("""/*
+ * Based on example from:
+ * https://p5r.uk/blog/2009/linux-serial-programming-example.html
+ *
+ * Please change dev macro on line 18
+ * Compile it using gcc
+ */
 
+#include <stdio.h>
+#include <unistd.h>
+#include <string.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <termios.h>
+#include <errno.h>
+
+#define dev "/dev/ttyUSB0"
+
+""")
+        
+        
+        f.write("char data[] = {\n")        
+        
+        f.write(hex((base_address >> 16) & 0xFF) + ", ")
+        f.write(hex((base_address >> 8) & 0xFF) + ", ")
+        f.write(hex((base_address >> 0) & 0xFF) + ", ")
+        
+        f.write("\n")
+        
+        size = size + 1
+        
+        f.write(hex((size >> 16) & 0xFF) + ", ")
+        f.write(hex((size >> 8) & 0xFF) + ", ")
+        f.write(hex((size >> 0) & 0xFF) + ", ")
+                
+        f.write("\n")
+        
+        counter = 6
+        
+        for value in buff:
+            f.write(hex((value >> 24) & 0xFF) + ", ")
+            f.write(hex((value >> 16) & 0xFF) + ", ")
+            f.write(hex((value >> 8) & 0xFF) + ", ")
+            f.write(hex((value >> 0) & 0xFF) + ", ")
+            counter = counter + 4
+            f.write("\n")
+            
+        f.write("0x00 };\n");
+        f.write("int count = " + str(counter) + ";\n")
+        
+        f.write(""" 
+
+int main(void)
+{
+    int fd;
+    struct termios old_termios;
+    struct termios new_termios;
+    
+    fd = open(dev, O_RDWR | O_NOCTTY);
+    if (fd < 0) {
+        fprintf(stderr, "error, counldn't open file %s\\n", dev);
+        return 1;
+    }
+    if (tcgetattr(fd, &old_termios) != 0) {
+        fprintf(stderr, "tcgetattr(fd, &old_termios) failed: %s\\n", strerror(errno));
+        return 1;
+    }
+    memset(&new_termios, 0, sizeof(new_termios));
+    new_termios.c_iflag = IGNPAR;
+    new_termios.c_oflag = 0;
+    new_termios.c_cflag = CS8 | CREAD | CLOCAL | HUPCL;
+    new_termios.c_lflag = 0;
+    new_termios.c_cc[VINTR]    = 0;
+    new_termios.c_cc[VQUIT]    = 0;
+    new_termios.c_cc[VERASE]   = 0;
+    new_termios.c_cc[VKILL]    = 0;
+    new_termios.c_cc[VEOF]     = 4;
+    new_termios.c_cc[VTIME]    = 0;
+    new_termios.c_cc[VMIN]     = 1;
+    new_termios.c_cc[VSWTC]    = 0;
+    new_termios.c_cc[VSTART]   = 0;
+    new_termios.c_cc[VSTOP]    = 0;
+    new_termios.c_cc[VSUSP]    = 0;
+    new_termios.c_cc[VEOL]     = 0;
+    new_termios.c_cc[VREPRINT] = 0;
+    new_termios.c_cc[VDISCARD] = 0;
+    new_termios.c_cc[VWERASE]  = 0;
+    new_termios.c_cc[VLNEXT]   = 0;
+    new_termios.c_cc[VEOL2]    = 0;
+
+    if (cfsetispeed(&new_termios, B38400) != 0) {
+        fprintf(stderr, "cfsetispeed(&new_termios, B57600) failed: %s\\n", strerror(errno));
+        return 1;
+    }
+    if (cfsetospeed(&new_termios, B38400) != 0) {
+        fprintf(stderr, "cfsetospeed(&new_termios, B57600) failed: %s\\n", strerror(errno));
+        return 1;
+    }
+    if (tcsetattr(fd, TCSANOW, &new_termios) != 0) {
+        fprintf(stderr, "tcsetattr(fd, TCSANOW, &new_termios) failed: %s\\n", strerror(errno));
+        return 1;
+    }
+
+
+    // Now read() and write() to the device at your heart's delight
+    
+    char greet[] = {0x55};  
+    write(fd, &greet, 1);
+    
+    int per = count / 100;
+    int total = 0;
+    int total_counter = 0;
+        
+    for(int i = 0; i < count; i++){
+        int x,y = 0;
+        write(fd, &(data[i]), 1);
+        do{
+            y = read(fd,&x,1);
+        }
+        while(y != 1);
+        
+        total_counter++;
+        if(total_counter == per){
+            total++;
+            total_counter = 0;          
+        }
+        printf("Sent: %d%% \\r", total);
+    }
+    printf("\\nDone\\n");
+    
+    // Before leaving, reset the old serial settings.
+    tcsetattr(fd, TCSANOW, &old_termios);
+    return 0;
+}
+""")
+        
+        f.close()
+    
     return 0
 
 if __name__ == '__main__':
