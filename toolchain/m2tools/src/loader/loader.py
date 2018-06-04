@@ -272,14 +272,16 @@ def main():
         ser.close()
     
     else:
-        f = open("fast_load.c", "w")
+		create_file(port, baudrate, base_address, size, buff)
+    
+    return 0
+
+def create_file(port, baudrate, base_address, size, buff):
+	f = open("fast_load.c", "w")
         
-        f.write("""/*
+	f.write("""/*
  * Based on example from:
  * https://p5r.uk/blog/2009/linux-serial-programming-example.html
- *
- * Please change dev macro on line 18
- * Compile it using gcc
  */
 
 #include <stdio.h>
@@ -291,41 +293,41 @@ def main():
 #include <termios.h>
 #include <errno.h>
 
-#define dev "/dev/ttyUSB0"
-
 """)
-        
-        
-        f.write("char data[] = {\n")        
-        
-        f.write(hex((base_address >> 16) & 0xFF) + ", ")
-        f.write(hex((base_address >> 8) & 0xFF) + ", ")
-        f.write(hex((base_address >> 0) & 0xFF) + ", ")
-        
-        f.write("\n")
-        
-        size = size + 1
-        
-        f.write(hex((size >> 16) & 0xFF) + ", ")
-        f.write(hex((size >> 8) & 0xFF) + ", ")
-        f.write(hex((size >> 0) & 0xFF) + ", ")
-                
-        f.write("\n")
-        
-        counter = 6
-        
-        for value in buff:
-            f.write(hex((value >> 24) & 0xFF) + ", ")
-            f.write(hex((value >> 16) & 0xFF) + ", ")
-            f.write(hex((value >> 8) & 0xFF) + ", ")
-            f.write(hex((value >> 0) & 0xFF) + ", ")
-            counter = counter + 4
-            f.write("\n")
-            
-        f.write("0x00 };\n");
-        f.write("int count = " + str(counter) + ";\n")
-        
-        f.write(""" 
+
+	f.write('#define PORT "' + port + '"\n')
+	f.write('#define BAUDRATE B' + str(baudrate) + '\n\n')
+	    
+	f.write("char data[] = {\n")        
+	
+	f.write(hex((base_address >> 16) & 0xFF) + ", ")
+	f.write(hex((base_address >> 8) & 0xFF) + ", ")
+	f.write(hex((base_address >> 0) & 0xFF) + ", ")
+	
+	f.write("\n")
+	
+	size = size + 1
+	
+	f.write(hex((size >> 16) & 0xFF) + ", ")
+	f.write(hex((size >> 8) & 0xFF) + ", ")
+	f.write(hex((size >> 0) & 0xFF) + ", ")
+			
+	f.write("\n")
+	
+	counter = 6
+	
+	for value in buff:
+		f.write(hex((value >> 24) & 0xFF) + ", ")
+		f.write(hex((value >> 16) & 0xFF) + ", ")
+		f.write(hex((value >> 8) & 0xFF) + ", ")
+		f.write(hex((value >> 0) & 0xFF) + ", ")
+		counter = counter + 4
+		f.write("\n")
+		
+	f.write("0x00 };\n");
+	f.write("int count = " + str(counter) + ";\n")
+	
+	f.write(""" 
 
 int main(void)
 {
@@ -333,9 +335,9 @@ int main(void)
     struct termios old_termios;
     struct termios new_termios;
     
-    fd = open(dev, O_RDWR | O_NOCTTY);
+    fd = open(PORT, O_RDWR | O_NOCTTY);
     if (fd < 0) {
-        fprintf(stderr, "error, counldn't open file %s\\n", dev);
+        fprintf(stderr, "error, counldn't open file %s\\n", PORT);
         return 1;
     }
     if (tcgetattr(fd, &old_termios) != 0) {
@@ -365,12 +367,12 @@ int main(void)
     new_termios.c_cc[VLNEXT]   = 0;
     new_termios.c_cc[VEOL2]    = 0;
 
-    if (cfsetispeed(&new_termios, B38400) != 0) {
-        fprintf(stderr, "cfsetispeed(&new_termios, B57600) failed: %s\\n", strerror(errno));
+    if (cfsetispeed(&new_termios, BAUDRATE) != 0) {
+        fprintf(stderr, "cfsetispeed(&new_termios, BAUDRATE) failed: %s\\n", strerror(errno));
         return 1;
     }
-    if (cfsetospeed(&new_termios, B38400) != 0) {
-        fprintf(stderr, "cfsetospeed(&new_termios, B57600) failed: %s\\n", strerror(errno));
+    if (cfsetospeed(&new_termios, BAUDRATE) != 0) {
+        fprintf(stderr, "cfsetospeed(&new_termios, BAUDRATE) failed: %s\\n", strerror(errno));
         return 1;
     }
     if (tcsetattr(fd, TCSANOW, &new_termios) != 0) {
@@ -387,7 +389,10 @@ int main(void)
     int per = count / 100;
     int total = 0;
     int total_counter = 0;
-        
+    
+    printf("Sent: 0%%");
+    fflush(stdout);
+    
     for(int i = 0; i < count; i++){
         int x,y = 0;
         write(fd, &(data[i]), 1);
@@ -399,9 +404,10 @@ int main(void)
         total_counter++;
         if(total_counter == per){
             total++;
-            total_counter = 0;          
-        }
-        printf("Sent: %d%% \\r", total);
+            total_counter = 0;
+			printf("\\rSent: %d%%", total);
+            fflush(stdout);
+        }        
     }
     printf("\\nDone\\n");
     
@@ -411,9 +417,8 @@ int main(void)
 }
 """)
         
-        f.close()
-    
-    return 0
+	f.close()
+
 
 if __name__ == '__main__':
     sys.exit(main())
